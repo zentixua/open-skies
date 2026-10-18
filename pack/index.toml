@@ -6,7 +6,7 @@ hash = "43c766c084c6919984fbc5975c47e8565297781dd7f661503f59829cd3fc00fb"
 
 [[files]]
 file = "config/defaultoptions/keybindings.txt"
-hash = "1ebdd94e0541568b1394cdfddd17f8570eee4969e1913c027d2a9b25da123f29"
+hash = "63ca41ee92ff035ed7a9a6a052b9fb7b5650b41672935b4f70dde4ff4b65a6e4"
 
 [[files]]
 file = "config/entityculling.json"
@@ -125,6 +125,11 @@ hash = "1a73038149dff505a614a65653ae8ae27260283959a3e1ee04236b86912700c6"
 metafile = true
 
 [[files]]
+file = "mods/do-a-barrel-roll.pw.toml"
+hash = "fe88386ca7a7c34be094f10e3a012810cec23f21b580dbc1c908cf95a17bf6f8"
+metafile = true
+
+[[files]]
 file = "mods/dynamic-fps.pw.toml"
 hash = "ae6fd52d8bdcbeca5bbe6db840f22f92c1928fe0fda22017b19612b9b00a245a"
 metafile = true
@@ -161,7 +166,7 @@ metafile = true
 
 [[files]]
 file = "mods/forgified-fabric-api.pw.toml"
-hash = "13eb88becee8bfceb6027d97af71ab3bded57dc45d5db9cb36e55109fa99aa27"
+hash = "981e52e1c4a97465921342f556cced335c6c75cdb050e9fc528d52cf4ff88b79"
 metafile = true
 
 [[files]]

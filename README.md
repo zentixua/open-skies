@@ -32,7 +32,7 @@ cd pack && packwiz mr export      # → Open Skies-<версия>.mrpack
 Новый экземпляр: Prism → «Добавить экземпляр…» → «Импорт» → `Open-Skies.zip` (выпуск выше, артефакт CI
 `open-skies` или `tools/prism_instance.py`). В нём Minecraft и NeoForge из `pack.toml`, 6144 МБ памяти,
 `packwiz-installer-bootstrap.jar` в папке игры и команда перед запуском. Первый запуск скачивает моды и спрашивает про
-необязательные: запись (Flashback, Sinytra Connector, Forgified Fabric API, Flashback NeoForge Fixed) нужна только тем,
+необязательные: запись (Flashback, Sinytra Connector, Flashback NeoForge Fixed) нужна только тем,
 кто снимает; Distant Horizons включён, на macOS его выключить (ниже).
 
 Экземпляр, поставленный из `.mrpack`, переводится на автообновление так же, миры остаются:
@@ -69,10 +69,10 @@ cd pack && packwiz mr export      # → Open Skies-<версия>.mrpack
 | основа | Create, Sable, Create Aeronautics, Incoming (jar выпуска с GitHub), Distant Horizons (по выбору, включён) |
 | производительность | Sodium, Sodium Extra, Reese's Sodium Options, Iris, Colorwheel, Lithium, FerriteCore, ModernFix, ImmediatelyFast, Entity Culling, More Culling (+ Cloth Config), Dynamic FPS |
 | Create | Propulsion: Simulated, Aeroworks, Tweaked Controllers, Big Cannons (+ RPL), Connected, Deco, Diesel Generators, Aeronautics Hot Air Fix |
-| авиация и оружие | Immersive Aircraft, Man of Many Planes, Vic's Point Blank (+ GeckoLib), Point Blank Aeronautics compat |
+| авиация и оружие | Immersive Aircraft, Man of Many Planes, Vic's Point Blank (+ GeckoLib), Point Blank Aeronautics compat, Do a Barrel Roll (полёт на элитрах с креном, + Forgified Fabric API) |
 | картинка и камера | шейдерпак Complementary Reimagined, Euphoria Patches, Aeronautics Camera Sync, 3D Skin Layers, Not Enough Animations |
 | мультиплеер и удобство | Essential, TrueUUID (вход на сервер, ниже), LAN Server Properties (временно, ниже), JEI (+ MezzConfig), Jade, Jade Sable Compat, Xaero's Minimap и World Map (+ MapSyncer: вся карта мира с сервера), Create – Xaero's map, GraveStone и его патч для Sable, Mouse Tweaks, No Chat Reports |
-| запись (по выбору) | Flashback, Flashback NeoForge Fixed, Sinytra Connector, Forgified Fabric API |
+| запись (по выбору) | Flashback, Flashback NeoForge Fixed, Sinytra Connector |
 | клавиши | Default Options (+ Balm): раскладка сборки (ниже) |
 | замер производительности | spark: на сервере `/spark tps`, `/spark health`, `/spark profiler` (операторы), у себя в клиенте — `/sparkc` |
 | только на сервере | Almighty (мост ведущего, ниже), ServerCore (производительность сервера, ниже) |
@@ -174,14 +174,15 @@ NeoForge запускает все действия на нажатой клав
 | M, ], [ | карта мира, её настройки, настройки мини-карты (у мода — Y) |
 | U, J, Z, Num + | список меток, новая метка (у мода — B), большая мини-карта, метка на месте (Xaero) |
 | N, «,», «.» | камера снаряда, карта наведения, второй ключ (Incoming) |
-| I | наклон камеры вместе с аппаратом (Aeronautics Camera Sync) |
+| I | наклон камеры вместе с аппаратом (Aeronautics Camera Sync; у Do a Barrel Roll на I — вкл/выкл, здесь без клавиши) |
+| A, D | на элитрах — рыскание (Do a Barrel Roll), крен и тангаж — мышью |
 | K, O | шейдеры вкл/выкл, выбор шейдеров (Iris) |
 | Shift, Num 0, Num 1 | подробности, настройки и показ подсказки Jade |
 
 Без клавиши (у модов она есть по умолчанию): у Essential — друзья (H), гардероб (B), скриншоты (I), подглядеть чат (Z), быстрое меню
 (G), эмоции (R): всё это есть в его меню; сохранить и загрузить панель творческого режима (C, X); перезагрузка шейдеров
 Iris (R, нужна авторам шейдеров); осмотр оружия Point Blank (I, только анимация); у Jade — жидкости, рецепты и
-применения (есть в JEI) и диктор (Num 2–5). Остальное — как в Minecraft (WASD, E, Q, T, /, F, L, P, F2, F5, F11, 1–9)
+применения (есть в JEI) и диктор (Num 2–5); у Do a Barrel Roll — тяга вперёд (W, на серверах по умолчанию запрещена) и вкл/выкл (I: мод и так включён). Остальное — как в Minecraft (WASD, E, Q, T, /, F, L, P, F2, F5, F11, 1–9)
 и у модов: правый Shift — подтверждение в окнах Xaero, в окне рецептов JEI — R, U, A и мышь.
 
 Красными в «Управлении» остаются задуманные пары: NeoForge подсвечивает клавишу у двух действий, даже когда у них разные
@@ -208,6 +209,7 @@ Default Options — только у игроков. Его библиотека 
 
 | версия | мод | что изменилось |
 |---|---|---|
+| 0.1.32 | 3.4.0 | Do a Barrel Roll 3.7.3 — полёт на элитрах с креном: мышь кренит и задирает нос, A и D — рыскание; Forgified Fabric API, который ему нужен, теперь у всех и на сервере |
 | 0.1.31 | 3.4.0 | Incoming 3.4.0 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.4.0.md)) — ядерный удар по физике от вспышки до осадков: волна идёт с настоящей скоростью (где в настройках уже есть значение, оно остаётся), давление по высоте подрыва, свет выжигает землю и поджигает со вспышкой, гриб поднимается и светлеет, как на испытаниях, слой пыли, звук и слух, ранения волной, ожоги, ослепление вспышкой и радиация |
 | 0.1.30 | 3.3.0 | Incoming 3.3.0 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.3.0.md)) — ядерный огненный шар и гриб объёмом, с тенью днём и светом на земле ночью; ударную волну видно по стене пыли за ней; над водой брызги и столб воды вместо пыли; волна толкает взгляд, а не трясёт; мобы убегают от взрыва |
 | 0.1.29 | 3.2.0 | Incoming 3.2.0 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.2.0.md)) — после ядерного удара пелена пыли над городом и огненный шторм, выжженная земля, следы вспышки на стенах, удар над водой, руины успевают за волной; оператор и хост выбирают точку пуска на карте наведения |

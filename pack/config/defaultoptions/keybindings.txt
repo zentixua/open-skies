@@ -144,3 +144,14 @@ key_flashback.keybind.create_marker_1:key.keyboard.unknown:
 key_flashback.keybind.create_marker_2:key.keyboard.unknown:
 key_flashback.keybind.create_marker_3:key.keyboard.unknown:
 key_flashback.keybind.create_marker_4:key.keyboard.unknown:
+key_key.do_a_barrel_roll.toggle_enabled:key.keyboard.unknown:
+key_key.do_a_barrel_roll.toggle_thrust:key.keyboard.unknown:
+key_key.do_a_barrel_roll.open_config:key.keyboard.unknown:
+key_key.do_a_barrel_roll.pitch_up:key.keyboard.unknown:
+key_key.do_a_barrel_roll.pitch_down:key.keyboard.unknown:
+key_key.do_a_barrel_roll.yaw_left:key.keyboard.a:
+key_key.do_a_barrel_roll.yaw_right:key.keyboard.d:
+key_key.do_a_barrel_roll.roll_left:key.keyboard.unknown:
+key_key.do_a_barrel_roll.roll_right:key.keyboard.unknown:
+key_key.do_a_barrel_roll.thrust_forward:key.keyboard.unknown:
+key_key.do_a_barrel_roll.thrust_backward:key.keyboard.unknown:
