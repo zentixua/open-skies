@@ -12,9 +12,11 @@ NeoForge, клиент — portablemc: Minecraft, библиотеки и асс
 
 Сервер слушает только 127.0.0.1, без проверки лицензии; после «Done» получает `stop` и должен выйти с кодом 0.
 Клиент входит в мир --world (копия в saves/) через Quick Play и должен прожить в нём --stay секунд без падения;
-потом процесс гасится. Окно клиенту нужно: на машине без экрана — --wrap с xvfb-run (CI) или вложенным KWin
-(ноутбук: tools/nested_kwin.sh incoming, `{cmdq}` — команда одним аргументом). Звук клиент открыть не должен
-(на ноутбуке его закрывает nested_kwin.sh, в CI устройства нет).
+потом процесс гасится. Шейдерпак, который выбирает `config/iris.properties` сборки, Iris должен найти и прочитать
+(строка «Using shaderpack: <имя>» в логе; пак читается до сборки шейдеров на видеокарте): имя в настройке и `filename`
+шейдерпака в pack/shaderpacks/ расходиться не могут. Окно клиенту нужно: на машине без экрана — --wrap с xvfb-run
+(CI) или вложенным KWin (ноутбук: tools/nested_kwin.sh incoming, `{cmdq}` — команда одним аргументом). Звук клиент
+открыть не должен (на ноутбуке его закрывает nested_kwin.sh, в CI устройства нет).
 
 Падение загрузки (мод не принял NeoForge или другой мод, «Mod loading has failed», ошибка в RegisterEvent) — код 1,
 в конце — хвост лога и отчёт о падении. Что нужно: Java 21 (JAVA_HOME или java в PATH), для клиента — portablemc 5
@@ -134,6 +136,25 @@ def report(dest, log):
                 print(f"==== {name}\n" + f.read()[:12000])
 
 
+def selected_shaderpack(dest):
+    """Шейдерпак, который Iris должен включить по config/iris.properties экземпляра; None — шейдеры не выбраны.
+    Читать до запуска: игра файл переписывает — Voxy выключает шейдеры, если его отрисовка с ними не встала
+    (IrisUtil.disableIrisShaders; в CI так и есть: Voxy нужна OpenGL 4.6, у llvmpipe 4.5)."""
+    path = os.path.join(dest, "config", "iris.properties")
+    if not os.path.isfile(path):
+        return None
+    props = {}
+    with open(path, encoding="latin-1") as f:  # формат java.util.Properties — ISO-8859-1
+        for line in f:
+            line = line.strip()
+            if line and line[0] not in "#!" and "=" in line:
+                key, value = line.split("=", 1)
+                props[key.strip()] = value.strip()
+    if props.get("enableShaders") == "false":
+        return None
+    return props.get("shaderPack") or None
+
+
 def wait_for(proc, log, pattern, timeout):
     """Ждать строку pattern в логе, пока процесс жив; None — процесс вышел, вышел срок или загрузка упала."""
     end = time.monotonic() + timeout
@@ -222,6 +243,7 @@ def client(a):
     base = [pmc, "--main-dir", main_dir, "--output", "machine", "start", "--jvm", java(), f"neoforge::{neo}"]
     run(base[:5] + ["start", "--dry"] + base[6:], dest, "portablemc: Minecraft и NeoForge")
     install_pack(dest, "client", a.cache)
+    shaderpack = selected_shaderpack(dest)
     # без экрана приветствия (иначе Quick Play ждёт за ним вечно) и без паузы, когда окно не в фокусе
     with open(os.path.join(dest, "options.txt"), "w") as f:
         f.write("onboardAccessibility:false\npauseOnLostFocus:false\nsoundCategory_master:0.0\n")
@@ -261,6 +283,23 @@ def client(a):
         finally:
             stop_group(proc)
     print(f"клиент: {a.stay} с в мире без падения")
+    if shaderpack:
+        with open(log, errors="replace") as f:
+            text = f.read()
+            if f"Using shaderpack: {shaderpack}" not in text:
+                report(dest, log)
+                # причина у Iris — в начале лога, report показывает только хвост
+                print("".join(line + "\n" for line in text.splitlines() if "[Iris/]" in line)[-6000:], end="")
+                sys.exit(f"Iris не прочитал шейдерпак «{shaderpack}» из config/iris.properties (нет такого файла в "
+                         "shaderpacks/ или пак не читается)")
+        print(f"клиент: Iris прочитал шейдерпак «{shaderpack}»")
+        if selected_shaderpack(dest) is None:
+            # не падение: так бывает на машине без нужной Voxy OpenGL — в вывод, чтобы причина была видна
+            print("клиент: за время игры шейдеры в config/iris.properties выключены; в логе:")
+            why = re.compile(r"\[Voxy/\]: .*(?i:error|fail|exception)|Shaders are disabled")
+            with open(log, errors="replace") as f:
+                hits = [line for line in f if why.search(line)]
+            print("".join(hits[:10]), end="")
 
 
 def main():
