@@ -1,7 +1,7 @@
 # Open Skies — сборка NeoForge 1.21.1 Артёма и друзей
 
-Своя сборка «Open Skies» в [packwiz](https://packwiz.infra.link/): Create, Create Aeronautics, Incoming, Distant
-Horizons, шейдеры, запись повторов, на сервере — Almighty. Что в ней и как её ставить — README.md. Мод — https://github.com/zentixua/incoming,
+Своя сборка «Open Skies» в [packwiz](https://packwiz.infra.link/): Create, Create Aeronautics, Incoming, дальняя
+прорисовка Voxy (через Roxy), шейдеры, запись повторов, на сервере — Almighty. Что в ней и как её ставить — README.md. Мод — https://github.com/zentixua/incoming,
 мост ведущего Almighty (только сервер) — https://github.com/zentixua/almighty.
 
 ## Люди и правила
@@ -26,8 +26,11 @@ pack/                    ← сама сборка: pack.toml (версии иг
 tools/prism_instance.py  ← экземпляр Prism, который ставит pack/ с main сам при каждом запуске (Open-Skies.zip)
 tools/pack_dir.py        ← каталог игры из pack/ без Prism (моды по хешам) — для проверок клиентом Incoming
 tools/check_loader.py    ← каждый мод (и вложенные jar) принимает NeoForge из pack.toml; шаг CI
+tools/boot_check.py      ← сборка с нуля запускается: сервер до «Done», клиент до входа в мир; задача CI «Запуск
+                           с нуля» (клиент — Xvfb и Mesa), руками — клиент во вложенном KWin Incoming (шапка скрипта)
 .github/workflows/build.yml  ← CI «Сборка модов»: индекс свежий, .mrpack и экземпляр Prism (артефакт open-skies);
-                               новая version на main — релиз v<version> с ними (заметки — строка README «Версии»)
+                               и «Запуск с нуля» (boot_check.py); новая version на main — релиз v<version> с ними,
+                               только если обе прошли (заметки — строка README «Версии»)
 ```
 Адрес сборки для packwiz-installer: `https://raw.githubusercontent.com/zentixua/open-skies/main/pack/pack.toml`;
 экземпляры, поставленные под прежним именем сборки (Airstrike Pack), берут её по старому адресу
@@ -46,6 +49,11 @@ python3 tools/prism_instance.py           # dist/Open-Skies.zip — новый �
 Almighty — так же, `almighty-<версия>.jar` из выпуска https://github.com/zentixua/almighty, `side = "server"`.
 
 ## Подводные камни
+- `config/fml.toml` сборки держит `maxThreads = 1`: NeoForge создаёт моды параллельно, а Create 6.0.10 регистрирует
+  предметы через таблицы не для нескольких потоков — изредка запуск падает с `Trying to access unbound value …
+  create:…` (README, «Настройки»). Убирать — только когда Create это исправит.
+- Roxy грузит только `voxy-0.2.16-beta+1.21.11` (Modrinth `H3w2nVdU`): Voxy не обновлять, пока Roxy не скажет
+  про другую версию. Roxy и Voxy — необязательные с галочкой по умолчанию, включаются и выключаются только вместе.
 - GitHub отдаёт raw-файлы с кэшем до 5 минут: сразу после слияния `pack.toml` и `index.toml` могут быть из разных
   коммитов — packwiz-installer скажет про неверный хеш индекса («Quit», запустить позже). Сервер перезапускать через
   ~5 минут после слияния.

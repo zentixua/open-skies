@@ -1,12 +1,12 @@
 name = "Open Skies"
 author = "zentixua"
-version = "0.1.35"
+version = "0.1.36"
 pack-format = "packwiz:1.1.0"
 
 [index]
 file = "index.toml"
 hash-format = "sha256"
-hash = "561e468de453df81e729f5713a464a6c934e322434ad94a5547132102bff28c8"
+hash = "a26ba6871514207780c2d267608ee503fce0709287b77289cea84cba54a72b9a"
 
 [versions]
 minecraft = "1.21.1"
