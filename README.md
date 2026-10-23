@@ -124,10 +124,12 @@ Voxy нужна OpenGL 4.6, на macOS её нет (там OpenGL 4.1): Roxy 0.4
 на выбор — [Complementary Unbound](https://modrinth.com/shader/complementary-unbound); оба рисуют и дальний рельеф
 Voxy (в паках есть шейдеры для Voxy). Если отрисовка Voxy с шейдерпаком не встаёт (так в CI: там нет OpenGL 4.6), Voxy
 сам выключает шейдеры и это сохраняется в настройке Iris — включить снова K. Unbound с Euphoria Patches — копия
-«ComplementaryUnbound_r5.9.3 + EuphoriaPatches_1.10.5», её Euphoria Patches делает сам на запуске, если в
-`shaderpacks` нет другой такой копии той же версии. В экземплярах до 0.1.37 там осталась копия прежнего пака сборки,
-«ComplementaryReimagined_r5.9.3 + EuphoriaPatches_1.10.5»: её сделал Euphoria Patches, packwiz-installer её не знает и
-не удаляет (zip Reimagined удаляет). Эту папку удалить руками — на следующем запуске появится копия Unbound.
+«ComplementaryUnbound_r5.9.3 + EuphoriaPatches_1.10.5», её Euphoria Patches делает сам на запуске. В экземплярах до
+0.1.37 в `shaderpacks` осталась копия прежнего пака сборки, «ComplementaryReimagined_r5.9.3 + EuphoriaPatches_1.10.5»:
+её сделал Euphoria Patches, packwiz-installer её не знает и не удаляет (zip Reimagined удаляет). Рядом с ней копию
+Unbound Euphoria Patches делает, только если помнит, что прежней была Reimagined
+(`config/euphoria_patcher/.data.json`; после переноса папки экземпляра не помнит). Если копии Unbound нет, папку
+Reimagined удалить руками — на следующем запуске копия появится.
 
 Настройки, которые сборка кладёт сама:
 - `config/entityculling.json` — значения Entity Culling по умолчанию плюс сущности Incoming в `entityWhitelist`: такие
@@ -245,7 +247,7 @@ Default Options — только у игроков. Его библиотека 
 
 | версия | мод | что изменилось |
 |---|---|---|
-| 0.1.37 | 3.6.0 | Шейдеры: Photon вместо Complementary Reimagined, он выбран по умолчанию и включится у всех при обновлении; на выбор — Complementary Unbound (клавиша O). Папку «ComplementaryReimagined_r5.9.3 + EuphoriaPatches_1.10.5» в `shaderpacks` удалить руками — тогда Euphoria Patches сделает свою копию Unbound |
+| 0.1.37 | 3.6.0 | Шейдеры: Photon вместо Complementary Reimagined, он выбран по умолчанию и включится у всех при обновлении; на выбор — Complementary Unbound (клавиша O). Если в выборе нет «ComplementaryUnbound_r5.9.3 + EuphoriaPatches_1.10.5», удалить в `shaderpacks` папку «ComplementaryReimagined_r5.9.3 + EuphoriaPatches_1.10.5» — Euphoria Patches сделает копию Unbound на следующем запуске |
 | 0.1.36 | 3.6.0 | Incoming 3.6.0 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.6.0.md)) — обычные удары по физике заряда: взрывы снова частицами, как в 3.4.1, но размер, цвет и свет из модели; осколки, воронки, пробитие бомбы, ПВО и полёт по своей модели, пресет масштаба GAME/REAL/CUSTOM. Не совместима по сети с прежними версиями: обновитесь все и сервер. Мир со своими `nuclear.effects_scale` или `wave_speed` получит GAME — чтобы сохранить числа, поставить CUSTOM. NeoForge 21.1.264 (packwiz-installer спросит, обновить ли его в экземпляре, — согласиться) и все моды — до последних версий для 1.21.1: JEI 19.69, Immersive Aircraft 1.7.0, 3D Skin Layers 1.11.4, Flashback NeoForge Fixed 1.0.17. Зум Ok Zoomer на C (держать) с колесом мыши — вместо зума Essential. Дальняя прорисовка Voxy (через Roxy) и LOD Server Support вместо Distant Horizons: на macOS снять галочки Roxy и Voxy. Моды загружаются по одному (`config/fml.toml`) — без редкого падения Create при запуске. CI ставит сборку с нуля и запускает сервер и клиент |
 | 0.1.35 | 3.4.1 | Снова Incoming 3.4.1 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.4.1.md)): прилёты в 3.5.0 вышли хуже, пока их разбираем — играем на 3.4.1. Не совместима по сети с 0.1.34: обновитесь все и сервер |
 | 0.1.34 | 3.5.0 | Incoming 3.5.0 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.5.0.md)) — обычные удары по физике: взрыв — освещённый объём дыма, пыли и огня, дым над пожарами, факелы и дымные следы из данных двигателей, облако пуска; звук полёта и взрыва по двигателю, заряду и погоде, толчок волны и звон в ушах. Не совместима по сети с 3.4.1: обновитесь все и сервер |

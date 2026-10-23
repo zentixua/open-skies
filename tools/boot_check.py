@@ -285,8 +285,11 @@ def client(a):
     print(f"клиент: {a.stay} с в мире без падения")
     if shaderpack:
         with open(log, errors="replace") as f:
-            if f"Using shaderpack: {shaderpack}" not in f.read():
+            text = f.read()
+            if f"Using shaderpack: {shaderpack}" not in text:
                 report(dest, log)
+                # причина у Iris — в начале лога, report показывает только хвост
+                print("".join(line + "\n" for line in text.splitlines() if "[Iris/]" in line)[-6000:], end="")
                 sys.exit(f"Iris не прочитал шейдерпак «{shaderpack}» из config/iris.properties (нет такого файла в "
                          "shaderpacks/ или пак не читается)")
         print(f"клиент: Iris прочитал шейдерпак «{shaderpack}»")
