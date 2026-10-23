@@ -219,8 +219,7 @@ def client(a):
     if not pmc:
         sys.exit("нет portablemc 5 (pip install portablemc): PORTABLEMC или portablemc в PATH")
     main_dir = os.path.abspath(os.path.join(a.cache, "minecraft"))
-    base = [pmc, "--main-dir", main_dir, "--output", "machine", "start", "--jvm-policy", "system",
-            "--jvm", java(), f"neoforge::{neo}"]
+    base = [pmc, "--main-dir", main_dir, "--output", "machine", "start", "--jvm", java(), f"neoforge::{neo}"]
     run(base[:5] + ["start", "--dry"] + base[6:], dest, "portablemc: Minecraft и NeoForge")
     install_pack(dest, "client", a.cache)
     # без экрана приветствия (иначе Quick Play ждёт за ним вечно) и без паузы, когда окно не в фокусе
