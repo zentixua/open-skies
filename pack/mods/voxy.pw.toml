@@ -1,6 +1,7 @@
 name = "Voxy"
 filename = "voxy-0.2.16-beta+1.21.11.jar"
 side = "client"
+pin = true
 
 [download]
 url = "https://cdn.modrinth.com/data/fxxUqruK/versions/H3w2nVdU/voxy-0.2.16-beta%2B1.21.11.jar"
@@ -14,5 +15,5 @@ version = "H3w2nVdU"
 
 [option]
 optional = true
-default = true
 description = "Дальняя прорисовка (Roxy и Voxy — только вместе): нужна OpenGL 4.6, на macOS выключить оба"
+default = true
