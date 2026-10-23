@@ -293,8 +293,9 @@ def client(a):
         if selected_shaderpack(dest) is None:
             # не падение: так бывает на машине без нужной Voxy OpenGL — в вывод, чтобы причина была видна
             print("клиент: за время игры шейдеры в config/iris.properties выключены; в логе:")
+            why = re.compile(r"\[Voxy/\]: .*(?i:error|fail|exception)|Shaders are disabled")
             with open(log, errors="replace") as f:
-                hits = [line for line in f if re.search(r"(?i)voxy.*(error|fail|exception)|shaders are disabled", line)]
+                hits = [line for line in f if why.search(line)]
             print("".join(hits[:10]), end="")
 
 
