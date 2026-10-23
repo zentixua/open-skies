@@ -122,11 +122,12 @@ Voxy нужна OpenGL 4.6, на macOS её нет (там OpenGL 4.1): Roxy 0.4
 
 Шейдеры — через Iris, переключатель — K, выбор — O. По умолчанию [Photon](https://modrinth.com/shader/photon-shader),
 на выбор — [Complementary Unbound](https://modrinth.com/shader/complementary-unbound); оба рисуют и дальний рельеф
-Voxy (в паках есть шейдеры для Voxy). Unbound с Euphoria Patches — копия «ComplementaryUnbound_r5.9.3 +
-EuphoriaPatches_1.10.5», её Euphoria Patches делает сам на запуске, если в `shaderpacks` нет другой такой копии той же
-версии. В экземплярах до 0.1.37 там осталась копия прежнего пака сборки, «ComplementaryReimagined_r5.9.3 +
-EuphoriaPatches_1.10.5»: её сделал Euphoria Patches, packwiz-installer её не знает и не удаляет (zip Reimagined удаляет).
-Эту папку удалить руками — на следующем запуске появится копия Unbound.
+Voxy (в паках есть шейдеры для Voxy). Если отрисовка Voxy с шейдерпаком не встаёт (так в CI: там нет OpenGL 4.6), Voxy
+сам выключает шейдеры и это сохраняется в настройке Iris — включить снова K. Unbound с Euphoria Patches — копия
+«ComplementaryUnbound_r5.9.3 + EuphoriaPatches_1.10.5», её Euphoria Patches делает сам на запуске, если в
+`shaderpacks` нет другой такой копии той же версии. В экземплярах до 0.1.37 там осталась копия прежнего пака сборки,
+«ComplementaryReimagined_r5.9.3 + EuphoriaPatches_1.10.5»: её сделал Euphoria Patches, packwiz-installer её не знает и
+не удаляет (zip Reimagined удаляет). Эту папку удалить руками — на следующем запуске появится копия Unbound.
 
 Настройки, которые сборка кладёт сама:
 - `config/entityculling.json` — значения Entity Culling по умолчанию плюс сущности Incoming в `entityWhitelist`: такие
