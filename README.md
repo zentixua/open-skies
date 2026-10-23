@@ -71,7 +71,7 @@ cd pack && packwiz mr export      # → Open Skies-<версия>.mrpack
 | производительность | Sodium, Sodium Extra, Reese's Sodium Options, Iris, Colorwheel, Lithium, FerriteCore, ModernFix, ImmediatelyFast, Entity Culling, More Culling (+ Cloth Config), Dynamic FPS |
 | Create | Propulsion: Simulated, Aeroworks, Tweaked Controllers, Big Cannons (+ RPL), Connected, Deco, Diesel Generators, Aeronautics Hot Air Fix |
 | авиация и оружие | Immersive Aircraft, Man of Many Planes, Vic's Point Blank (+ GeckoLib), Point Blank Aeronautics compat, Do a Barrel Roll (полёт на элитрах с креном, + Forgified Fabric API) |
-| картинка и камера | шейдерпаки Photon, Complementary Unbound, Solas, BSL, MakeUp Ultra Fast (на выбор, ниже), Euphoria Patches (дополнение к Complementary), Aeronautics Camera Sync, 3D Skin Layers, Not Enough Animations, Ok Zoomer (зум, ниже) |
+| картинка и камера | шейдерпаки Photon, Solas, Complementary Unbound, BSL, MakeUp Ultra Fast (на выбор, ниже), Euphoria Patches (дополнение к Complementary), Aeronautics Camera Sync, 3D Skin Layers, Not Enough Animations, Ok Zoomer (зум, ниже) |
 | мультиплеер и удобство | Essential, TrueUUID (вход на сервер, ниже), LAN Server Properties (временно, ниже), JEI (+ MezzConfig), Jade, Jade Sable Compat, Xaero's Minimap и World Map (+ MapSyncer: вся карта мира с сервера), Create – Xaero's map, GraveStone и его патч для Sable, Mouse Tweaks, No Chat Reports |
 | запись (по выбору) | Flashback, Flashback NeoForge Fixed, Sinytra Connector |
 | клавиши | Default Options (+ Balm): раскладка сборки (ниже) |
@@ -127,9 +127,8 @@ Voxy нужна OpenGL 4.6, на macOS её нет (там OpenGL 4.1): Roxy 0.4
 [MakeUp Ultra Fast](https://modrinth.com/shader/makeup-ultra-fast-shaders) — для слабых ПК (тяжёлые эффекты по умолчанию
 выключены). Отобраны из самых скачиваемых на Modrinth с версией для 1.21.1 и Iris, у всех в zip есть шейдеры для
 Voxy (`voxy.json`); Bliss и Rethinking Voxels не взяты — у них поддержки Voxy нет. Какой включить и включать ли
-вообще, решает игрок — сборка настройку Iris не кладёт. Если
-отрисовка Voxy с шейдерпаком не встаёт (так в CI: там нет OpenGL 4.6), Voxy
-сам выключает шейдеры и это сохраняется в настройке Iris — включить снова K. Unbound с Euphoria Patches — копия
+вообще, решает игрок — сборка настройку Iris не кладёт. Если отрисовка Voxy с шейдерпаком не встаёт (так в CI:
+там нет OpenGL 4.6), Voxy сам выключает шейдеры и это сохраняется в настройке Iris — включить снова K. Unbound с Euphoria Patches — копия
 «ComplementaryUnbound_r5.9.3 + EuphoriaPatches_1.10.5», её Euphoria Patches делает сам на запуске. В экземплярах до
 0.1.37 в `shaderpacks` осталась копия прежнего пака сборки, «ComplementaryReimagined_r5.9.3 + EuphoriaPatches_1.10.5»:
 её сделал Euphoria Patches, packwiz-installer её не знает и не удаляет (zip Reimagined удаляет). Рядом с ней копию
