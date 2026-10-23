@@ -71,7 +71,7 @@ cd pack && packwiz mr export      # → Open Skies-<версия>.mrpack
 | производительность | Sodium, Sodium Extra, Reese's Sodium Options, Iris, Colorwheel, Lithium, FerriteCore, ModernFix, ImmediatelyFast, Entity Culling, More Culling (+ Cloth Config), Dynamic FPS |
 | Create | Propulsion: Simulated, Aeroworks, Tweaked Controllers, Big Cannons (+ RPL), Connected, Deco, Diesel Generators, Aeronautics Hot Air Fix |
 | авиация и оружие | Immersive Aircraft, Man of Many Planes, Vic's Point Blank (+ GeckoLib), Point Blank Aeronautics compat, Do a Barrel Roll (полёт на элитрах с креном, + Forgified Fabric API) |
-| картинка и камера | шейдерпак Complementary Reimagined, Euphoria Patches, Aeronautics Camera Sync, 3D Skin Layers, Not Enough Animations |
+| картинка и камера | шейдерпак Complementary Reimagined, Euphoria Patches, Aeronautics Camera Sync, 3D Skin Layers, Not Enough Animations, Ok Zoomer (зум, ниже) |
 | мультиплеер и удобство | Essential, TrueUUID (вход на сервер, ниже), LAN Server Properties (временно, ниже), JEI (+ MezzConfig), Jade, Jade Sable Compat, Xaero's Minimap и World Map (+ MapSyncer: вся карта мира с сервера), Create – Xaero's map, GraveStone и его патч для Sable, Mouse Tweaks, No Chat Reports |
 | запись (по выбору) | Flashback, Flashback NeoForge Fixed, Sinytra Connector |
 | клавиши | Default Options (+ Balm): раскладка сборки (ниже) |
@@ -175,7 +175,7 @@ NeoForge запускает все действия на нажатой клав
 | R | перезарядка (Point Blank); у пульта Tweaked Controllers — мышь в центр |
 | B, V, Y | режим огня, смена прицела, обвесы (Point Blank); Alt+Y — его настройки |
 | G | блок, пока в руках оружие и ПКМ занят прицелом (Point Blank) |
-| C | приближение (Essential) |
+| C (держать) | зум, колесо мыши — сильнее или слабее, средняя кнопка — сброс (Ok Zoomer) |
 | X | выйти: из самолёта (Immersive Aircraft, у мода — R), из пульта Tweaked Controllers (у мода — Tab; Esc тоже) |
 | Ctrl | бег; в самолёте — разгонные ракеты (у мода — B) |
 | Пробел, Shift | прыжок и красться; в самолёте — тяга, вверх и вниз |
@@ -191,11 +191,18 @@ NeoForge запускает все действия на нажатой клав
 | K, O | шейдеры вкл/выкл, выбор шейдеров (Iris) |
 | Shift, Num 0, Num 1 | подробности, настройки и показ подсказки Jade |
 
-Без клавиши (у модов она есть по умолчанию): у Essential — друзья (H), гардероб (B), скриншоты (I), подглядеть чат (Z), быстрое меню
+Без клавиши (у модов она есть по умолчанию): у Essential — зум (C: его заменяет Ok Zoomer), друзья (H), гардероб (B), скриншоты (I), подглядеть чат (Z), быстрое меню
 (G), эмоции (R): всё это есть в его меню; сохранить и загрузить панель творческого режима (C, X); перезагрузка шейдеров
 Iris (R, нужна авторам шейдеров); осмотр оружия Point Blank (I, только анимация); у Jade — жидкости, рецепты и
 применения (есть в JEI) и диктор (Num 2–5); у Do a Barrel Roll — тяга вперёд (W, на серверах по умолчанию запрещена) и вкл/выкл (I: мод и так включён). Остальное — как в Minecraft (WASD, E, Q, T, /, F, L, P, F2, F5, F11, 1–9)
 и у модов: правый Shift — подтверждение в окнах Xaero, в окне рецептов JEI — R, U, A и мышь.
+
+Зум — [Ok Zoomer](https://modrinth.com/mod/ok-zoomer) (только у игроков): пока C зажата, поле зрения сужается
+плавно, колесо мыши меняет увеличение (30 шагов, каждые 5 — вдвое; без зума колесо, как обычно, листает
+панель), средняя кнопка возвращает начальное, после отпускания C увеличение сбрасывается. Настройки — значения мода
+по умолчанию (пресет «Camera»: на время зума прячутся интерфейс и прицел — для съёмки, чувствительность мыши падает вместе с увеличением), меняются в его окне (кнопка у клавиши
+в «Управлении») или командой `/ok_zoomer`. Zoomify, самый скачиваемый зум, для NeoForge 1.21.1 не выходит (только
+26.x); Zume хранит настройки в общей папке `.minecraft/global` вне экземпляра. Зум Essential на той же C — без клавиши.
 
 Красными в «Управлении» остаются задуманные пары: NeoForge подсвечивает клавишу у двух действий, даже когда у них разные
 контексты и вместе они не срабатывают (`KeyMapping.same` в конце сравнивает сами клавиши). Это JEI в окне рецептов
@@ -221,7 +228,7 @@ Default Options — только у игроков. Его библиотека 
 
 | версия | мод | что изменилось |
 |---|---|---|
-| 0.1.36 | 3.4.1 | NeoForge 21.1.264 (packwiz-installer спросит, обновить ли его в экземпляре, — согласиться) и все моды — до последних версий для 1.21.1: JEI 19.69, Immersive Aircraft 1.7.0, 3D Skin Layers 1.11.4, Flashback NeoForge Fixed 1.0.17. Дальняя прорисовка Voxy (через Roxy) и LOD Server Support вместо Distant Horizons: на macOS снять галочки Roxy и Voxy. Моды загружаются по одному (`config/fml.toml`) — без редкого падения Create при запуске. CI ставит сборку с нуля и запускает сервер и клиент |
+| 0.1.36 | 3.4.1 | NeoForge 21.1.264 (packwiz-installer спросит, обновить ли его в экземпляре, — согласиться) и все моды — до последних версий для 1.21.1: JEI 19.69, Immersive Aircraft 1.7.0, 3D Skin Layers 1.11.4, Flashback NeoForge Fixed 1.0.17. Зум Ok Zoomer на C (держать) с колесом мыши — вместо зума Essential. Дальняя прорисовка Voxy (через Roxy) и LOD Server Support вместо Distant Horizons: на macOS снять галочки Roxy и Voxy. Моды загружаются по одному (`config/fml.toml`) — без редкого падения Create при запуске. CI ставит сборку с нуля и запускает сервер и клиент |
 | 0.1.35 | 3.4.1 | Снова Incoming 3.4.1 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.4.1.md)): прилёты в 3.5.0 вышли хуже, пока их разбираем — играем на 3.4.1. Не совместима по сети с 0.1.34: обновитесь все и сервер |
 | 0.1.34 | 3.5.0 | Incoming 3.5.0 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.5.0.md)) — обычные удары по физике: взрыв — освещённый объём дыма, пыли и огня, дым над пожарами, факелы и дымные следы из данных двигателей, облако пуска; звук полёта и взрыва по двигателю, заряду и погоде, толчок волны и звон в ушах. Не совместима по сети с 3.4.1: обновитесь все и сервер |
 | 0.1.33 | 3.4.1 | Incoming 3.4.1 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.4.1.md)) — факел двигателя один вблизи и вдали и не пропадает на краю прорисовки; ударная волна бьёт фронтом сразу; свет огненного шара доходит и до отвёрнутых склонов; сорванная волной пыль остаётся на месте, пелена — ровное покрывало сверху, её нет под землёй и нет каймы у краёв блоков |
