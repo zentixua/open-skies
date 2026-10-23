@@ -71,7 +71,7 @@ cd pack && packwiz mr export      # → Open Skies-<версия>.mrpack
 | производительность | Sodium, Sodium Extra, Reese's Sodium Options, Iris, Colorwheel, Lithium, FerriteCore, ModernFix, ImmediatelyFast, Entity Culling, More Culling (+ Cloth Config), Dynamic FPS |
 | Create | Propulsion: Simulated, Aeroworks, Tweaked Controllers, Big Cannons (+ RPL), Connected, Deco, Diesel Generators, Aeronautics Hot Air Fix |
 | авиация и оружие | Immersive Aircraft, Man of Many Planes, Vic's Point Blank (+ GeckoLib), Point Blank Aeronautics compat, Do a Barrel Roll (полёт на элитрах с креном, + Forgified Fabric API) |
-| картинка и камера | шейдерпаки Photon (по умолчанию) и Complementary Unbound (ниже), Euphoria Patches (дополнение к Complementary), Aeronautics Camera Sync, 3D Skin Layers, Not Enough Animations, Ok Zoomer (зум, ниже) |
+| картинка и камера | шейдерпаки Photon и Complementary Unbound (на выбор, ниже), Euphoria Patches (дополнение к Complementary), Aeronautics Camera Sync, 3D Skin Layers, Not Enough Animations, Ok Zoomer (зум, ниже) |
 | мультиплеер и удобство | Essential, TrueUUID (вход на сервер, ниже), LAN Server Properties (временно, ниже), JEI (+ MezzConfig), Jade, Jade Sable Compat, Xaero's Minimap и World Map (+ MapSyncer: вся карта мира с сервера), Create – Xaero's map, GraveStone и его патч для Sable, Mouse Tweaks, No Chat Reports |
 | запись (по выбору) | Flashback, Flashback NeoForge Fixed, Sinytra Connector |
 | клавиши | Default Options (+ Balm): раскладка сборки (ниже) |
@@ -120,8 +120,9 @@ Voxy нужна OpenGL 4.6, на macOS её нет (там OpenGL 4.1): Roxy 0.4
 Поэтому Roxy и Voxy — необязательные моды сборки, по умолчанию включены: на macOS в окне «Optional mods...» снять обе
 галочки (Roxy без Voxy не работает). Выключенный на странице «Моды» Prism мод packwiz-installer вернёт.
 
-Шейдеры — через Iris, переключатель — K, выбор — O. По умолчанию [Photon](https://modrinth.com/shader/photon-shader),
-на выбор — [Complementary Unbound](https://modrinth.com/shader/complementary-unbound); оба рисуют и дальний рельеф
+Шейдеры — через Iris, переключатель — K, выбор — O. В сборке два шейдерпака:
+[Photon](https://modrinth.com/shader/photon-shader) и [Complementary Unbound](https://modrinth.com/shader/complementary-unbound);
+какой включить и включать ли вообще, решает игрок — сборка настройку Iris не кладёт. Оба рисуют и дальний рельеф
 Voxy (в паках есть шейдеры для Voxy). Если отрисовка Voxy с шейдерпаком не встаёт (так в CI: там нет OpenGL 4.6), Voxy
 сам выключает шейдеры и это сохраняется в настройке Iris — включить снова K. Unbound с Euphoria Patches — копия
 «ComplementaryUnbound_r5.9.3 + EuphoriaPatches_1.10.5», её Euphoria Patches делает сам на запуске. В экземплярах до
@@ -147,14 +148,6 @@ Reimagined удалить руками — на следующем запуск�
   правку Aeronautics, по которой грань у левитита рисуется (`levitite/BlockMixin`), а даёт оно меньше вершин видеокарте,
   которая в замере была занята на 34 %, пока поток отрисовки стоял на 100 %.
 - `config/defaultoptions/keybindings.txt` — раскладка клавиш сборки (ниже).
-- `config/iris.properties` — выбранный шейдерпак Iris: Photon, шейдеры включены (`shaderPack` — имя zip Photon, как
-  `filename` в `shaderpacks/photon-shader.pw.toml`); других ключей нет, их Iris берёт по умолчанию. packwiz-installer
-  кладёт файл, когда его нет в прошлой установке или сборка его меняет, а в остальные запуски не трогает: при
-  обновлении до 0.1.37 у всех выбирается Photon (прежний выбор, Complementary Reimagined, из сборки убран), дальше
-  выбор игрока в игре (O) остаётся. Default Options так не может: файлы из его `extra/` он кладёт, только если их ещё
-  нет, а `iris.properties` Iris создаёт на первом запуске у каждого. Новая версия Photon — новое имя zip: настройку
-  меняют тем же PR, и у всех снова выбирается Photon. «Запуск с нуля» в CI проверяет, что Iris нашёл и прочитал пак
-  из настройки.
 - `config/fml.toml` — значения загрузчика NeoForge по умолчанию, кроме `maxThreads = 1`: моды создаются по одному,
   а не все сразу в нескольких потоках. Create 6.0.10 регистрирует свои блоки и предметы через общие таблицы, которые
   не рассчитаны на работу из нескольких потоков (в его `Create.java` так и написано: «some of these registrations are
@@ -247,6 +240,7 @@ Default Options — только у игроков. Его библиотека 
 
 | версия | мод | что изменилось |
 |---|---|---|
+| 0.1.38 | 3.6.0 | Шейдеры больше не включаются сами: сборка не выбирает шейдерпак, Photon и Complementary Unbound — на выбор (O). У кого уже стояла 0.1.37, настройка Iris сбросится и шейдеры выключатся — включить свой в O |
 | 0.1.37 | 3.6.0 | Шейдеры: Photon вместо Complementary Reimagined, он выбран по умолчанию и включится у всех при обновлении; на выбор — Complementary Unbound (клавиша O). Если в выборе нет «ComplementaryUnbound_r5.9.3 + EuphoriaPatches_1.10.5», удалить в `shaderpacks` папку «ComplementaryReimagined_r5.9.3 + EuphoriaPatches_1.10.5» — Euphoria Patches сделает копию Unbound на следующем запуске |
 | 0.1.36 | 3.6.0 | Incoming 3.6.0 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.6.0.md)) — обычные удары по физике заряда: взрывы снова частицами, как в 3.4.1, но размер, цвет и свет из модели; осколки, воронки, пробитие бомбы, ПВО и полёт по своей модели, пресет масштаба GAME/REAL/CUSTOM. Не совместима по сети с прежними версиями: обновитесь все и сервер. Мир со своими `nuclear.effects_scale` или `wave_speed` получит GAME — чтобы сохранить числа, поставить CUSTOM. NeoForge 21.1.264 (packwiz-installer спросит, обновить ли его в экземпляре, — согласиться) и все моды — до последних версий для 1.21.1: JEI 19.69, Immersive Aircraft 1.7.0, 3D Skin Layers 1.11.4, Flashback NeoForge Fixed 1.0.17. Зум Ok Zoomer на C (держать) с колесом мыши — вместо зума Essential. Дальняя прорисовка Voxy (через Roxy) и LOD Server Support вместо Distant Horizons: на macOS снять галочки Roxy и Voxy. Моды загружаются по одному (`config/fml.toml`) — без редкого падения Create при запуске. CI ставит сборку с нуля и запускает сервер и клиент |
 | 0.1.35 | 3.4.1 | Снова Incoming 3.4.1 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.4.1.md)): прилёты в 3.5.0 вышли хуже, пока их разбираем — играем на 3.4.1. Не совместима по сети с 0.1.34: обновитесь все и сервер |
