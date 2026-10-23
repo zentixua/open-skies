@@ -48,7 +48,7 @@ key_keybind.name.EMOTE_SLOT_5:key.keyboard.unknown:
 key_keybind.name.EMOTE_SLOT_6:key.keyboard.unknown:
 key_keybind.name.EMOTE_SLOT_7:key.keyboard.unknown:
 key_keybind.name.EMOTE_SLOT_8:key.keyboard.unknown:
-key_keybind.name.ZOOM:key.keyboard.c:
+key_keybind.name.ZOOM:key.keyboard.unknown:
 key_create_tweaked_controllers.keybind.mouse_focus:key.keyboard.h:
 key_create_tweaked_controllers.keybind.mouse_reset:key.keyboard.r:
 key_create_tweaked_controllers.keybind.controller_exit:key.keyboard.x:
@@ -155,3 +155,7 @@ key_key.do_a_barrel_roll.roll_left:key.keyboard.unknown:
 key_key.do_a_barrel_roll.roll_right:key.keyboard.unknown:
 key_key.do_a_barrel_roll.thrust_forward:key.keyboard.unknown:
 key_key.do_a_barrel_roll.thrust_backward:key.keyboard.unknown:
+key_key.ok_zoomer.zoom:key.keyboard.c:
+key_key.ok_zoomer.decrease_zoom:key.keyboard.unknown:
+key_key.ok_zoomer.increase_zoom:key.keyboard.unknown:
+key_key.ok_zoomer.reset_zoom:key.keyboard.unknown:

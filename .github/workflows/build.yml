@@ -97,9 +97,61 @@ jobs:
             pack/release-notes.md
           if-no-files-found: error
 
+  # индекс и check_loader.py не видят падения при самой загрузке (ошибка в RegisterEvent, мод не принял другой мод):
+  # сборка ставится с нуля, как у игрока и на сервере, и запускается — сервер до «Done», клиент до входа в мир
+  boot:
+    name: Запуск с нуля
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      # клиенту — экран без монитора (Xvfb) и OpenGL на процессоре (Mesa llvmpipe); portablemc ставит Minecraft
+      # и NeoForge клиента так же, как лаунчер
+      - name: Xvfb, Mesa и portablemc
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -yq xvfb libgl1-mesa-dri libglx-mesa0 mesa-utils
+          pipx install portablemc==5.0.6
+          xvfb-run -a glxinfo -B | grep -E 'OpenGL (renderer|core profile version)'
+
+      # Minecraft клиента (ассеты ~1 ГБ) и установщики — между запусками; ключ — версия NeoForge сборки
+      - name: Кэш скачанного
+        id: neoforge
+        run: echo "version=$(sed -n 's/^neoforge = "\(.*\)"$/\1/p' pack/pack.toml)" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        with:
+          path: run/boot-cache
+          key: boot-${{ steps.neoforge.outputs.version }}-pmc5.0.6
+
+      - name: Сервер до «Done»
+        run: python3 tools/boot_check.py server run/boot/server
+
+      # мир — тот, что сервер только что создал: клиент открывает его Quick Play, как одиночную игру
+      - name: Клиент до входа в мир
+        run: |
+          python3 tools/boot_check.py client run/boot/client --world run/boot/server/world \
+            --wrap 'xvfb-run -a -s "-screen 0 1280x720x24" {cmd}'
+
+      - uses: actions/upload-artifact@v6
+        if: failure()
+        with:
+          name: boot-logs
+          path: |
+            run/boot/*/logs/
+            run/boot/*/crash-reports/
+            run/boot/*/console.log
+          if-no-files-found: ignore
+
   release:
     name: Релиз
-    needs: pack
+    # релиз — только сборки, которая запускается с нуля
+    needs: [pack, boot]
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     timeout-minutes: 10

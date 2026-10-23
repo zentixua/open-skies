@@ -1,7 +1,7 @@
 # Open Skies
 
-Своя сборка для игры с друзьями: NeoForge 1.21.1, Create, Create Aeronautics, Incoming, Distant Horizons, шейдеры и
-запись повторов, на сервере — Almighty.
+Своя сборка для игры с друзьями: NeoForge 1.21.1, Create, Create Aeronautics, Incoming, дальняя прорисовка Voxy,
+шейдеры и запись повторов, на сервере — Almighty.
 Без контента не по теме: оружие и техника, Create для построек и аппаратов, всё лишнее для такой игры не берём.
 
 Сборка описана файлами [packwiz](https://packwiz.infra.link/): `pack.toml` (версии игры и NeoForge), `mods/*.pw.toml` и
@@ -33,7 +33,7 @@ cd pack && packwiz mr export      # → Open Skies-<версия>.mrpack
 `open-skies` или `tools/prism_instance.py`). В нём Minecraft и NeoForge из `pack.toml`, 6144 МБ памяти,
 `packwiz-installer-bootstrap.jar` в папке игры и команда перед запуском. Первый запуск скачивает моды и спрашивает про
 необязательные: запись (Flashback, Sinytra Connector, Flashback NeoForge Fixed) нужна только тем,
-кто снимает; Distant Horizons включён, на macOS его выключить (ниже).
+кто снимает; дальняя прорисовка (Roxy и Voxy) включена, на macOS её выключить (ниже).
 
 Экземпляр, поставленный из `.mrpack`, переводится на автообновление так же, миры остаются:
 1. Prism: «Папка» (папка игры экземпляра, там `mods` и `saves`): переименовать `mods` в `mods-old` и положить
@@ -52,7 +52,7 @@ cd pack && packwiz mr export      # → Open Skies-<версия>.mrpack
 `config/` сборки на первом запуске он перезаписывает, если они отличаются.
 
 Окно packwiz-installer на каждом запуске: «Continue» — сразу в игру (иначе само через 10 с), «Optional mods...» —
-включить или выключить запись и Distant Horizons. Галочки модов сборки на странице «Моды» Prism не менять: убранный
+включить или выключить запись и дальнюю прорисовку. Галочки модов сборки на странице «Моды» Prism не менять: убранный
 или выключенный мод packwiz-installer вернёт. Если сборка сменит версию Minecraft или NeoForge, он спросит, обновить
 ли их в экземпляре. Файлы сборки GitHub раздаёт с кэшем до 5 минут: запуск сразу после слияния PR сборки может застать
 `pack.toml` и `index.toml` разных коммитов, и packwiz-installer скажет про неверный хеш индекса — «Quit» и запустить
@@ -60,17 +60,18 @@ cd pack && packwiz mr export      # → Open Skies-<версия>.mrpack
 
 `.mrpack` (выпуск выше, артефакт CI или `packwiz mr export`) — разовая установка без автообновления: «Импорт» этого
 файла, Prism сам спросит про необязательные моды. Галочек по умолчанию в формате Modrinth нет, и Prism предлагает их все
-выключенными: Distant Horizons отметить (кроме macOS).
+выключенными: Roxy и Voxy отметить (кроме macOS).
 
 ## Что внутри
 
 | группа | моды |
 |---|---|
-| основа | Create, Sable, Create Aeronautics, Incoming (jar выпуска с GitHub), Distant Horizons (по выбору, включён) |
+| основа | Create, Sable, Create Aeronautics, Incoming (jar выпуска с GitHub) |
+| дальняя прорисовка | Voxy через Roxy (по выбору, включена; ниже), LOD Server Support (рельеф вдали присылает сервер) |
 | производительность | Sodium, Sodium Extra, Reese's Sodium Options, Iris, Colorwheel, Lithium, FerriteCore, ModernFix, ImmediatelyFast, Entity Culling, More Culling (+ Cloth Config), Dynamic FPS |
 | Create | Propulsion: Simulated, Aeroworks, Tweaked Controllers, Big Cannons (+ RPL), Connected, Deco, Diesel Generators, Aeronautics Hot Air Fix |
 | авиация и оружие | Immersive Aircraft, Man of Many Planes, Vic's Point Blank (+ GeckoLib), Point Blank Aeronautics compat, Do a Barrel Roll (полёт на элитрах с креном, + Forgified Fabric API) |
-| картинка и камера | шейдерпак Complementary Reimagined, Euphoria Patches, Aeronautics Camera Sync, 3D Skin Layers, Not Enough Animations |
+| картинка и камера | шейдерпак Complementary Reimagined, Euphoria Patches, Aeronautics Camera Sync, 3D Skin Layers, Not Enough Animations, Ok Zoomer (зум, ниже) |
 | мультиплеер и удобство | Essential, TrueUUID (вход на сервер, ниже), LAN Server Properties (временно, ниже), JEI (+ MezzConfig), Jade, Jade Sable Compat, Xaero's Minimap и World Map (+ MapSyncer: вся карта мира с сервера), Create – Xaero's map, GraveStone и его патч для Sable, Mouse Tweaks, No Chat Reports |
 | запись (по выбору) | Flashback, Flashback NeoForge Fixed, Sinytra Connector |
 | клавиши | Default Options (+ Balm): раскладка сборки (ниже) |
@@ -108,13 +109,16 @@ TrueUUID — он стоит и на сервере, и у каждого игр
 ход — `mapsyncer status`). Обновление раз в сутки, а не каждые несколько минут: перед каждым проходом MapSyncer
 сохраняет мир целиком на диск в потоке сервера.
 
-Distant Horizons на macOS (Apple Silicon) выключать: DH 3.3.3 запрашивает `GL_POLYGON_MODE` через `glGetInteger`
-(место под одно число на стеке LWJGL), а драйвер OpenGL от Apple пишет два — каждый кадр на 4 байта за конец буфера.
-Портится соседняя память, и Java падает (`SIGSEGV` в `Chunk::chop`, компилятор JIT). В `main` DH этот запрос тот же,
-падения на macOS у них — открытая [#1258](https://gitlab.com/distant-horizons-team/distant-horizons/-/issues/1258).
-Выключенный на странице «Моды» Prism мод packwiz-installer вернёт, поэтому DH — необязательный мод сборки: галочка
-в окне «Optional mods...». Игре по сети его отсутствие у игрока не мешает: пакеты DH зарегистрированы как
-необязательные (`PayloadRegistrar.optional()`).
+Дальняя прорисовка — [Voxy](https://modrinth.com/mod/voxy): рельеф до горизонта упрощёнными блоками (LOD). Voxy
+выходит только для Fabric и новых версий Minecraft; на NeoForge 1.21.1 его грузит [Roxy](https://modrinth.com/mod/roxy)
+— переходник, которому нужен оригинальный jar `voxy-0.2.16-beta+1.21.11` с Modrinth (другие версии Voxy с Roxy не
+работают). Рельеф для LOD Voxy берёт из чанков, которые видел игрок, а на сервере — от
+[LOD Server Support](https://modrinth.com/mod/lod-server-support): он стоит и на сервере, и у игроков и присылает
+рельеф вдали сам. Distant Horizons убран: две дальние прорисовки сразу не нужны.
+Voxy нужна OpenGL 4.6, на macOS её нет (там OpenGL 4.1): Roxy 0.4.1 запускает его на Apple Silicon только с
+дополнительными библиотеками ([инструкция Roxy](https://github.com/RasaNovum/Roxy/blob/main/Roxy-macOS-compat/setup-guide.md)).
+Поэтому Roxy и Voxy — необязательные моды сборки, по умолчанию включены: на macOS в окне «Optional mods...» снять обе
+галочки (Roxy без Voxy не работает). Выключенный на странице «Моды» Prism мод packwiz-installer вернёт.
 
 Настройки, которые сборка кладёт сама:
 - `config/entityculling.json` — значения Entity Culling по умолчанию плюс сущности Incoming в `entityWhitelist`: такие
@@ -132,6 +136,14 @@ Distant Horizons на macOS (Apple Silicon) выключать: DH 3.3.3 зап�
   правку Aeronautics, по которой грань у левитита рисуется (`levitite/BlockMixin`), а даёт оно меньше вершин видеокарте,
   которая в замере была занята на 34 %, пока поток отрисовки стоял на 100 %.
 - `config/defaultoptions/keybindings.txt` — раскладка клавиш сборки (ниже).
+- `config/fml.toml` — значения загрузчика NeoForge по умолчанию, кроме `maxThreads = 1`: моды создаются по одному,
+  а не все сразу в нескольких потоках. Create 6.0.10 регистрирует свои блоки и предметы через общие таблицы, которые
+  не рассчитаны на работу из нескольких потоков (в его `Create.java` так и написано: «some of these registrations are
+  not thread-safe»), а NeoForge создаёт все моды параллельно, и аддоны Create в своих конструкторах трогают классы
+  Create. Изредка запись предмета теряется, и запуск падает в регистрации: `Trying to access unbound value:
+  ResourceKey[minecraft:item / create:chocolate_bucket]` (23.10 — один раз на ~70 копий сборки, запущенных проверками
+  21–23.10; у других сборок с Create — так же, Create#10534). В одном потоке гонки нет. Цена — около 1–2 с: вход
+  в мир на ноутбуке хоста 26–27 с против 25 с (два тёплых запуска на каждое значение, 23.10).
 - `config/servercore/config.yml`, `optimizations.yml` — значения ServerCore 1.5.19 по умолчанию, кроме двух. Дальность
   активации (`activation-range`, как у Paper) включена: мобы и стойки для брони дальше 16–48 блоков от игроков тикают
   раз в 20 тиков, пока их ничто не будит (падают, в воде, их бьют, у них цель). Всё, что не моб и не стойка (снаряды
@@ -163,7 +175,7 @@ NeoForge запускает все действия на нажатой клав
 | R | перезарядка (Point Blank); у пульта Tweaked Controllers — мышь в центр |
 | B, V, Y | режим огня, смена прицела, обвесы (Point Blank); Alt+Y — его настройки |
 | G | блок, пока в руках оружие и ПКМ занят прицелом (Point Blank) |
-| C | приближение (Essential) |
+| C (держать) | зум, колесо мыши — сильнее или слабее, средняя кнопка — сброс (Ok Zoomer) |
 | X | выйти: из самолёта (Immersive Aircraft, у мода — R), из пульта Tweaked Controllers (у мода — Tab; Esc тоже) |
 | Ctrl | бег; в самолёте — разгонные ракеты (у мода — B) |
 | Пробел, Shift | прыжок и красться; в самолёте — тяга, вверх и вниз |
@@ -179,11 +191,18 @@ NeoForge запускает все действия на нажатой клав
 | K, O | шейдеры вкл/выкл, выбор шейдеров (Iris) |
 | Shift, Num 0, Num 1 | подробности, настройки и показ подсказки Jade |
 
-Без клавиши (у модов она есть по умолчанию): у Essential — друзья (H), гардероб (B), скриншоты (I), подглядеть чат (Z), быстрое меню
+Без клавиши (у модов она есть по умолчанию): у Essential — зум (C: его заменяет Ok Zoomer), друзья (H), гардероб (B), скриншоты (I), подглядеть чат (Z), быстрое меню
 (G), эмоции (R): всё это есть в его меню; сохранить и загрузить панель творческого режима (C, X); перезагрузка шейдеров
 Iris (R, нужна авторам шейдеров); осмотр оружия Point Blank (I, только анимация); у Jade — жидкости, рецепты и
 применения (есть в JEI) и диктор (Num 2–5); у Do a Barrel Roll — тяга вперёд (W, на серверах по умолчанию запрещена) и вкл/выкл (I: мод и так включён). Остальное — как в Minecraft (WASD, E, Q, T, /, F, L, P, F2, F5, F11, 1–9)
 и у модов: правый Shift — подтверждение в окнах Xaero, в окне рецептов JEI — R, U, A и мышь.
+
+Зум — [Ok Zoomer](https://modrinth.com/mod/ok-zoomer) (только у игроков): пока C зажата, поле зрения сужается
+плавно, колесо мыши меняет увеличение (30 шагов, каждые 5 — вдвое; без зума колесо, как обычно, листает
+панель), средняя кнопка возвращает начальное, после отпускания C увеличение сбрасывается. Настройки — значения мода
+по умолчанию (пресет «Camera»: на время зума прячутся интерфейс и прицел — для съёмки, чувствительность мыши падает вместе с увеличением), меняются в его окне (кнопка у клавиши
+в «Управлении») или командой `/ok_zoomer`. Zoomify, самый скачиваемый зум, для NeoForge 1.21.1 не выходит (только
+26.x); Zume хранит настройки в общей папке `.minecraft/global` вне экземпляра. Зум Essential на той же C — без клавиши.
 
 Красными в «Управлении» остаются задуманные пары: NeoForge подсвечивает клавишу у двух действий, даже когда у них разные
 контексты и вместе они не срабатывают (`KeyMapping.same` в конце сравнивает сами клавиши). Это JEI в окне рецептов
@@ -209,6 +228,7 @@ Default Options — только у игроков. Его библиотека 
 
 | версия | мод | что изменилось |
 |---|---|---|
+| 0.1.36 | 3.6.0 | Incoming 3.6.0 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.6.0.md)) — обычные удары по физике заряда: взрывы снова частицами, как в 3.4.1, но размер, цвет и свет из модели; осколки, воронки, пробитие бомбы, ПВО и полёт по своей модели, пресет масштаба GAME/REAL/CUSTOM. Не совместима по сети с прежними версиями: обновитесь все и сервер. Мир со своими `nuclear.effects_scale` или `wave_speed` получит GAME — чтобы сохранить числа, поставить CUSTOM. NeoForge 21.1.264 (packwiz-installer спросит, обновить ли его в экземпляре, — согласиться) и все моды — до последних версий для 1.21.1: JEI 19.69, Immersive Aircraft 1.7.0, 3D Skin Layers 1.11.4, Flashback NeoForge Fixed 1.0.17. Зум Ok Zoomer на C (держать) с колесом мыши — вместо зума Essential. Дальняя прорисовка Voxy (через Roxy) и LOD Server Support вместо Distant Horizons: на macOS снять галочки Roxy и Voxy. Моды загружаются по одному (`config/fml.toml`) — без редкого падения Create при запуске. CI ставит сборку с нуля и запускает сервер и клиент |
 | 0.1.35 | 3.4.1 | Снова Incoming 3.4.1 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.4.1.md)): прилёты в 3.5.0 вышли хуже, пока их разбираем — играем на 3.4.1. Не совместима по сети с 0.1.34: обновитесь все и сервер |
 | 0.1.34 | 3.5.0 | Incoming 3.5.0 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.5.0.md)) — обычные удары по физике: взрыв — освещённый объём дыма, пыли и огня, дым над пожарами, факелы и дымные следы из данных двигателей, облако пуска; звук полёта и взрыва по двигателю, заряду и погоде, толчок волны и звон в ушах. Не совместима по сети с 3.4.1: обновитесь все и сервер |
 | 0.1.33 | 3.4.1 | Incoming 3.4.1 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.4.1.md)) — факел двигателя один вблизи и вдали и не пропадает на краю прорисовки; ударная волна бьёт фронтом сразу; свет огненного шара доходит и до отвёрнутых склонов; сорванная волной пыль остаётся на месте, пелена — ровное покрывало сверху, её нет под землёй и нет каймы у краёв блоков |

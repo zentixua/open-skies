@@ -1,16 +1,16 @@
 name = "Open Skies"
 author = "zentixua"
-version = "0.1.35"
+version = "0.1.36"
 pack-format = "packwiz:1.1.0"
 
 [index]
 file = "index.toml"
 hash-format = "sha256"
-hash = "561e468de453df81e729f5713a464a6c934e322434ad94a5547132102bff28c8"
+hash = "5c71e84c88bfcd13fb494645138925e9acca6444fc3efb601c12d4d416e779c9"
 
 [versions]
 minecraft = "1.21.1"
-neoforge = "21.1.262"
+neoforge = "21.1.264"
 
 [options]
 acceptable-game-versions = ["1.21"]
