@@ -137,7 +137,9 @@ def report(dest, log):
 
 
 def selected_shaderpack(dest):
-    """Шейдерпак, который Iris должен включить по config/iris.properties экземпляра; None — шейдеры не выбраны."""
+    """Шейдерпак, который Iris должен включить по config/iris.properties экземпляра; None — шейдеры не выбраны.
+    Читать до запуска: игра файл переписывает — Voxy выключает шейдеры, если его отрисовка с ними не встала
+    (IrisUtil.disableIrisShaders; в CI так и есть: Voxy нужна OpenGL 4.6, у llvmpipe 4.5)."""
     path = os.path.join(dest, "config", "iris.properties")
     if not os.path.isfile(path):
         return None
@@ -241,6 +243,7 @@ def client(a):
     base = [pmc, "--main-dir", main_dir, "--output", "machine", "start", "--jvm", java(), f"neoforge::{neo}"]
     run(base[:5] + ["start", "--dry"] + base[6:], dest, "portablemc: Minecraft и NeoForge")
     install_pack(dest, "client", a.cache)
+    shaderpack = selected_shaderpack(dest)
     # без экрана приветствия (иначе Quick Play ждёт за ним вечно) и без паузы, когда окно не в фокусе
     with open(os.path.join(dest, "options.txt"), "w") as f:
         f.write("onboardAccessibility:false\npauseOnLostFocus:false\nsoundCategory_master:0.0\n")
@@ -280,7 +283,6 @@ def client(a):
         finally:
             stop_group(proc)
     print(f"клиент: {a.stay} с в мире без падения")
-    shaderpack = selected_shaderpack(dest)
     if shaderpack:
         with open(log, errors="replace") as f:
             if f"Using shaderpack: {shaderpack}" not in f.read():
@@ -288,6 +290,12 @@ def client(a):
                 sys.exit(f"Iris не прочитал шейдерпак «{shaderpack}» из config/iris.properties (нет такого файла в "
                          "shaderpacks/ или пак не читается)")
         print(f"клиент: Iris прочитал шейдерпак «{shaderpack}»")
+        if selected_shaderpack(dest) is None:
+            # не падение: так бывает на машине без нужной Voxy OpenGL — в вывод, чтобы причина была видна
+            print("клиент: за время игры шейдеры в config/iris.properties выключены; в логе:")
+            with open(log, errors="replace") as f:
+                hits = [line for line in f if re.search(r"(?i)voxy.*(error|fail|exception)|shaders are disabled", line)]
+            print("".join(hits[:10]), end="")
 
 
 def main():
