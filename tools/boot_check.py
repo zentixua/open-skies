@@ -235,6 +235,7 @@ def client(a):
     # та же команда — для повтора руками (тот же каталог, тот же мир)
     with open(os.path.join(dest, "launch.sh"), "w") as f:
         f.write(f"#!/bin/sh\ncd {shlex.quote(dest)} && exec {cmd}\n")
+    os.chmod(os.path.join(dest, "launch.sh"), 0o755)
     log = os.path.join(dest, "logs", "latest.log")
     started = time.monotonic()
     with open(os.path.join(dest, "console.log"), "w") as out:
