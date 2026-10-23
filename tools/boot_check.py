@@ -12,9 +12,11 @@ NeoForge, клиент — portablemc: Minecraft, библиотеки и асс
 
 Сервер слушает только 127.0.0.1, без проверки лицензии; после «Done» получает `stop` и должен выйти с кодом 0.
 Клиент входит в мир --world (копия в saves/) через Quick Play и должен прожить в нём --stay секунд без падения;
-потом процесс гасится. Окно клиенту нужно: на машине без экрана — --wrap с xvfb-run (CI) или вложенным KWin
-(ноутбук: tools/nested_kwin.sh incoming, `{cmdq}` — команда одним аргументом). Звук клиент открыть не должен
-(на ноутбуке его закрывает nested_kwin.sh, в CI устройства нет).
+потом процесс гасится. Шейдерпак, который выбирает `config/iris.properties` сборки, Iris должен найти и прочитать
+(строка «Using shaderpack: <имя>» в логе; пак читается до сборки шейдеров на видеокарте): имя в настройке и `filename`
+шейдерпака в pack/shaderpacks/ расходиться не могут. Окно клиенту нужно: на машине без экрана — --wrap с xvfb-run
+(CI) или вложенным KWin (ноутбук: tools/nested_kwin.sh incoming, `{cmdq}` — команда одним аргументом). Звук клиент
+открыть не должен (на ноутбуке его закрывает nested_kwin.sh, в CI устройства нет).
 
 Падение загрузки (мод не принял NeoForge или другой мод, «Mod loading has failed», ошибка в RegisterEvent) — код 1,
 в конце — хвост лога и отчёт о падении. Что нужно: Java 21 (JAVA_HOME или java в PATH), для клиента — portablemc 5
@@ -132,6 +134,23 @@ def report(dest, log):
         for name in sorted(os.listdir(crashes)):
             with open(os.path.join(crashes, name), errors="replace") as f:
                 print(f"==== {name}\n" + f.read()[:12000])
+
+
+def selected_shaderpack(dest):
+    """Шейдерпак, который Iris должен включить по config/iris.properties экземпляра; None — шейдеры не выбраны."""
+    path = os.path.join(dest, "config", "iris.properties")
+    if not os.path.isfile(path):
+        return None
+    props = {}
+    with open(path, encoding="latin-1") as f:  # формат java.util.Properties — ISO-8859-1
+        for line in f:
+            line = line.strip()
+            if line and line[0] not in "#!" and "=" in line:
+                key, value = line.split("=", 1)
+                props[key.strip()] = value.strip()
+    if props.get("enableShaders") == "false":
+        return None
+    return props.get("shaderPack") or None
 
 
 def wait_for(proc, log, pattern, timeout):
@@ -261,6 +280,14 @@ def client(a):
         finally:
             stop_group(proc)
     print(f"клиент: {a.stay} с в мире без падения")
+    shaderpack = selected_shaderpack(dest)
+    if shaderpack:
+        with open(log, errors="replace") as f:
+            if f"Using shaderpack: {shaderpack}" not in f.read():
+                report(dest, log)
+                sys.exit(f"Iris не прочитал шейдерпак «{shaderpack}» из config/iris.properties (нет такого файла в "
+                         "shaderpacks/ или пак не читается)")
+        print(f"клиент: Iris прочитал шейдерпак «{shaderpack}»")
 
 
 def main():

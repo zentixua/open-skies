@@ -17,6 +17,10 @@ file = "config/fml.toml"
 hash = "7e79c658ce584a820859031f4b2c728bc81253f529d6fb2829a71c26fd23199d"
 
 [[files]]
+file = "config/iris.properties"
+hash = "2d004dac4cd013c057525fc6eabbd683708b887e0c5605f34585fa45aa674176"
+
+[[files]]
 file = "config/moreculling.toml"
 hash = "2704aa71d40b744fa4f4ac0bd37cbb787dbf50d8404015ac5ae331245f95afb9"
 
@@ -349,6 +353,11 @@ hash = "3a8e91aecdb602039ba1f7445bbf6b64cc5a46344339a3ffaf3b2e3eb2f5bcbc"
 metafile = true
 
 [[files]]
-file = "shaderpacks/complementary-reimagined.pw.toml"
-hash = "75d1d2488a0c332a9a58af7e57f980a1b006c02b3a1c580fbd50443088e4eab0"
+file = "shaderpacks/complementary-unbound.pw.toml"
+hash = "1a3d3663c44dc21e227c39c42ea9b5e3c4f3b2e3b5272ed55b45da9e247a46d7"
+metafile = true
+
+[[files]]
+file = "shaderpacks/photon-shader.pw.toml"
+hash = "1e4109987a9d4b0bab4302601e08b365b0e3d5b3a39b14b7134f8655c29a6bcc"
 metafile = true
