@@ -72,6 +72,7 @@ cd pack && packwiz mr export      # → Open Skies-<версия>.mrpack
 | Create | Propulsion: Simulated, Aeroworks, Tweaked Controllers, Big Cannons (+ RPL), Connected, Deco, Diesel Generators, Aeronautics Hot Air Fix |
 | авиация и оружие | Immersive Aircraft, Man of Many Planes, Vic's Point Blank (+ GeckoLib), Point Blank Aeronautics compat, Do a Barrel Roll (полёт на элитрах с креном, + Forgified Fabric API) |
 | картинка и камера | шейдерпаки Photon, Solas, Complementary Unbound, BSL, MakeUp Ultra Fast (на выбор, ниже), Euphoria Patches (дополнение к Complementary), Aeronautics Camera Sync, 3D Skin Layers, Not Enough Animations, Ok Zoomer (зум, ниже) |
+| мир вокруг | Subtle Effects (мелкие частицы и звуки: искры огня, дым горящих мобов, рябь, листья; + Fzzy Config, Kotlin for Forge), Particle Rain (дождь, снег и пыльные бури частицами), AmbientSounds (звуки природы по биому, высоте и времени; + CreativeCore), LambDynamicLights (свет от факела в руке, горящих мобов и снарядов), Contraption Lights (свет фонарей на аппаратах Create и кораблях Sable падает на мир) |
 | мультиплеер и удобство | Essential, TrueUUID (вход на сервер, ниже), LAN Server Properties (временно, ниже), JEI (+ MezzConfig), Jade, Jade Sable Compat, Xaero's Minimap и World Map (+ MapSyncer: вся карта мира с сервера), Create – Xaero's map, GraveStone и его патч для Sable, Mouse Tweaks, No Chat Reports |
 | запись (по выбору) | Flashback, Flashback NeoForge Fixed, Sinytra Connector |
 | клавиши | Default Options (+ Balm): раскладка сборки (ниже) |
@@ -152,6 +153,10 @@ Reimagined удалить руками — на следующем запуск�
   правку Aeronautics, по которой грань у левитита рисуется (`levitite/BlockMixin`), а даёт оно меньше вершин видеокарте,
   которая в замере была занята на 34 %, пока поток отрисовки стоял на 100 %.
 - `config/defaultoptions/keybindings.txt` — раскладка клавиш сборки (ниже).
+- `config/subtle_effects/general.toml` — значения Subtle Effects 1.15.1 по умолчанию, кроме `particleRenderDistance = 32`
+  (его предел, 512 блоков; по умолчанию 5 чанков). Отсечение частиц у мода включено и прячет почти все частицы дальше
+  этой дальности, в том числе обломки, брызги и осколки удара Incoming: прилёт за 100 блоков остался бы без них. Огненный
+  шар и дым Incoming рисует сам и отсечения не видит. Отсечение за краем экрана мод оставляет — его выигрыш сохраняется.
 - `config/fml.toml` — значения загрузчика NeoForge по умолчанию, кроме `maxThreads = 1`: моды создаются по одному,
   а не все сразу в нескольких потоках. Create 6.0.10 регистрирует свои блоки и предметы через общие таблицы, которые
   не рассчитаны на работу из нескольких потоков (в его `Create.java` так и написано: «some of these registrations are
@@ -244,6 +249,7 @@ Default Options — только у игроков. Его библиотека 
 
 | версия | мод | что изменилось |
 |---|---|---|
+| 0.1.43 | 3.7.0 | Мир вокруг живее: Subtle Effects (искры огня, дым горящих мобов, рябь, падающие листья), Particle Rain (дождь и снег частицами, пыльные бури), AmbientSounds (звуки природы), LambDynamicLights (факел в руке светит) и Contraption Lights (фонари на аппаратах и кораблях светят на мир). Всё только у игроков, серверу не нужно |
 | 0.1.42 | 3.7.0 | LOD Server Support 0.20.0 (новая настройка «Extend Far Player Draw Range» на странице Far Players, по умолчанию выключена: далёкие игроки видны дальше обычной прорисовки вместе с Voxy) и ModernFix 5.27.27 |
 | 0.1.41 | 3.7.0 | Incoming 3.7.0 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.7.0.md)) — огненный шар клубится и поднимается; свечение вокруг огня (настройка «Свечение вокруг огня»); дым клубится со светлыми верхами; видно ударную волну, камера трясётся; пыль тяжелее воздуха и стекает с крыш; воронки по грунту, плиты над пустотой пробиваются; удар по воде — настоящий столб брызг; залп летит волной; ядерка — шар с узором и короткая засветка. Не совместима по сети с 3.6.1: обновитесь все и сервер |
 | 0.1.40 | 3.6.1 | Incoming 3.6.1 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.6.1.md)) — после удара шахеда или ракеты горит только то, что правда поджигает жар шара (листва, сено, сухая трава), а не песок и рельсы; рамки целей держатся на цели при любом зуме; облако после удара наклоняется по ветру и расходится; ускорители догорают плавно; ножка ядерки — та же пыль, что ковёр. Не совместима по сети с 3.6.0: обновитесь все и сервер |

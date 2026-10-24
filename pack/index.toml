@@ -29,6 +29,10 @@ file = "config/servercore/optimizations.yml"
 hash = "63ba7034fdf1f45f1b40798d3212f8d838f7c299fbe5795075fbafe1e2265192"
 
 [[files]]
+file = "config/subtle_effects/general.toml"
+hash = "5513e33f046e07449bca4b189e22a1883b39b637231a8da923e13ea5e1a20585"
+
+[[files]]
 file = "mods/3dskinlayers.pw.toml"
 hash = "2dc498bd8a43a8e02fc9d08fe5846ac17f6eabbecbf38ae39aa7b1f23fe100b0"
 metafile = true
@@ -49,6 +53,11 @@ hash = "1a9f78e0a8d80ac8b0c5c5896d15fc63401d928ce7adee877e7ea1b01cdaf578"
 metafile = true
 
 [[files]]
+file = "mods/ambientsounds.pw.toml"
+hash = "1801f6f6bf0bd7eaf33544c0ad137f9162aa35239a030efe29a899f5c28bddfa"
+metafile = true
+
+[[files]]
 file = "mods/balm.pw.toml"
 hash = "603cdc47142b5aa5729cbbf265a473574c9e2b55561de4318e9842d3d4b3b995"
 metafile = true
@@ -66,6 +75,11 @@ metafile = true
 [[files]]
 file = "mods/connector.pw.toml"
 hash = "01d6ccac84f3bbe094c455c4fc0ceaa1b22de3e6212d1588a3e5a768f6b4ebd6"
+metafile = true
+
+[[files]]
+file = "mods/contraption-lights.pw.toml"
+hash = "f3c392c47366722efa21b36286fd16875371c71acc145990ce288a9a8dbca103"
 metafile = true
 
 [[files]]
@@ -119,6 +133,11 @@ hash = "dcaf5f2e28db0b9a127d0167456832341045ddc9aec058c3d9fcf53f618d2404"
 metafile = true
 
 [[files]]
+file = "mods/creativecore.pw.toml"
+hash = "1438d9872c78eb499463ae9d3c104514b7034e90059be054b8b4f2b19b11486d"
+metafile = true
+
+[[files]]
 file = "mods/default-options.pw.toml"
 hash = "a6967d761dde867ccc1af53dc9f4e530eb9917a9cb21d0fc15708e8cd2c0f2ba"
 metafile = true
@@ -169,6 +188,11 @@ hash = "981e52e1c4a97465921342f556cced335c6c75cdb050e9fc528d52cf4ff88b79"
 metafile = true
 
 [[files]]
+file = "mods/fzzy-config.pw.toml"
+hash = "a8d14e69213b6b1a2c92fa536e3946f4e0a7b793f7a705335ecf5db6d742a6b9"
+metafile = true
+
+[[files]]
 file = "mods/geckolib.pw.toml"
 hash = "35779b39ddc06059ec483b33de2ecfdc3adb95c0a49e69b6701fb0024827e2f5"
 metafile = true
@@ -216,6 +240,16 @@ metafile = true
 [[files]]
 file = "mods/jei.pw.toml"
 hash = "2ffd0c6ed2e981835168a60cb3418482223ee02d22dd35d0bb541774fa89f81c"
+metafile = true
+
+[[files]]
+file = "mods/kotlin-for-forge.pw.toml"
+hash = "34580d9d26462eb2381a526dbbcb60d9526dcc0ba9c0e442cc348abac709ce49"
+metafile = true
+
+[[files]]
+file = "mods/lambdynamiclights.pw.toml"
+hash = "ebf0dae777cc19c354a662dc8144009dff7269b2d05624b4591fcb7de56fc14e"
 metafile = true
 
 [[files]]
@@ -279,6 +313,11 @@ hash = "1121ffc2012bbbf0b619a16b953d5951c41a9ef545285d01f31995b3ba6b2b8c"
 metafile = true
 
 [[files]]
+file = "mods/particle-rain.pw.toml"
+hash = "bb3302ebfd619afbda63f5365628856d4680c0a3fe86bfbdf1135d2a48acb190"
+metafile = true
+
+[[files]]
 file = "mods/point-blank-aeronautics-compat.pw.toml"
 hash = "10d147e95742260b2e7229936ea83c7a1163f11ebd4cda87e0ccecc40b31aa91"
 metafile = true
@@ -321,6 +360,11 @@ metafile = true
 [[files]]
 file = "mods/spark.pw.toml"
 hash = "593fa7b30ab016aa45be07bd6bef3a9f160ed0f24689850d60bf84995d69b843"
+metafile = true
+
+[[files]]
+file = "mods/subtle-effects.pw.toml"
+hash = "fdf3d8942d14758ea44a1f27e071fcfbffeafd4720e2d326dbc7dd939d588adc"
 metafile = true
 
 [[files]]
