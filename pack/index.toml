@@ -29,6 +29,10 @@ file = "config/servercore/optimizations.yml"
 hash = "63ba7034fdf1f45f1b40798d3212f8d838f7c299fbe5795075fbafe1e2265192"
 
 [[files]]
+file = "config/sound_physics_remastered/sound_rates.properties"
+hash = "6a4854a60e238d86a99cdab92219b770081eaeeae2ad03e2085a96111945c5f8"
+
+[[files]]
 file = "config/subtle_effects/general.toml"
 hash = "5513e33f046e07449bca4b189e22a1883b39b637231a8da923e13ea5e1a20585"
 
@@ -355,6 +359,11 @@ metafile = true
 [[files]]
 file = "mods/sodium.pw.toml"
 hash = "2a001cdb3d5ac4970d422914083c27380eba8ebd40dfd435754fe6566ba78beb"
+metafile = true
+
+[[files]]
+file = "mods/sound-physics-remastered.pw.toml"
+hash = "848923e74def7cd3996f95ac7f6a9c3fe47c3030f43ae650a74b0a77df96ee49"
 metafile = true
 
 [[files]]
