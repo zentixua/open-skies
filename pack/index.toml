@@ -67,6 +67,11 @@ hash = "603cdc47142b5aa5729cbbf265a473574c9e2b55561de4318e9842d3d4b3b995"
 metafile = true
 
 [[files]]
+file = "mods/burnt-basic.pw.toml"
+hash = "fcfaa241bc2498186b607fbe6b95291b0f99c697f61b521957a4ee16fdcf4b94"
+metafile = true
+
+[[files]]
 file = "mods/cloth-config.pw.toml"
 hash = "75181b55e0407d1fca1e2f346c6501f919f5109545990ddfb66db9cd1b771f8a"
 metafile = true
