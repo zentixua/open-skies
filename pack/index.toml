@@ -230,7 +230,7 @@ metafile = true
 
 [[files]]
 file = "mods/lod-server-support.pw.toml"
-hash = "5cdfdedd26a707de2a8f6ecf6bc9c7a8002a8b0e296116b6e85b81e1dbca7787"
+hash = "a4d33d1875befb6f840ae93460ff8575b6048cc2d1edbe40b02582cc28fd2576"
 metafile = true
 
 [[files]]
@@ -250,7 +250,7 @@ metafile = true
 
 [[files]]
 file = "mods/modernfix.pw.toml"
-hash = "d10fbef1555f5277563b9cbf7683811ac0f38c1af41646e6ce5c3aaa2149425d"
+hash = "ef65836e005bd42a0f40df30a94eba1ad7ee5ed3194b11eafbeadc64edb44252"
 metafile = true
 
 [[files]]
