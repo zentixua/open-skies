@@ -5,6 +5,10 @@ file = "config/aero_cam_sync-client.toml"
 hash = "43c766c084c6919984fbc5975c47e8565297781dd7f661503f59829cd3fc00fb"
 
 [[files]]
+file = "config/burnt_basic.json"
+hash = "24329e49cf140f1b69a072786992ce80d82442d2f6b997cbc5ad2d9f87707f89"
+
+[[files]]
 file = "config/defaultoptions/keybindings.txt"
 hash = "2513006d0df4cb77259d0b6082171ac735f7cf5efff47026c2a991e139e00770"
 

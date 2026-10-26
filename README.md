@@ -138,6 +138,17 @@ Unbound Euphoria Patches делает, только если помнит, чт�
 Reimagined удалить руками — на следующем запуске копия появится.
 
 Настройки, которые сборка кладёт сама:
+- `config/burnt_basic.json` — disables Burnt 1.10.5.2's smoke particles and ground smoke (`smoke_particles`,
+  `ground_smoke`): Incoming supplies the fire smoke, so the same fire no longer emits two styles of smoke. Flame
+  particles, ash and fire mechanics keep Burnt's defaults. Distant plumes and smoke fog are already off by default;
+  heat haze (Burnt's sky tint) is unchanged. Burnt reads this file separately on the client and server, so the pack
+  supplies it to both. **Requires an Incoming release with support for Burnt's custom burning blocks; 3.8.0 only
+  recognises vanilla fire. Do not ship this configuration with 3.8.0.**
+  Отключает частицы дыма и дым у земли Burnt 1.10.5.2 (`smoke_particles`, `ground_smoke`): дым пожара рисует Incoming,
+  и один огонь больше не дымит в двух стилях. Частицы пламени, пепел и механика огня — по умолчанию Burnt. Дальние
+  столбы и дымовой туман уже выключены по умолчанию; heat haze (окраска неба Burnt) не меняется. Клиент и сервер
+  читают этот файл каждый у себя, поэтому сборка кладёт его обоим. **Нужен выпуск Incoming с поддержкой горящих
+  блоков Burnt; 3.8.0 узнаёт только ванильный огонь. С 3.8.0 эту настройку не выпускать.**
 - `config/entityculling.json` — значения Entity Culling по умолчанию плюс сущности Incoming в `entityWhitelist`: такие
   сущности мод не прячет и не останавливает их тик на клиенте (в 1.11.3 этот список действует на оба). Факел снаряда
   рисуется вместе с моделью, а шлейф, облако пуска и дым горящих обломков рождаются в тике сущности на клиенте
@@ -253,6 +264,7 @@ Default Options — только у игроков. Его библиотека 
 
 | версия | мод | что изменилось |
 |---|---|---|
+| 0.1.45 | pending / ожидается | Draft: use Incoming's smoke for Burnt fires; disable Burnt smoke particles and ground smoke, keep its flames, ash and fire mechanics. Requires an Incoming release with Burnt fire-source support before shipping. / Черновик: дым пожаров Burnt рисует Incoming; частицы дыма Burnt и дым у земли выключены, пламя, пепел и механика огня сохранены. До выпуска нужен Incoming с поддержкой источников огня Burnt |
 | 0.1.44 | 3.8.0 | Incoming 3.8.0 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.8.0.md)) — взрыв выглядит по тому, во что попал (грунт, бетон, плита, воздух); огонь топлива — обычный огонь на блоках; пыльная дымка и ветер у земли идут по улицам; ударная волна у игрока (контузия, трава и пыль вокруг); звук массированного налёта; дым большого налёта больше не роняет частоту кадров. Burnt — огонь прогорает; Sound Physics Remastered — эхо и глушение звуков мира. Не совместима по сети с 3.7.0: обновитесь все и сервер |
 | 0.1.43 | 3.7.0 | Мир вокруг живее: Subtle Effects (искры огня, дым горящих мобов, рябь, падающие листья), Particle Rain (дождь и снег частицами, пыльные бури), AmbientSounds (звуки природы), LambDynamicLights (факел в руке светит) и Contraption Lights (фонари на аппаратах и кораблях светят на мир). Всё только у игроков, серверу не нужно |
 | 0.1.42 | 3.7.0 | LOD Server Support 0.20.0 (новая настройка «Extend Far Player Draw Range» на странице Far Players, по умолчанию выключена: далёкие игроки видны дальше обычной прорисовки вместе с Voxy) и ModernFix 5.27.27 |
