@@ -156,7 +156,7 @@ jobs:
           if-no-files-found: ignore
 
   release:
-    name: Release
+    name: Релиз
     # Release only a pack that boots from scratch.
     needs: [pack, boot]
     if: github.ref == 'refs/heads/main'
