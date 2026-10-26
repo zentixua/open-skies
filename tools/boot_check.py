@@ -63,6 +63,8 @@ SLEEPER = (
 SUMMONED = re.compile(r"\]: Summoned new ")
 DONE = re.compile(r"\]: Done \([0-9.]+s\)!")
 JOINED = re.compile(r"\]: (\S+) joined the game")
+# отключение от сервера кончает запись Flashback (automaticallyFinish), а её каталог остаётся до сохранения
+LEFT = re.compile(r"\]: \S+ lost connection: (.*)")
 # «Unreported exception thrown!» — падение клиента вне главного цикла (поток записи Flashback): отчёт придёт позже
 FAILED = re.compile(r"Mod loading has failed|Loading errors encountered|Preparing crash report|"
                     r"Failed to start the minecraft server|Unreported exception thrown!")
@@ -317,6 +319,13 @@ def client(a):
                 with open(log, errors="replace") as f:
                     text = f.read()
                 crashed = FAILED.search(text)
+                if server_log:
+                    with open(server_log, errors="replace") as f:
+                        left = LEFT.search(f.read())
+                    if left:
+                        stop_group(proc)
+                        report(dest, log)
+                        sys.exit(f"клиент отключился от сервера: {left.group(1)}")
                 if crashed or proc.poll() is not None:
                     stop_group(proc)
                     report(dest, log)
