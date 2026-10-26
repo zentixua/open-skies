@@ -17,6 +17,10 @@ file = "config/fml.toml"
 hash = "7e79c658ce584a820859031f4b2c728bc81253f529d6fb2829a71c26fd23199d"
 
 [[files]]
+file = "config/mapsyncer-server.toml"
+hash = "3b97487241c4ac2853953a31aa6f1db2d0e654cae565d598bc6f6c165de25fe1"
+
+[[files]]
 file = "config/moreculling.toml"
 hash = "2704aa71d40b744fa4f4ac0bd37cbb787dbf50d8404015ac5ae331245f95afb9"
 
