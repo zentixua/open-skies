@@ -29,6 +29,10 @@ file = "config/servercore/optimizations.yml"
 hash = "63ba7034fdf1f45f1b40798d3212f8d838f7c299fbe5795075fbafe1e2265192"
 
 [[files]]
+file = "config/sound_physics_remastered/sound_rates.properties"
+hash = "ea331219e42db3e87b5f9d16796037075c44ad6e9af323ddd3364b5e9ed8a48c"
+
+[[files]]
 file = "config/subtle_effects/general.toml"
 hash = "5513e33f046e07449bca4b189e22a1883b39b637231a8da923e13ea5e1a20585"
 
@@ -60,6 +64,11 @@ metafile = true
 [[files]]
 file = "mods/balm.pw.toml"
 hash = "603cdc47142b5aa5729cbbf265a473574c9e2b55561de4318e9842d3d4b3b995"
+metafile = true
+
+[[files]]
+file = "mods/burnt-basic.pw.toml"
+hash = "fcfaa241bc2498186b607fbe6b95291b0f99c697f61b521957a4ee16fdcf4b94"
 metafile = true
 
 [[files]]
@@ -219,7 +228,7 @@ metafile = true
 
 [[files]]
 file = "mods/incoming.pw.toml"
-hash = "aa443697b0b8e07a02b02ef07a0a549a3e91a40c7db31dedd4f7d2dc07622cad"
+hash = "89ebe0f64da72aa891e52d91e970fd2469e24d0f954c9d88117613a36d0eafc7"
 metafile = true
 
 [[files]]
@@ -355,6 +364,11 @@ metafile = true
 [[files]]
 file = "mods/sodium.pw.toml"
 hash = "2a001cdb3d5ac4970d422914083c27380eba8ebd40dfd435754fe6566ba78beb"
+metafile = true
+
+[[files]]
+file = "mods/sound-physics-remastered.pw.toml"
+hash = "848923e74def7cd3996f95ac7f6a9c3fe47c3030f43ae650a74b0a77df96ee49"
 metafile = true
 
 [[files]]
