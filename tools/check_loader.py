@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
-"""Каждый мод сборки принимает её NeoForge из pack.toml.
+"""Every mod in the pack accepts its NeoForge version from pack.toml.
 
-Качает jar каждого mods/*.pw.toml (хеш сверяется), читает META-INF/neoforge.mods.toml — и у вложенных jar (список в
-META-INF/jarjar/metadata.json, их NeoForge грузит как отдельные моды) — и сверяет versionRange зависимости neoforge с
-версией сборки. Иначе игра встаёт на «Error loading mods»: так Forgified Fabric API 2.3.6 в сборке 0.1.27 требовал
-NeoForge 21.1.262 при 21.1.259. Minecraft не сверяется: сборка его не меняет, а диапазоны у модов для 1.21.1 бывают
-записаны как «[1.21,1.21.1)» (Iris, JEI), и игра их всё равно грузит.
+Downloads the jar for each mods/*.pw.toml (checking its hash), reads META-INF/neoforge.mods.toml, including in
+nested jars (listed in META-INF/jarjar/metadata.json, loaded by NeoForge as separate mods), and checks the neoforge
+dependency's versionRange against the pack's version. Otherwise, the game stops at "Error loading mods":
+Forgified Fabric API 2.3.6 in pack 0.1.27 required NeoForge 21.1.262 while the pack used 21.1.259. Minecraft is not
+checked: the pack does not change it, and some mods for 1.21.1 use ranges such as "[1.21,1.21.1)" (Iris, JEI),
+yet the game still loads them.
 
-Запуск: python3 tools/check_loader.py [каталог сборки, по умолчанию pack]
+Usage: python3 tools/check_loader.py [pack directory, default: pack]
 """
 import concurrent.futures
 import hashlib
@@ -25,7 +26,7 @@ CHECKED = ("neoforge",)
 
 
 def version_key(v):
-    """Порядок версий как у Maven для наших случаев: числа по порядку, версия с квалификатором (-beta) — раньше без него."""
+    """Maven version order for our cases: compare numbers, then put a qualifier (-beta) before no qualifier."""
     v = v.strip()
     main, _, qualifier = v.partition("-")
     nums = [int(n) if n.isdigit() else 0 for n in re.split(r"[.+]", main) if n != ""]
@@ -43,13 +44,13 @@ def cmp(a, b):
 
 
 def in_range(version, spec):
-    """versionRange Maven: «[a,b)», «(,b]», «[a]», несколько через запятую; голая версия и «*» — без ограничения."""
+    """Maven versionRange: "[a,b)", "(,b]", "[a]", or comma-separated ranges; a bare version or "*" is unrestricted."""
     spec = spec.replace(" ", "")
     if spec in ("", "*") or spec[0] not in "[(":
         return True
     for token in re.findall(r"[\[(][^\])]*[\])]", spec):
         lo_br, body, hi_br = token[0], token[1:-1], token[-1]
-        if "," not in body:  # [a] — ровно эта версия
+        if "," not in body:  # [a]: exactly this version
             if cmp(version, body) == 0:
                 return True
             continue
@@ -62,7 +63,7 @@ def in_range(version, spec):
 
 
 def dependencies(toml_text):
-    """(мод, modId зависимости, versionRange, type) из neoforge.mods.toml; None, если файл не TOML."""
+    """(mod, dependency modId, versionRange, type) from neoforge.mods.toml; None if the file is not TOML."""
     try:
         data = tomllib.loads(toml_text)
     except tomllib.TOMLDecodeError:
@@ -79,12 +80,12 @@ def scan(jar_bytes, label, versions, problems):
         if "META-INF/neoforge.mods.toml" in names:
             deps = dependencies(z.read("META-INF/neoforge.mods.toml").decode("utf-8", "replace"))
             if deps is None:
-                problems.append(f"{label}: neoforge.mods.toml не читается как TOML")
+                problems.append(f"{label}: neoforge.mods.toml cannot be parsed as TOML")
             else:
                 for owner, mod, spec, kind in deps:
                     if mod in CHECKED and kind not in ("incompatible", "discouraged") \
                             and not in_range(versions[mod], spec):
-                        problems.append(f"{label}: мод {owner} требует {mod} {spec}, в сборке {versions[mod]}")
+                        problems.append(f"{label}: mod {owner} requires {mod} {spec}, the pack has {versions[mod]}")
         if "META-INF/jarjar/metadata.json" in names:
             nested = [j["path"] for j in json.loads(z.read("META-INF/jarjar/metadata.json")).get("jars", [])]
         else:
@@ -99,7 +100,7 @@ def fetch(meta_path):
     if not meta.get("filename", "").endswith(".jar"):
         return meta_path.name, None, None
     download = meta["download"]
-    for attempt in range(3):  # обрыв загрузки — не ошибка сборки
+    for attempt in range(3):  # An interrupted download is not a pack error.
         try:
             with urllib.request.urlopen(download["url"], timeout=120) as r:
                 body = r.read()
@@ -109,7 +110,7 @@ def fetch(meta_path):
                 raise
     digest = hashlib.new(download["hash-format"], body).hexdigest()
     if digest != download["hash"]:
-        return meta["filename"], None, f"{meta['filename']}: хеш {download['hash-format']} не совпал с .pw.toml"
+        return meta["filename"], None, f"{meta['filename']}: {download['hash-format']} hash does not match .pw.toml"
     return meta["filename"], body, None
 
 
@@ -125,7 +126,7 @@ def main():
                 problems.append(error)
             elif body is not None:
                 scan(body, name, versions, problems)
-    print(f"NeoForge {versions['neoforge']}: проверено модов {len(metas)}")
+    print(f"NeoForge {versions['neoforge']}: checked {len(metas)} mods")
     for p in problems:
         print("  " + p)
     sys.exit(1 if problems else 0)

@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
-"""Экземпляр Prism Launcher со сборкой pack/, которая обновляется сама при каждом запуске игры.
+"""Prism Launcher instance with the pack/ modpack, updated automatically before every game launch.
 
   tools/prism_instance.py [dist/Open-Skies.zip]
 
-В архиве — пустой экземпляр (Minecraft и NeoForge из pack.toml, память как в инструкции для друзей) и
-packwiz-installer-bootstrap в папке игры, а команда перед запуском экземпляра — packwiz-installer со сборкой
-из main этого репозитория (https://packwiz.infra.link/tutorials/installing/packwiz-installer/). Prism: «Добавить
-экземпляр» → «Импорт» → этот файл; на первом запуске packwiz-installer скачивает моды и спрашивает про необязательные,
-на каждом следующем ставит то, что изменилось в pack/ на main. Архив от версии сборки не зависит: версии Minecraft
-и NeoForge в экземпляре packwiz-installer сам приводит к pack.toml (спросив игрока).
+The archive contains an empty instance (Minecraft and NeoForge from pack.toml, memory as in the instructions for
+friends) and packwiz-installer-bootstrap in the game directory. The instance's pre-launch command runs
+packwiz-installer with the pack from this repository's main branch
+(https://packwiz.infra.link/tutorials/installing/packwiz-installer/). In Prism: "Add Instance" → "Import" → this
+file. On the first launch, packwiz-installer downloads the mods and asks about optional ones; on every later
+launch, it applies changes to pack/ on main. The archive does not depend on the pack version: packwiz-installer
+updates the instance's Minecraft and NeoForge versions to match pack.toml (after asking the player).
 """
 import argparse
 import hashlib
@@ -25,15 +26,15 @@ PACK_URL = "https://raw.githubusercontent.com/zentixua/open-skies/main/pack/pack
 BOOTSTRAP = "packwiz-installer-bootstrap.jar"
 BOOTSTRAP_URL = f"https://github.com/packwiz/packwiz-installer-bootstrap/releases/download/v0.0.3/{BOOTSTRAP}"
 BOOTSTRAP_SHA256 = "a8fbb24dc604278e97f4688e82d3d91a318b98efc08d5dbfcbcbcab6443d116c"
-# с запасом: замер сборки на ноутбуке: игре с шейдерами нужно 1,5–2,5 ГБ живой памяти
+# With headroom: measured on the laptop, the game with shaders needs 1.5–2.5 GB of live memory.
 MAX_MEMORY_MB = 6144
-# компоненты Prism (mmc-pack.json) по ключам [versions] в pack.toml — те же, что сверяет packwiz-installer
+# Prism components (mmc-pack.json) by [versions] keys in pack.toml, also checked by packwiz-installer.
 COMPONENTS = {"minecraft": "net.minecraft", "neoforge": "net.neoforged"}
 USER_AGENT = "zentixua/open-skies tools/prism_instance.py"
 
 
 def ini_value(s):
-    """Значение instance.cfg так, как его пишет Prism (QSettings, формат INI): \\ и " — через обратную косую."""
+    """An instance.cfg value as written by Prism (QSettings, INI format): backslash-escape \\ and "."""
     return s.replace("\\", "\\\\").replace('"', '\\"')
 
 
@@ -47,7 +48,7 @@ def main():
     versions = pack["versions"]
     unknown = versions.keys() - COMPONENTS.keys()
     if unknown:
-        sys.exit(f"pack.toml: нет компонента Prism для {', '.join(sorted(unknown))}")
+        sys.exit(f"pack.toml: no Prism component for {', '.join(sorted(unknown))}")
 
     req = urllib.request.Request(BOOTSTRAP_URL, headers={"User-Agent": USER_AGENT})
     with urllib.request.urlopen(req, timeout=60) as r:
@@ -56,7 +57,7 @@ def main():
     if got != BOOTSTRAP_SHA256:
         sys.exit(f"{BOOTSTRAP}: sha256 {got} ≠ {BOOTSTRAP_SHA256}")
 
-    # команда — из инструкции packwiz; рабочая папка команды перед запуском у Prism — папка игры экземпляра
+    # Command from the packwiz instructions; Prism runs the pre-launch command in the instance's game directory.
     command = f'"$INST_JAVA" -jar {BOOTSTRAP} {PACK_URL}'
     instance_cfg = "".join(f"{k}={v}\n" for k, v in [
         ("ConfigVersion", "1.3"),
@@ -68,7 +69,7 @@ def main():
         ("MaxMemAlloc", str(MAX_MEMORY_MB)),
     ])
     components = [{"uid": COMPONENTS[k], "version": versions[k]} for k in ("minecraft", "neoforge") if k in versions]
-    components[0]["important"] = True  # Minecraft: Prism не даёт убрать его из экземпляра
+    components[0]["important"] = True  # Minecraft: Prism does not allow removing it from the instance.
     mmc_pack = json.dumps({"components": components, "formatVersion": 1}, indent=4) + "\n"
 
     out = os.path.abspath(a.out)
@@ -77,9 +78,9 @@ def main():
         for name, data in [("instance.cfg", "[General]\n" + instance_cfg), ("mmc-pack.json", mmc_pack),
                            (f"minecraft/{BOOTSTRAP}", bootstrap)]:
             info = zipfile.ZipInfo(name, (1980, 1, 1, 0, 0, 0))
-            info.external_attr = (stat.S_IFREG | 0o644) << 16  # обычный файл rw-r--r--: без прав распаковщик ставит ноль
+            info.external_attr = (stat.S_IFREG | 0o644) << 16  # Regular file, rw-r--r--: without permissions, extraction sets zero.
             z.writestr(info, data, zipfile.ZIP_DEFLATED)
-    print(f"{pack['name']}: " + ", ".join(f"{k} {v}" for k, v in versions.items()) + f"; сборка {PACK_URL} → {out}")
+    print(f"{pack['name']}: " + ", ".join(f"{k} {v}" for k, v in versions.items()) + f"; pack {PACK_URL} → {out}")
 
 
 if __name__ == "__main__":

@@ -1,17 +1,17 @@
 #!/usr/bin/env python3
-"""Каталог игры из сборки pack/ (packwiz) — без Prism и без packwiz: для проверок клиентом prod_client.py Incoming.
+"""Game directory from pack/ (packwiz), without Prism or packwiz: for Incoming's prod_client.py client checks.
 
   tools/pack_dir.py ../airstrike/mod/run/pack-b [--optional]
-  (в zentixua/incoming) tools/prod_client.py <сценарий> --no-copy --dir mod/run/pack-b
-                                                            (сборку мода со сценариями кладёт prod_client.py)
+  (in zentixua/incoming) tools/prod_client.py <scenario> --no-copy --dir mod/run/pack-b
+                                                            (prod_client.py installs the mod build with scenarios)
 
-Те же файлы, что ставит Prism из .mrpack сборки: моды и шейдерпаки по `*.pw.toml` (скачанный файл сверяется с хешем
-из них), остальное из index.toml (`config/…`) — как есть. Только для клиента: `side = "server"` не ставится;
-необязательные (`[option] optional = true`) — как их галочка по умолчанию (`default`, как у packwiz-installer):
-выключенные — `<файл>.disabled`, как их ставит Prism без галочки; с --optional — все включёнными. Индекс должен быть
-свежим (хеши метафайлов сверяются, как в CI: `packwiz refresh`).
-Скачанное лежит в кэше по хешу (по умолчанию run/pack-cache) и второй раз не качается. Каталог должен быть новым
-или без mods/: смешивать с прежним набором модов нельзя.
+The same files Prism installs from the pack's .mrpack: mods and shaderpacks from `*.pw.toml` (each download is
+checked against its hash), other files from index.toml (`config/…`) copied as is. Client only: `side = "server"`
+is not installed. Optional mods (`[option] optional = true`) follow their default checkbox (`default`, as in
+packwiz-installer): disabled ones become `<file>.disabled`, as Prism installs them when unchecked; --optional
+enables all of them. The index must be fresh (metafile hashes are checked, as in CI: `packwiz refresh`).
+Downloads are cached by hash (default: run/pack-cache) and are not downloaded again. The directory must be new
+or have no mods/: do not mix with an earlier set of mods.
 """
 import argparse
 import hashlib
@@ -37,10 +37,10 @@ def digest(path, algo):
 
 
 def inside(root, rel):
-    """Путь из файлов сборки — только внутри каталога (как требует формат .mrpack)."""
+    """Paths from pack files must stay inside the directory (as required by the .mrpack format)."""
     path = os.path.normpath(os.path.join(root, rel))
     if os.path.isabs(rel) or not path.startswith(root + os.sep):
-        sys.exit(f"путь {rel!r} выходит из {root}")
+        sys.exit(f"path {rel!r} escapes {root}")
     return path
 
 
@@ -57,35 +57,35 @@ def fetch(name, download, cache):
             with urllib.request.urlopen(req, timeout=60) as r, open(tmp, "wb") as out:
                 shutil.copyfileobj(r, out)
             break
-        except (OSError, http.client.HTTPException) as e:  # обрыв посреди файла — IncompleteRead
+        except (OSError, http.client.HTTPException) as e:  # Interrupted mid-file: IncompleteRead.
             error = e
             if attempt < 3:
                 time.sleep(2 << attempt)
     else:
-        sys.exit(f"{name}: не скачать {download['url']}: {error}")
+        sys.exit(f"{name}: cannot download {download['url']}: {error}")
     got = digest(tmp, algo)
     if got != want:
         os.remove(tmp)
-        sys.exit(f"{name}: {algo} скачанного {got} ≠ {want} ({download['url']})")
+        sys.exit(f"{name}: downloaded {algo} {got} ≠ {want} ({download['url']})")
     os.replace(tmp, cached)
     return cached
 
 
 def main():
     ap = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
-    ap.add_argument("dir", help="каталог игры (новый)")
-    ap.add_argument("--optional", action="store_true", help="все необязательные моды включить")
+    ap.add_argument("dir", help="game directory (new)")
+    ap.add_argument("--optional", action="store_true", help="enable all optional mods")
     ap.add_argument("--cache", default=os.path.join(ROOT, "run", "pack-cache"))
     a = ap.parse_args()
     dest = os.path.abspath(a.dir)
     if os.path.isdir(os.path.join(dest, "mods")):
-        sys.exit(f"в {dest} уже есть mods/ — нужен новый каталог")
+        sys.exit(f"{dest} already contains mods/ — a new directory is required")
 
     with open(os.path.join(PACK, "pack.toml"), "rb") as f:
         pack = tomllib.load(f)
     index_file = os.path.join(PACK, pack["index"]["file"])
     if digest(index_file, pack["index"]["hash-format"]) != pack["index"]["hash"]:
-        sys.exit("index.toml не тот, что в pack.toml: packwiz refresh")
+        sys.exit("index.toml does not match pack.toml: packwiz refresh")
     with open(index_file, "rb") as f:
         index = tomllib.load(f)
     print(f"{pack['name']} {pack['version']}: " + ", ".join(f"{k} {v}" for k, v in pack["versions"].items()))
@@ -95,7 +95,7 @@ def main():
     for entry in index["files"]:
         src = inside(PACK, entry["file"])
         if digest(src, entry.get("hash-format", index["hash-format"])) != entry["hash"]:
-            sys.exit(f"{entry['file']}: хеш не тот, что в index.toml: packwiz refresh")
+            sys.exit(f"{entry['file']}: hash does not match index.toml: packwiz refresh")
         if not entry.get("metafile"):
             out = inside(dest, entry["file"])
             os.makedirs(os.path.dirname(out), exist_ok=True)
@@ -113,7 +113,7 @@ def main():
         os.makedirs(os.path.dirname(out), exist_ok=True)
         shutil.copyfile(fetch(meta["name"], meta["download"], a.cache), out)
         (on if enabled else off).append(meta["filename"])
-    print(f"включено {len(on)}, выключено {len(off)}{': ' + ', '.join(off) if off else ''}; файлов как есть {files} → {dest}")
+    print(f"enabled {len(on)}, disabled {len(off)}{': ' + ', '.join(off) if off else ''}; files copied as is {files} → {dest}")
 
 
 if __name__ == "__main__":
