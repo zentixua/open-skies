@@ -67,26 +67,7 @@ jobs:
 
       # Generate release notes on PRs too: a new version without a row in README.md's version table cannot reach main.
       - name: Release notes
-        env:
-          V: ${{ steps.version.outputs.version }}
-        run: |
-          # Version row from README.md's version table: | version | mod | changes |
-          row=$(awk -F ' [|] ' -v v="$V" '$1 == "| " v { print $2 "\t" substr($3, 1, length($3) - 2) }' ../README.md)
-          [ -n "$row" ] || { echo "README.md: no row for version $V in the version table"; exit 1; }
-          mod=${row%%$'\t'*}
-          changes=${row#*$'\t'}
-          changes=${changes//](#/](https://github.com/zentixua/open-skies#}  # Use full URLs for README anchors in the notes.
-          mc=$(sed -n 's/^minecraft = "\(.*\)"$/\1/p' pack.toml)
-          neoforge=$(sed -n 's/^neoforge = "\(.*\)"$/\1/p' pack.toml)
-          cat > release-notes.md <<EOF
-          Minecraft $mc, NeoForge $neoforge, Incoming $mod. $changes
-
-          ## Установка
-          - \`Open-Skies.zip\` — экземпляр [Prism Launcher](https://prismlauncher.org/download/), который сам обновляет сборку перед каждым запуском игры: «Добавить экземпляр…» → «Импорт» → этот файл.
-          - \`Open-Skies.mrpack\` — разовая установка этой версии без автообновления: импорт в Prism Launcher или Modrinth App.
-
-          Подробно — [README](https://github.com/zentixua/open-skies#установка).
-          EOF
+        run: python3 ../tools/release_notes.py release-notes.md
 
       - uses: actions/upload-artifact@v6
         with:

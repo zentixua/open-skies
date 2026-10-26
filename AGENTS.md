@@ -17,7 +17,8 @@ the Almighty host bridge (server only) is at https://github.com/zentixua/almight
 - Keep the modpack clean and reliable: standard mechanisms, no workarounds; other mods' settings stay at their
   defaults, and every file in `config/` needs a reason in README.md. Add a required mod only on Artem's instruction.
 - Bump `version` in `pack.toml` for every change to the modpack's composition, and add a row to README.md's version
-  table: all players must have the same set.
+  table: all players must have the same set. Each new pack version also needs
+  `docs/releases/<version>.en.md` with the English translation of that row; CI requires both.
 - GitHub releases are automatic: a new `version` on `main` becomes release `v<version>` (downloads without signing in
   at `releases/latest/download/Open-Skies.zip` and `…/Open-Skies.mrpack`).
   Other public steps (Modrinth, etc.) require Artem's explicit instruction.
@@ -43,7 +44,8 @@ tools/boot_check.py      ← the modpack boots from scratch: server reaches "Don
                            manually: client in Incoming's nested KWin (see the script header)
 .github/workflows/build.yml  ← CI "Сборка модов": fresh index, .mrpack and Prism instance (artifact open-skies);
                                and "Запуск с нуля" (boot_check.py); a new version on main becomes release v<version>
-                               with these files only if both pass (notes: README's version table row)
+                               with these files only if both pass (notes: README's version table row and
+                               docs/releases/<version>.en.md)
 ```
 
 Modpack address for packwiz-installer: `https://raw.githubusercontent.com/zentixua/open-skies/main/pack/pack.toml`;

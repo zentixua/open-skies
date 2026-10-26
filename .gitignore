@@ -4,3 +4,7 @@ __pycache__/
 *.pyc
 pack/*.mrpack
 pack/*.zip
+.env
+.env.*
+!.env.example
+/config/almighty/token
