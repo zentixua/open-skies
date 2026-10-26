@@ -60,6 +60,7 @@ SLEEPER = (
     "summon villager 0 200.5625 -1 {NoAI:1b,SleepingX:0,SleepingY:200,SleepingZ:-1}",
     "setworldspawn 2 200 2",
 )
+SUMMONED = re.compile(r"\]: Summoned new ")
 DONE = re.compile(r"\]: Done \([0-9.]+s\)!")
 JOINED = re.compile(r"\]: (\S+) joined the game")
 # «Unreported exception thrown!» — падение клиента вне главного цикла (поток записи Flashback): отчёт придёт позже
@@ -212,6 +213,9 @@ def start_server(dest, neo, memory, timeout):
     args = os.path.join("libraries", "net", "neoforged", "neoforge", neo, "unix_args.txt")
     argv = [java(), f"-Xmx{memory}", f"@{args}", "nogui"]
     log = os.path.join(dest, "logs", "latest.log")
+    # лог прошлого запуска (проверка сервера перед --server) уже говорит «Done»: в сторону, ждать строку нового
+    if os.path.isfile(log):
+        os.replace(log, os.path.join(dest, "logs", "previous-run.log"))
     started = time.monotonic()
     with open(os.path.join(dest, "console.log"), "a") as out:
         proc = subprocess.Popen(argv, cwd=dest, stdin=subprocess.PIPE, stdout=out, stderr=subprocess.STDOUT,
@@ -289,6 +293,10 @@ def client(a):
     if a.server:
         server_proc, server_log = start_server(srv, neo, a.server_memory, a.timeout)
         console(server_proc, *SLEEPER)
+        if not wait_for(server_proc, server_log, SUMMONED, 60):
+            stop_group(server_proc)
+            report(srv, server_log)
+            sys.exit("сервер не поставил сцену со спящим жителем")
     log = os.path.join(dest, "logs", "latest.log")
     started = time.monotonic()
     try:
