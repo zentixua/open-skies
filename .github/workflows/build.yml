@@ -138,6 +138,13 @@ jobs:
           python3 tools/boot_check.py client run/boot/client --world run/boot/server/world \
             --wrap 'xvfb-run -a -s "-screen 0 1280x720x24" {cmd}'
 
+      # тот же сервер снова, клиент входит на него по сети и пишет повтор Flashback у спящего жителя: реестры от
+      # сервера и звуки, которые клиент играет сам (0.1.44 — запись падала на храпе Subtle Effects)
+      - name: Запись Flashback на сервере
+        run: |
+          python3 tools/boot_check.py client run/boot/record --server run/boot/server --stay 90 \
+            --wrap 'xvfb-run -a -s "-screen 0 1280x720x24" {cmd}'
+
       - uses: actions/upload-artifact@v6
         if: failure()
         with:

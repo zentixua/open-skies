@@ -4,6 +4,7 @@
   python3 tools/boot_check.py server run/boot/server
   python3 tools/boot_check.py client run/boot/client --world run/boot/server/world \
       [--wrap 'xvfb-run -a -s "-screen 0 1280x720x24" {cmd}']
+  python3 tools/boot_check.py client run/boot/record --server run/boot/server [--wrap …]
 
 Всё ставится так же, как у игрока и на сервере, с нуля: NeoForge — версии из pack.toml (сервер — установщиком
 NeoForge, клиент — portablemc: Minecraft, библиотеки и ассеты Mojang), моды и config/ — packwiz-installer из pack/,
@@ -12,8 +13,11 @@ NeoForge, клиент — portablemc: Minecraft, библиотеки и асс
 
 Сервер слушает только 127.0.0.1, без проверки лицензии; после «Done» получает `stop` и должен выйти с кодом 0.
 Клиент входит в мир --world (копия в saves/) через Quick Play и должен прожить в нём --stay секунд без падения;
-потом процесс гасится. Окно клиенту нужно: на машине без экрана — --wrap с xvfb-run (CI) или вложенным KWin
-(ноутбук: tools/nested_kwin.sh incoming, `{cmdq}` — команда одним аргументом). Звук клиент открыть не должен
+потом процесс гасится. С --server клиент входит на выделенный сервер проверки (тот же каталог, сервер запускается
+снова) с модами записи, и Flashback пишет повтор с первого входа рядом со спящим жителем (SLEEPER): так проверяется
+то, чего нет в одиночной игре, — реестры от сервера и вход с каналами модов сервера. Окно клиенту нужно: на машине
+без экрана — --wrap с xvfb-run (CI) или вложенным KWin (ноутбук: tools/nested_kwin.sh incoming, `{cmdq}` — команда
+одним аргументом). Звук клиент открыть не должен
 (на ноутбуке его закрывает nested_kwin.sh, в CI устройства нет).
 
 Падение загрузки (мод не принял NeoForge или другой мод, «Mod loading has failed», ошибка в RegisterEvent) — код 1,
@@ -22,7 +26,9 @@ NeoForge, клиент — portablemc: Minecraft, библиотеки и асс
 """
 import argparse
 import functools
+import hashlib
 import http.server
+import json
 import os
 import re
 import shlex
@@ -42,9 +48,26 @@ USER_AGENT = "zentixua/open-skies tools/boot_check.py"
 BOOTSTRAP = "https://github.com/packwiz/packwiz-installer-bootstrap/releases/download/v0.0.3/packwiz-installer-bootstrap.jar"
 INSTALLER = "https://github.com/packwiz/packwiz-installer/releases/download/v0.5.14/packwiz-installer.jar"
 NEOFORGE = "https://maven.neoforged.net/releases/net/neoforged/neoforge/{v}/neoforge-{v}-installer.jar"
+# моды записи повтора (необязательные в pack/) — для проверки клиента на сервере
+RECORDING = ("connector", "flashback", "flashback-neoforge-fixed")
+# сцена на сервере перед входом клиента: игрок появляется на плите в небе у спящего жителя (без ИИ — спит всю
+# проверку). Клиентские моды озвучивают сон (храп Subtle Effects) — Flashback пишет эти звуки в повтор
+SLEEPER = (
+    "forceload add -16 -16 15 15", "gamerule doDaylightCycle false", "gamerule doMobSpawning false",
+    "gamerule spawnRadius 0", "time set 18000", "defaultgamemode creative",
+    "fill -4 199 -4 4 199 4 stone",
+    "setblock 0 200 0 red_bed[facing=north,part=foot]", "setblock 0 200 -1 red_bed[facing=north,part=head]",
+    "summon villager 0 200.5625 -1 {NoAI:1b,SleepingX:0,SleepingY:200,SleepingZ:-1}",
+    "setworldspawn 2 200 2",
+)
+SUMMONED = re.compile(r"\]: Summoned new ")
 DONE = re.compile(r"\]: Done \([0-9.]+s\)!")
 JOINED = re.compile(r"\]: (\S+) joined the game")
-FAILED = re.compile(r"Mod loading has failed|Loading errors encountered|Preparing crash report|Failed to start the minecraft server")
+# отключение от сервера кончает запись Flashback (automaticallyFinish), а её каталог остаётся до сохранения
+LEFT = re.compile(r"\]: \S+ lost connection: (.*)")
+# «Unreported exception thrown!» — падение клиента вне главного цикла (поток записи Flashback): отчёт придёт позже
+FAILED = re.compile(r"Mod loading has failed|Loading errors encountered|Preparing crash report|"
+                    r"Failed to start the minecraft server|Unreported exception thrown!")
 
 
 def java():
@@ -183,28 +206,46 @@ def server(a):
     with open(os.path.join(dest, "server.properties"), "w") as f:
         f.write(f"server-ip=127.0.0.1\nserver-port={port}\nonline-mode=false\nlevel-seed={a.seed}\n"
                 "spawn-protection=0\nmotd=Open Skies boot check\n")
+    proc, log = start_server(dest, neo, a.memory, a.timeout)
+    stop_server(proc, dest, log, a.timeout)
+
+
+def start_server(dest, neo, memory, timeout):
+    """Поставленный сервер проверки — до «Done»; процесс со stdin для команд консоли и путь к логу."""
     args = os.path.join("libraries", "net", "neoforged", "neoforge", neo, "unix_args.txt")
-    argv = [java(), f"-Xmx{a.memory}", f"@{args}", "nogui"]
+    argv = [java(), f"-Xmx{memory}", f"@{args}", "nogui"]
     log = os.path.join(dest, "logs", "latest.log")
+    # лог прошлого запуска (проверка сервера перед --server) уже говорит «Done»: в сторону, ждать строку нового
+    if os.path.isfile(log):
+        os.replace(log, os.path.join(dest, "logs", "previous-run.log"))
     started = time.monotonic()
-    with open(os.path.join(dest, "console.log"), "w") as out:
+    with open(os.path.join(dest, "console.log"), "a") as out:
         proc = subprocess.Popen(argv, cwd=dest, stdin=subprocess.PIPE, stdout=out, stderr=subprocess.STDOUT,
                                 text=True, start_new_session=True)
-        done = wait_for(proc, log, DONE, a.timeout)
-        if not done:
-            stop_group(proc)
-            report(dest, log)
-            sys.exit(f"сервер не дошёл до «Done» (код {proc.returncode}, {time.monotonic() - started:.0f} с)")
-        print(f"сервер: «Done» за {time.monotonic() - started:.0f} с от запуска")
-        assert proc.stdin is not None
-        proc.stdin.write("stop\n")
+    done = wait_for(proc, log, DONE, timeout)
+    if not done:
+        stop_group(proc)
+        report(dest, log)
+        sys.exit(f"сервер не дошёл до «Done» (код {proc.returncode}, {time.monotonic() - started:.0f} с)")
+    print(f"сервер: «Done» за {time.monotonic() - started:.0f} с от запуска")
+    return proc, log
+
+
+def console(proc, *commands):
+    assert proc.stdin is not None
+    for c in commands:
+        proc.stdin.write(c + "\n")
         proc.stdin.flush()
-        try:
-            code = proc.wait(a.timeout)
-        except subprocess.TimeoutExpired:
-            stop_group(proc)
-            report(dest, log)
-            sys.exit("сервер не остановился по stop")
+
+
+def stop_server(proc, dest, log, timeout):
+    console(proc, "stop")
+    try:
+        code = proc.wait(timeout)
+    except subprocess.TimeoutExpired:
+        stop_group(proc)
+        report(dest, log)
+        sys.exit("сервер не остановился по stop")
     if code != 0:
         report(dest, log)
         sys.exit(f"сервер вышел с кодом {code}")
@@ -223,44 +264,105 @@ def client(a):
     run(base[:5] + ["start", "--dry"] + base[6:], dest, "portablemc: Minecraft и NeoForge")
     install_pack(dest, "client", a.cache)
     # без экрана приветствия (иначе Quick Play ждёт за ним вечно) и без паузы, когда окно не в фокусе
+    options = "onboardAccessibility:false\npauseOnLostFocus:false\nsoundCategory_master:0.0\n"
+    if a.server:
+        install_recording(dest)
+        # без окна «игра по сети — не под контролем Mojang» (иначе вход на сервер ждёт за ним вечно)
+        options += "skipMultiplayerWarning:true\n"
     with open(os.path.join(dest, "options.txt"), "w") as f:
-        f.write("onboardAccessibility:false\npauseOnLostFocus:false\nsoundCategory_master:0.0\n")
-    world = os.path.basename(os.path.normpath(a.world))
-    shutil.copytree(a.world, os.path.join(dest, "saves", world))
-    argv = base[:-1] + ["--mc-dir", dest, "--username", a.user, "--resolution", "1280x720", "--join-world", world,
+        f.write(options)
+    if a.server:
+        srv = os.path.abspath(a.server)
+        with open(os.path.join(srv, "server.properties")) as f:
+            port = re.search(r"^server-port=(\d+)$", f.read(), re.M).group(1)
+        target = ["--join-server", "127.0.0.1", "--join-server-port", port]
+        where = "на сервере проверки"
+    else:
+        world = os.path.basename(os.path.normpath(a.world))
+        shutil.copytree(a.world, os.path.join(dest, "saves", world))
+        target = ["--join-world", world]
+        where = f"в мире «{world}»"
+    argv = base[:-1] + ["--mc-dir", dest, "--username", a.user, "--resolution", "1280x720", *target,
                         f"--jvm-arg=-Xmx{a.memory}", base[-1]]
     cmd = shlex.join(argv)
     if a.wrap:
         cmd = a.wrap.replace("{cmdq}", shlex.quote(cmd)).replace("{cmd}", cmd)
-    # та же команда — для повтора руками (тот же каталог, тот же мир)
+    # та же команда — для повтора руками (тот же каталог, тот же мир или сервер)
     with open(os.path.join(dest, "launch.sh"), "w") as f:
         f.write(f"#!/bin/sh\ncd {shlex.quote(dest)} && exec {cmd}\n")
     os.chmod(os.path.join(dest, "launch.sh"), 0o755)
+    server_proc = server_log = None
+    if a.server:
+        server_proc, server_log = start_server(srv, neo, a.server_memory, a.timeout)
+        console(server_proc, *SLEEPER)
+        if not wait_for(server_proc, server_log, SUMMONED, 60):
+            stop_group(server_proc)
+            report(srv, server_log)
+            sys.exit("сервер не поставил сцену со спящим жителем")
     log = os.path.join(dest, "logs", "latest.log")
     started = time.monotonic()
-    with open(os.path.join(dest, "console.log"), "w") as out:
-        proc = subprocess.Popen(cmd, shell=True, cwd=dest, stdout=out, stderr=subprocess.STDOUT,
-                                start_new_session=True)
+    try:
+        with open(os.path.join(dest, "console.log"), "w") as out:
+            proc = subprocess.Popen(cmd, shell=True, cwd=dest, stdout=out, stderr=subprocess.STDOUT,
+                                    start_new_session=True)
         try:
-            joined = wait_for(proc, log, JOINED, a.timeout)
+            # вход видно в логе того, кто ведёт мир: у одиночной игры — сам клиент, иначе — сервер
+            joined = wait_for(proc, server_log or log, JOINED, a.timeout)
             if not joined:
                 stop_group(proc)
                 report(dest, log)
-                sys.exit(f"клиент не вошёл в мир (код {proc.returncode}, {time.monotonic() - started:.0f} с)")
-            print(f"клиент: {joined.group(1)} в мире «{world}» через {time.monotonic() - started:.0f} с от запуска")
+                sys.exit(f"клиент не вошёл (код {proc.returncode}, {time.monotonic() - started:.0f} с)")
+            print(f"клиент: {joined.group(1)} {where} через {time.monotonic() - started:.0f} с от запуска")
             # в мире — ещё --stay секунд: рисуются чанки, встают моды, которые начинают работу с миром
             end = time.monotonic() + a.stay
             while time.monotonic() < end:
                 with open(log, errors="replace") as f:
-                    crashed = FAILED.search(f.read())
+                    text = f.read()
+                crashed = FAILED.search(text)
+                if server_log:
+                    with open(server_log, errors="replace") as f:
+                        left = LEFT.search(f.read())
+                    if left:
+                        stop_group(proc)
+                        report(dest, log)
+                        sys.exit(f"клиент отключился от сервера: {left.group(1)}")
                 if crashed or proc.poll() is not None:
                     stop_group(proc)
                     report(dest, log)
-                    sys.exit(f"клиент упал в мире (код {proc.returncode})")
+                    sys.exit(f"клиент упал {where} (код {proc.returncode})")
                 time.sleep(1)
+            if a.server:
+                recording = os.path.join(dest, "flashback", "temp", "recording")
+                if not (os.path.isdir(recording) and os.listdir(recording)):
+                    report(dest, log)
+                    sys.exit("Flashback не начал запись")
         finally:
             stop_group(proc)
-    print(f"клиент: {a.stay} с в мире без падения")
+    finally:
+        if server_proc:
+            stop_server(server_proc, srv, server_log, a.timeout)
+    print(f"клиент: {a.stay} с {where} без падения" + (", запись Flashback шла" if a.server else ""))
+
+
+def install_recording(dest):
+    """Моды записи (Flashback и что ему нужно — необязательные, по умолчанию выключены) и запись с первого входа.
+
+    Voxy и Roxy проверке на сервере не нужны (их грузит проверка в одиночной игре), а с Mesa llvmpipe рядом с
+    сервером они съедают память машины CI: их здесь нет."""
+    for name in RECORDING:
+        with open(os.path.join(PACK, "mods", f"{name}.pw.toml"), "rb") as f:
+            meta = tomllib.load(f)
+        jar = download(meta["download"]["url"], os.path.join(dest, "mods", meta["filename"]))
+        assert meta["download"]["hash-format"] == "sha512"
+        with open(jar, "rb") as f:
+            if hashlib.sha512(f.read()).hexdigest() != meta["download"]["hash"]:
+                sys.exit(f"{meta['filename']}: хеш не тот, что в pack/")
+    for jar in os.listdir(os.path.join(dest, "mods")):
+        if jar.startswith(("voxy-", "roxy-")):
+            os.remove(os.path.join(dest, "mods", jar))
+    os.makedirs(os.path.join(dest, "config", "flashback"), exist_ok=True)
+    with open(os.path.join(dest, "config", "flashback", "flashback.json"), "w") as f:
+        json.dump({"configVersion": 2, "recordingControls": {"automaticallyStart": True}}, f)
 
 
 def main():
@@ -275,7 +377,11 @@ def main():
         p.add_argument("--memory", default="4G", help="-Xmx")
     sub.choices["server"].add_argument("--seed", default="open-skies", help="зерно мира проверки")
     c = sub.choices["client"]
-    c.add_argument("--world", required=True, help="каталог мира (например world сервера проверки)")
+    where = c.add_mutually_exclusive_group(required=True)
+    where.add_argument("--world", help="каталог мира (например world сервера проверки): одиночная игра")
+    where.add_argument("--server", help="каталог сервера проверки: клиент входит на него и пишет повтор Flashback "
+                                        "рядом со спящим жителем")
+    c.add_argument("--server-memory", default="3G", help="-Xmx сервера при --server")
     c.add_argument("--user", default="BootCheck")
     c.add_argument("--stay", type=int, default=30, help="секунд в мире после входа")
     c.add_argument("--wrap", help="оболочка запуска: {cmd} — команда, {cmdq} — она же одним аргументом")

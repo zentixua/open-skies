@@ -72,7 +72,7 @@ cd pack && packwiz mr export      # → Open Skies-<версия>.mrpack
 | Create | Propulsion: Simulated, Aeroworks, Tweaked Controllers, Big Cannons (+ RPL), Connected, Deco, Diesel Generators, Aeronautics Hot Air Fix |
 | авиация и оружие | Immersive Aircraft, Man of Many Planes, Vic's Point Blank (+ GeckoLib), Point Blank Aeronautics compat, Do a Barrel Roll (полёт на элитрах с креном, + Forgified Fabric API) |
 | картинка и камера | шейдерпаки Photon, Solas, Complementary Unbound, BSL, MakeUp Ultra Fast (на выбор, ниже), Euphoria Patches (дополнение к Complementary), Aeronautics Camera Sync, 3D Skin Layers, Not Enough Animations, Ok Zoomer (зум, ниже) |
-| мир вокруг | Subtle Effects (мелкие частицы и звуки: искры огня, дым горящих мобов, рябь, листья; + Fzzy Config, Kotlin for Forge), Particle Rain (дождь, снег и пыльные бури частицами), AmbientSounds (звуки природы по биому, высоте и времени; + CreativeCore), LambDynamicLights (свет от факела в руке, горящих мобов и снарядов), Contraption Lights (свет фонарей на аппаратах Create и кораблях Sable падает на мир), Sound Physics Remastered (эхо в помещениях и глушение звука стенами для звуков мира), Burnt (огонь прогорает: обугленные дома и деревья, обрушение горящих построек) |
+| мир вокруг | Subtle Effects (мелкие частицы и звуки: искры огня, дым горящих мобов, рябь, листья; + Fzzy Config, Kotlin for Forge; стоит и на сервере, ниже), Particle Rain (дождь, снег и пыльные бури частицами), AmbientSounds (звуки природы по биому, высоте и времени; + CreativeCore), LambDynamicLights (свет от факела в руке, горящих мобов и снарядов), Contraption Lights (свет фонарей на аппаратах Create и кораблях Sable падает на мир), Sound Physics Remastered (эхо в помещениях и глушение звука стенами для звуков мира), Burnt (огонь прогорает: обугленные дома и деревья, обрушение горящих построек) |
 | мультиплеер и удобство | Essential, TrueUUID (вход на сервер, ниже), LAN Server Properties (временно, ниже), JEI (+ MezzConfig), Jade, Jade Sable Compat, Xaero's Minimap и World Map (+ MapSyncer: вся карта мира с сервера), Create – Xaero's map, GraveStone и его патч для Sable, Mouse Tweaks, No Chat Reports |
 | запись (по выбору) | Flashback, Flashback NeoForge Fixed, Sinytra Connector |
 | клавиши | Default Options (+ Balm): раскладка сборки (ниже) |
@@ -99,6 +99,17 @@ TrueUUID — он стоит и на сервере, и у каждого игр
 [ServerCore](https://modrinth.com/mod/servercore) — производительность сервера (настройки ниже).
 Мост Almighty слушает только адрес из `config/almighty-common.toml` с ключом из `config/almighty/token` (устройство —
 [CLAUDE.md](https://github.com/zentixua/almighty/blob/main/CLAUDE.md) в репозитории моста).
+
+Subtle Effects (с Fzzy Config и Kotlin for Forge) стоит и на сервере, хотя всё видимое и слышимое он делает у игрока.
+Свои звуки (храп спящих, сердцебиение, капли, шипение костра и другие) он регистрирует в реестре звуков, а в
+мультиплеере номера записей реестра приходят от сервера: без мода на сервере у этих звуков у игрока номера нет. Игре
+это не мешает, но Flashback пишет в повтор и звуки, которые клиент играет сам, — по номеру, и запись падает: `Can't
+find id for subtle_effects:entity.villager.snore` (0.1.44, запись рядом со спящим жителем). Правило: клиентский мод,
+который регистрирует то, что может попасть в пакет (звуки, сущности, предметы, блоки), ставится и на сервер
+(`side = "both"`). Остальные клиентские моды сборки регистрируют только то, что в пакеты не попадает: частицы
+Particle Rain (рисуются только у игрока), окна и типы аргументов команд CreativeCore (их присылает только сервер),
+типы света Contraption Lights (свой реестр Veil у клиента). Проверяет CI: клиент с Flashback пишет повтор на сервере
+сборки рядом со спящим жителем.
 
 Карта мира на сервере. В одиночке Xaero's World Map читает карту прямо из файлов мира, а в мультиплеере рисует только
 чанки, которые сервер прислал игроку. Всю карту мира игрокам отдаёт MapSyncer (стоит на сервере и у каждого игрока):
@@ -253,6 +264,7 @@ Default Options — только у игроков. Его библиотека 
 
 | версия | мод | что изменилось |
 |---|---|---|
+| 0.1.45 | 3.8.0 | Запись Flashback больше не падает на звуках Subtle Effects (храп спящего жителя, капли, костёр и другие): Subtle Effects с Fzzy Config и Kotlin for Forge теперь стоит и на сервере (исправление — после перезапуска сервера). Совместима по сети с 0.1.44 |
 | 0.1.44 | 3.8.0 | Incoming 3.8.0 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.8.0.md)) — взрыв выглядит по тому, во что попал (грунт, бетон, плита, воздух); огонь топлива — обычный огонь на блоках; пыльная дымка и ветер у земли идут по улицам; ударная волна у игрока (контузия, трава и пыль вокруг); звук массированного налёта; дым большого налёта больше не роняет частоту кадров. Burnt — огонь прогорает; Sound Physics Remastered — эхо и глушение звуков мира. Не совместима по сети с 3.7.0: обновитесь все и сервер |
 | 0.1.43 | 3.7.0 | Мир вокруг живее: Subtle Effects (искры огня, дым горящих мобов, рябь, падающие листья), Particle Rain (дождь и снег частицами, пыльные бури), AmbientSounds (звуки природы), LambDynamicLights (факел в руке светит) и Contraption Lights (фонари на аппаратах и кораблях светят на мир). Всё только у игроков, серверу не нужно |
 | 0.1.42 | 3.7.0 | LOD Server Support 0.20.0 (новая настройка «Extend Far Player Draw Range» на странице Far Players, по умолчанию выключена: далёкие игроки видны дальше обычной прорисовки вместе с Voxy) и ModernFix 5.27.27 |
