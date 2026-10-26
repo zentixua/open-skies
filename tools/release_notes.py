@@ -25,7 +25,14 @@ def render(root=ROOT):
     if len(rows) != 1:
         raise ValueError(f"README.md: expected one version-table row for {version}, got {len(rows)}")
     mod, russian = rows[0]
-    english = (root / f"docs/releases/{version}.en.md").read_text(encoding="utf-8").strip()
+    english_path = Path(f"docs/releases/{version}.en.md")
+    try:
+        english = (root / english_path).read_text(encoding="utf-8").strip()
+    except FileNotFoundError:
+        raise ValueError(
+            f"Missing {english_path}: each new pack version needs docs/releases/<version>.en.md "
+            "with the English translation of its README.md version-table row."
+        ) from None
     if not english:
         raise ValueError(f"Empty English release notes for {version}")
     sections = []

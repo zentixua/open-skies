@@ -65,9 +65,9 @@ def main():
         ("InstanceType", "OneSix"),
         ("name", ini_value(pack["name"])),
         ("notes", ini_value(
-            '<a href="https://github.com/zentixua/open-skies/blob/main/docs/install/optional-mods.en.md">'
-            'Installation and optional mods (EN)</a><br>'
-            '<a href="https://github.com/zentixua/open-skies/blob/main/docs/install/optional-mods.ru.md">RU</a>'
+            'Installation and optional mods: EN '
+            'https://github.com/zentixua/open-skies/blob/main/docs/install/optional-mods.en.md | RU '
+            'https://github.com/zentixua/open-skies/blob/main/docs/install/optional-mods.ru.md'
         )),
         ("OverrideCommands", "true"),
         ("PreLaunchCommand", ini_value(command)),
