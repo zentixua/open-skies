@@ -1,17 +1,17 @@
-# Сборка «Open Skies» (pack/, packwiz): индекс свежий, файлы для лаунчера собираются — .mrpack и экземпляр Prism,
-# который ставит сборку с main сам при каждом запуске (tools/prism_instance.py); оба — в артефактах запуска.
-# Новая version в pack.toml на main выходит сама: релиз v<version> с этими файлами под постоянными именами, их
-# последняя версия скачивается без входа по releases/latest/download/<имя>.
+# Build Open Skies (pack/, packwiz): check that the index is fresh and build launcher files — .mrpack and a Prism
+# instance that installs the pack from main before every launch (tools/prism_instance.py); both are run artifacts.
+# A new version in pack.toml on main is released automatically: release v<version> with these files under fixed
+# names. Their latest versions can be downloaded without signing in at releases/latest/download/<name>.
 name: build
 
-# Каждый коммит проверяется один раз: ветки — запуском pull_request (он и решает слияние), main — push.
+# Check each commit once: branches through pull_request (which determines merge readiness), main through push.
 on:
   push:
     branches: [main]
   pull_request:
   workflow_dispatch:
 
-# новый пуш в ветку PR отменяет прежнюю проверку; запуск на main не отменяется — в нём может идти релиз
+# A new push to the PR branch cancels the previous check; a main run is not cancelled, as it may be releasing.
 concurrency:
   group: build-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
@@ -40,42 +40,42 @@ jobs:
       - name: packwiz
         run: go install github.com/packwiz/packwiz@v0.0.0-20260906154125-ef87d964f8cb
 
-      # .pw.toml правят руками или packwiz; индекс с их хешами должен быть пересчитан тем же коммитом
-      - name: Индекс свежий
+      # .pw.toml files are edited manually or by packwiz; recalculate their hashes in the index in the same commit.
+      - name: Fresh index
         run: |
           packwiz refresh
           git diff --exit-code -- .
 
-      # мод, которому мало NeoForge сборки, роняет запуск игры («Error loading mods»), а индекс этого не видит
-      - name: Моды принимают NeoForge сборки
+      # A mod requiring a newer NeoForge stops startup ("Error loading mods"); the index does not catch this.
+      - name: Mods accept the pack's NeoForge
         run: python3 ../tools/check_loader.py .
 
-      - name: Версия сборки
+      - name: Pack version
         id: version
         run: |
           v=$(sed -n 's/^version = "\(.*\)"$/\1/p' pack.toml)
-          [ -n "$v" ] || { echo "pack.toml: нет version"; exit 1; }
+          [ -n "$v" ] || { echo "pack.toml: missing version"; exit 1; }
           echo "version=$v" >> "$GITHUB_OUTPUT"
 
-      # имена без версии: у релиза releases/latest/download/<имя> всегда ведёт к последней сборке; Prism называет
-      # экземпляр по имени файла (пробел в имени файла выпуска GitHub заменил бы точкой)
-      - name: Файл для лаунчера
+      # Unversioned names: releases/latest/download/<name> always points to the latest pack; Prism names the
+      # instance after the file (GitHub would replace a space in a release filename with a dot).
+      - name: Launcher file
         run: packwiz mr export -o Open-Skies.mrpack
 
-      - name: Экземпляр Prism с автообновлением
+      - name: Prism instance with automatic updates
         run: python3 ../tools/prism_instance.py Open-Skies.zip
 
-      # заметки релиза — и на PR: новая версия без строки в «Версиях» README.md не дойдёт до main
-      - name: Заметки релиза
+      # Generate release notes on PRs too: a new version without a row in README.md's version table cannot reach main.
+      - name: Release notes
         env:
           V: ${{ steps.version.outputs.version }}
         run: |
-          # строка версии из таблицы «Версии» README.md: | версия | мод | что изменилось |
+          # Version row from README.md's version table: | version | mod | changes |
           row=$(awk -F ' [|] ' -v v="$V" '$1 == "| " v { print $2 "\t" substr($3, 1, length($3) - 2) }' ../README.md)
-          [ -n "$row" ] || { echo "README.md: нет строки версии $V в «Версиях»"; exit 1; }
+          [ -n "$row" ] || { echo "README.md: no row for version $V in the version table"; exit 1; }
           mod=${row%%$'\t'*}
           changes=${row#*$'\t'}
-          changes=${changes//](#/](https://github.com/zentixua/open-skies#}  # якоря README — в заметках полной ссылкой
+          changes=${changes//](#/](https://github.com/zentixua/open-skies#}  # Use full URLs for README anchors in the notes.
           mc=$(sed -n 's/^minecraft = "\(.*\)"$/\1/p' pack.toml)
           neoforge=$(sed -n 's/^neoforge = "\(.*\)"$/\1/p' pack.toml)
           cat > release-notes.md <<EOF
@@ -97,8 +97,8 @@ jobs:
             pack/release-notes.md
           if-no-files-found: error
 
-  # индекс и check_loader.py не видят падения при самой загрузке (ошибка в RegisterEvent, мод не принял другой мод):
-  # сборка ставится с нуля, как у игрока и на сервере, и запускается — сервер до «Done», клиент до входа в мир
+  # The index and check_loader.py miss crashes during loading (RegisterEvent errors, a mod rejecting another mod):
+  # install the pack from scratch, as for a player and on the server, then boot the server to "Done" and client to world entry.
   boot:
     name: Запуск с нуля
     runs-on: ubuntu-latest
@@ -111,17 +111,17 @@ jobs:
           distribution: temurin
           java-version: '21'
 
-      # клиенту — экран без монитора (Xvfb) и OpenGL на процессоре (Mesa llvmpipe); portablemc ставит Minecraft
-      # и NeoForge клиента так же, как лаунчер
-      - name: Xvfb, Mesa и portablemc
+      # Give the client a display without a monitor (Xvfb) and CPU OpenGL (Mesa llvmpipe); portablemc installs
+      # client Minecraft and NeoForge just as a launcher does.
+      - name: Xvfb, Mesa and portablemc
         run: |
           sudo apt-get update -q
           sudo apt-get install -yq xvfb libgl1-mesa-dri libglx-mesa0 mesa-utils
           pipx install portablemc==5.0.6
           xvfb-run -a glxinfo -B | grep -E 'OpenGL (renderer|core profile version)'
 
-      # Minecraft клиента (ассеты ~1 ГБ) и установщики — между запусками; ключ — версия NeoForge сборки
-      - name: Кэш скачанного
+      # Cache client Minecraft (~1 GB of assets) and installers between runs; key by the pack's NeoForge version.
+      - name: Download cache
         id: neoforge
         run: echo "version=$(sed -n 's/^neoforge = "\(.*\)"$/\1/p' pack/pack.toml)" >> "$GITHUB_OUTPUT"
       - uses: actions/cache@v4
@@ -129,18 +129,18 @@ jobs:
           path: run/boot-cache
           key: boot-${{ steps.neoforge.outputs.version }}-pmc5.0.6
 
-      - name: Сервер до «Done»
+      - name: Server reaches Done
         run: python3 tools/boot_check.py server run/boot/server
 
-      # мир — тот, что сервер только что создал: клиент открывает его Quick Play, как одиночную игру
-      - name: Клиент до входа в мир
+      # Use the world the server just created: the client opens it through Quick Play as singleplayer.
+      - name: Client enters the world
         run: |
           python3 tools/boot_check.py client run/boot/client --world run/boot/server/world \
             --wrap 'xvfb-run -a -s "-screen 0 1280x720x24" {cmd}'
 
-      # тот же сервер снова, клиент входит на него по сети и пишет повтор Flashback у спящего жителя: реестры от
-      # сервера и звуки, которые клиент играет сам (0.1.44 — запись падала на храпе Subtle Effects)
-      - name: Запись Flashback на сервере
+      # Restart the same server; the client joins over the network and records Flashback next to a sleeping
+      # villager: server registries and sounds played by the client itself (0.1.44: recording crashed on Subtle Effects snoring).
+      - name: Flashback recording on the server
         run: |
           python3 tools/boot_check.py client run/boot/record --server run/boot/server --stay 90 \
             --wrap 'xvfb-run -a -s "-screen 0 1280x720x24" {cmd}'
@@ -157,7 +157,7 @@ jobs:
 
   release:
     name: Релиз
-    # релиз — только сборки, которая запускается с нуля
+    # Release only a pack that boots from scratch.
     needs: [pack, boot]
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
@@ -169,14 +169,14 @@ jobs:
       GH_REPO: ${{ github.repository }}
       V: ${{ needs.pack.outputs.version }}
     steps:
-      - name: Есть ли уже
+      - name: Already released
         id: exists
         run: |
           case $(gh release view "v$V" --json isDraft -q .isDraft 2>/dev/null) in
             false)
-              echo "Релиз v$V уже есть — сборка этой версии вышла раньше" >> "$GITHUB_STEP_SUMMARY"
+              echo "Release v$V already exists — this pack version was released earlier" >> "$GITHUB_STEP_SUMMARY"
               echo "yes=true" >> "$GITHUB_OUTPUT" ;;
-            # черновик остаётся от запуска, прерванного на загрузке файлов (gh выпускает через черновик): заново
+            # A run interrupted during upload leaves a draft (gh publishes through a draft): start again.
             true) gh release delete "v$V" --yes ;;
           esac
 
@@ -186,7 +186,7 @@ jobs:
           name: open-skies
           path: dist
 
-      - name: Релиз
+      - name: Release
         if: steps.exists.outputs.yes != 'true'
         run: |
           gh release create "v$V" dist/Open-Skies.zip dist/Open-Skies.mrpack --target "$GITHUB_SHA" \
