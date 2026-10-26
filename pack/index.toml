@@ -30,7 +30,7 @@ hash = "63ba7034fdf1f45f1b40798d3212f8d838f7c299fbe5795075fbafe1e2265192"
 
 [[files]]
 file = "config/sound_physics_remastered/sound_rates.properties"
-hash = "6a4854a60e238d86a99cdab92219b770081eaeeae2ad03e2085a96111945c5f8"
+hash = "ea331219e42db3e87b5f9d16796037075c44ad6e9af323ddd3364b5e9ed8a48c"
 
 [[files]]
 file = "config/subtle_effects/general.toml"
@@ -228,7 +228,7 @@ metafile = true
 
 [[files]]
 file = "mods/incoming.pw.toml"
-hash = "aa443697b0b8e07a02b02ef07a0a549a3e91a40c7db31dedd4f7d2dc07622cad"
+hash = "89ebe0f64da72aa891e52d91e970fd2469e24d0f954c9d88117613a36d0eafc7"
 metafile = true
 
 [[files]]
