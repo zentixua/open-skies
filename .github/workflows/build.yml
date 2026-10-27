@@ -2,6 +2,7 @@
 # instance that installs the pack from main before every launch (tools/prism_instance.py); both are run artifacts.
 # A new version in pack.toml on main is released automatically: release v<version> with these files under fixed
 # names. Their latest versions can be downloaded without signing in at releases/latest/download/<name>.
+# Automatic updates (update.yml) are checked here on branch pack-update and reach main only from job "В main".
 name: build
 
 # Check each commit once: branches through pull_request (which determines merge readiness), main through push.
@@ -136,11 +137,31 @@ jobs:
             run/boot/*/console.log
           if-no-files-found: ignore
 
+  # An automatic update (update.yml dispatches this workflow on pack-update) goes to main as the very commit that
+  # passed above: a fast-forward push, refused if main moved on meanwhile (the next update starts from the new main).
+  merge:
+    name: В main
+    needs: [pack, boot]
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/pack-update'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Fast-forward main
+        run: git push origin HEAD:refs/heads/main
+
   release:
     name: Релиз
-    # Release only a pack that boots from scratch.
-    needs: [pack, boot]
-    if: github.ref == 'refs/heads/main'
+    # Release only a pack that boots from scratch; a push with GITHUB_TOKEN starts no workflow on main, so an
+    # automatic update is released by this run.
+    needs: [pack, boot, merge]
+    if: >-
+      !cancelled() && needs.pack.result == 'success' && needs.boot.result == 'success' &&
+      (github.ref == 'refs/heads/main' || needs.merge.result == 'success')
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -172,3 +193,35 @@ jobs:
         run: |
           gh release create "v$V" dist/Open-Skies.zip dist/Open-Skies.mrpack --target "$GITHUB_SHA" \
             --title "Open Skies $V" --notes-file dist/release-notes.md --latest
+
+  # Nobody watches automatic updates: a failed one opens (or adds to) an issue, which notifies the repository's
+  # owner; the next successful one closes it.
+  report:
+    name: Отчёт
+    needs: [pack, boot, merge, release]
+    if: always() && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/pack-update'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      issues: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      RESULT: ${{ needs.release.result }}
+      MERGE: ${{ needs.merge.result }}
+      RUN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      V: ${{ needs.pack.outputs.version }}
+    steps:
+      - name: Issue
+        run: |
+          title='Automatic pack update failed'
+          n=$(gh issue list --state open --search "\"$title\" in:title" --json number -q '.[0].number')
+          if [ "$RESULT" = success ]; then
+            [ -z "$n" ] || gh issue close "$n" -c "Open Skies $V passed and was released: $RUN"
+          elif [ -n "$n" ]; then
+            gh issue comment "$n" -b "Open Skies $V failed again: $RUN"
+          elif [ "$MERGE" = success ]; then
+            gh issue create -t "$title" -b "Open Skies $V is on main but its release failed: $RUN. Players already get it; re-run the failed jobs to release it."
+          else
+            gh issue create -t "$title" -b "Open Skies $V from update.yml did not reach main (failed checks, or main moved during them): $RUN. Players and the server keep the previous version. Fix the cause (for example pin the mod that broke, \`packwiz pin <name>\`, or update it by hand in a PR); the next scheduled update tries again."
+          fi

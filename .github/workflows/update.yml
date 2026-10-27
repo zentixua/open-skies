@@ -1,0 +1,105 @@
+# Keep the pack current without anyone asking: new Incoming and Almighty releases are picked up every 3 hours,
+# Modrinth mods weekly at night. The update is a new pack version committed to branch pack-update and checked by
+# build.yml there (fresh index, NeoForge ranges, server, client and Flashback recording from scratch); only that
+# checked commit goes to main and is released (build.yml, job "В main"). Pinned mods (Voxy and Roxy, and Create, Sable,
+# Create Aeronautics and Immersive Aircraft, which Incoming and Almighty test against) are updated by people.
+name: update
+
+on:
+  schedule:
+    - cron: '17 */3 * * *'
+    - cron: '41 2 * * 1'
+  workflow_dispatch:
+    inputs:
+      modrinth:
+        description: Also update Modrinth mods
+        type: boolean
+        default: false
+
+concurrency:
+  group: update
+
+permissions:
+  contents: write
+  actions: write
+
+jobs:
+  update:
+    name: Обновление
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      MODRINTH: ${{ github.event.schedule == '41 2 * * 1' || inputs.modrinth == true }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+
+      # A previous update still being checked lands on main by itself or fails visibly; do not race it.
+      - name: Previous update in CI
+        id: busy
+        run: |
+          if gh run list -w build.yml -b pack-update -L 5 --json status -q '.[].status' | grep -qv completed; then
+            echo "A previous update is still being checked" >> "$GITHUB_STEP_SUMMARY"
+            echo "yes=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Incoming and Almighty releases
+        if: steps.busy.outputs.yes != 'true'
+        run: python3 tools/update_pack.py releases
+
+      - name: Changes or Modrinth
+        id: work
+        if: steps.busy.outputs.yes != 'true'
+        run: |
+          if [ "$MODRINTH" = true ] || ! git diff --quiet; then echo "yes=true" >> "$GITHUB_OUTPUT"; fi
+
+      - uses: actions/setup-go@v6
+        if: steps.work.outputs.yes == 'true'
+        with:
+          go-version: '1.24'
+          cache: false
+
+      # The same packwiz as build.yml.
+      - name: packwiz
+        if: steps.work.outputs.yes == 'true'
+        run: go install github.com/packwiz/packwiz@v0.0.0-20260906154125-ef87d964f8cb
+
+      - name: Modrinth mods
+        if: steps.work.outputs.yes == 'true' && env.MODRINTH == 'true'
+        working-directory: pack
+        run: packwiz update --all -y
+
+      - name: New pack version
+        id: pack
+        if: steps.work.outputs.yes == 'true'
+        run: python3 tools/update_pack.py finish --message "$RUNNER_TEMP/message.txt"
+
+      # The same update already failed its checks: wait for a fix (a pin or a new release) instead of rerunning
+      # the same 40-minute check every 3 hours; the open issue already says so. A manual run checks it again.
+      - name: Same as the failed update
+        id: same
+        if: steps.pack.outputs.version && github.event_name == 'schedule'
+        run: |
+          if git fetch -q origin pack-update 2>/dev/null && git diff --quiet FETCH_HEAD -- pack/ &&
+             [ "$(gh run list -w build.yml -b pack-update -L 1 --json conclusion -q '.[0].conclusion')" = failure ]; then
+            echo "Open Skies ${{ steps.pack.outputs.version }} is the update that already failed; not checked again" >> "$GITHUB_STEP_SUMMARY"
+            echo "yes=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Pushes and runs made with GITHUB_TOKEN start no workflows except workflow_dispatch, so build.yml is
+      # dispatched on the branch explicitly.
+      - name: Check on pack-update
+        if: steps.pack.outputs.version && steps.same.outputs.yes != 'true'
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git switch -c pack-update
+          git add -A
+          git commit -qF "$RUNNER_TEMP/message.txt"
+          git push -f origin pack-update
+          gh workflow run build.yml --ref pack-update
+          { echo "Open Skies ${{ steps.pack.outputs.version }} is being checked on pack-update:"; echo; \
+            sed -n '5,$p' "$RUNNER_TEMP/message.txt"; } >> "$GITHUB_STEP_SUMMARY"
