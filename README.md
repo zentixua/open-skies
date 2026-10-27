@@ -278,7 +278,7 @@ Default Options — только у игроков. Его библиотека 
   проходит те же проверки CI, что и любой PR (включая запуск сервера и клиента с нуля), и только тогда попадает в
   `main` и выходит. Не прошло — сборка остаётся прежней, а в репозитории открывается issue «Automatic pack update
   failed». Сразу, не дожидаясь расписания: запустить `update` вручную во вкладке Actions.
-- Закреплённые моды (`pin = true`) обновляются только вручную: Voxy (ниже) и Create, Sable, Create Aeronautics,
+- Закреплённые моды (`pin = true`) обновляются только вручную: Voxy и Roxy (ниже) и Create, Sable, Create Aeronautics,
   Immersive Aircraft — на них проверяются Incoming и Almighty, их версии меняются вместе с версиями в этих модах.
 - Мод вручную: `packwiz update <имя>` (или `packwiz modrinth add --project-id <slug> --version-id <id>` — точная
   версия), потом `packwiz refresh`. CI проверяет, что `index.toml` свежий.

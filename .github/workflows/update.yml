@@ -1,7 +1,7 @@
 # Keep the pack current without anyone asking: new Incoming and Almighty releases are picked up every 3 hours,
 # Modrinth mods weekly at night. The update is a new pack version committed to branch pack-update and checked by
 # build.yml there (fresh index, NeoForge ranges, server, client and Flashback recording from scratch); only that
-# checked commit goes to main and is released (build.yml, job "В main"). Pinned mods (Voxy, and Create, Sable,
+# checked commit goes to main and is released (build.yml, job "В main"). Pinned mods (Voxy and Roxy, and Create, Sable,
 # Create Aeronautics and Immersive Aircraft, which Incoming and Almighty test against) are updated by people.
 name: update
 
@@ -77,10 +77,22 @@ jobs:
         if: steps.work.outputs.yes == 'true'
         run: python3 tools/update_pack.py finish --message "$RUNNER_TEMP/message.txt"
 
+      # The same update already failed its checks: wait for a fix (a pin or a new release) instead of rerunning
+      # the same 40-minute check every 3 hours; the open issue already says so. A manual run checks it again.
+      - name: Same as the failed update
+        id: same
+        if: steps.pack.outputs.version && github.event_name == 'schedule'
+        run: |
+          if git fetch -q origin pack-update 2>/dev/null && git diff --quiet FETCH_HEAD -- pack/ &&
+             [ "$(gh run list -w build.yml -b pack-update -L 1 --json conclusion -q '.[0].conclusion')" = failure ]; then
+            echo "Open Skies ${{ steps.pack.outputs.version }} is the update that already failed; not checked again" >> "$GITHUB_STEP_SUMMARY"
+            echo "yes=true" >> "$GITHUB_OUTPUT"
+          fi
+
       # Pushes and runs made with GITHUB_TOKEN start no workflows except workflow_dispatch, so build.yml is
       # dispatched on the branch explicitly.
       - name: Check on pack-update
-        if: steps.pack.outputs.version
+        if: steps.pack.outputs.version && steps.same.outputs.yes != 'true'
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'

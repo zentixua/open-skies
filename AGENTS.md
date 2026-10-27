@@ -19,7 +19,7 @@ the Almighty host bridge (server only) is at https://github.com/zentixua/almight
   generated README row and English notes. build.yml checks it on branch `pack-update`, then pushes that commit to
   `main` and releases it; no PR or review round (there is no authored code). A failed update opens the issue
   "Automatic pack update failed". Do not open pack PRs for a mod release; to get one in at once, run `update`
-  manually. Pinned mods stay out: Voxy (below) and Create, Sable, Create Aeronautics and Immersive Aircraft, which
+  manually. Pinned mods stay out: Voxy and Roxy (below) and Create, Sable, Create Aeronautics and Immersive Aircraft, which
   Incoming's and Almighty's GameTests pin; update those by hand in a PR together with the mods' dev pins.
 - Keep the modpack clean and reliable: standard mechanisms, no workarounds; other mods' settings stay at their
   defaults, and every file in `config/` needs a reason in README.md. Add a required mod only on Artem's instruction.

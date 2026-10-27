@@ -208,6 +208,7 @@ jobs:
       GH_TOKEN: ${{ github.token }}
       GH_REPO: ${{ github.repository }}
       RESULT: ${{ needs.release.result }}
+      MERGE: ${{ needs.merge.result }}
       RUN: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
       V: ${{ needs.pack.outputs.version }}
     steps:
@@ -219,6 +220,8 @@ jobs:
             [ -z "$n" ] || gh issue close "$n" -c "Open Skies $V passed and was released: $RUN"
           elif [ -n "$n" ]; then
             gh issue comment "$n" -b "Open Skies $V failed again: $RUN"
+          elif [ "$MERGE" = success ]; then
+            gh issue create -t "$title" -b "Open Skies $V is on main but its release failed: $RUN. Players already get it; re-run the failed jobs to release it."
           else
-            gh issue create -t "$title" -b "Open Skies $V from update.yml did not pass the checks and stayed on branch pack-update: $RUN. Players and the server keep the previous version. Fix the cause (for example pin the mod that broke, \`packwiz pin <name>\`, or update it by hand in a PR); the next scheduled update tries again."
+            gh issue create -t "$title" -b "Open Skies $V from update.yml did not reach main (failed checks, or main moved during them): $RUN. Players and the server keep the previous version. Fix the cause (for example pin the mod that broke, \`packwiz pin <name>\`, or update it by hand in a PR); the next scheduled update tries again."
           fi

@@ -342,7 +342,7 @@ metafile = true
 
 [[files]]
 file = "mods/roxy.pw.toml"
-hash = "fbe1f3cf063244c7f26292d994574ffb47ff826b26d83c294c9af088f41610fa"
+hash = "8a62b3e626994f6f9c967d07f8e5f59530ca56913bd7dad2565e3fd7ba2fb537"
 metafile = true
 
 [[files]]

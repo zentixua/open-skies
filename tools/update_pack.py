@@ -51,7 +51,7 @@ def releases():
         match = GITHUB_JAR.fullmatch(meta["download"]["url"])
         if not match or meta.get("pin"):
             continue
-        owner, repo, tag, filename = match.groups()
+        owner, repo, tag, _ = match.groups()
         latest = github_api(f"repos/{owner}/{repo}/releases/latest")
         if latest["tag_name"] == tag:
             continue
@@ -62,7 +62,7 @@ def releases():
         url = jar["browser_download_url"]
         sha256 = hashlib.sha256(get(url)).hexdigest()
         # Keep name, side and layout; replace the four fields that name the file.
-        for key, old, new in (("filename", filename, jar["name"]), ("url", meta["download"]["url"], url),
+        for key, old, new in (("filename", meta["filename"], jar["name"]), ("url", meta["download"]["url"], url),
                               ("hash-format", meta["download"]["hash-format"], "sha256"),
                               ("hash", meta["download"]["hash"], sha256)):
             text, n = re.subn(rf'^{re.escape(key)} = "{re.escape(old)}"$', f'{key} = "{new}"', text, count=1,
