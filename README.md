@@ -273,15 +273,21 @@ Default Options — только у игроков. Его библиотека 
 
 ## Как обновлять
 
-- Мод с Modrinth: `packwiz update <имя>` (или `packwiz modrinth add --project-id <slug> --version-id <id>` — точная
+- Обновления приходят сами (`.github/workflows/update.yml`): каждые 3 часа — новые выпуски Incoming и Almighty, раз в
+  неделю, в ночь на понедельник, — все моды с Modrinth. Обновление получает новую версию сборки и строку в «Версиях»,
+  проходит те же проверки CI, что и любой PR (включая запуск сервера и клиента с нуля), и только тогда попадает в
+  `main` и выходит. Не прошло — сборка остаётся прежней, а в репозитории открывается issue «Automatic pack update
+  failed». Сразу, не дожидаясь расписания: запустить `update` вручную во вкладке Actions.
+- Закреплённые моды (`pin = true`) обновляются только вручную: Voxy (ниже) и Create, Sable, Create Aeronautics,
+  Immersive Aircraft — на них проверяются Incoming и Almighty, их версии меняются вместе с версиями в этих модах.
+- Мод вручную: `packwiz update <имя>` (или `packwiz modrinth add --project-id <slug> --version-id <id>` — точная
   версия), потом `packwiz refresh`. CI проверяет, что `index.toml` свежий.
-- Новый выпуск Incoming: `packwiz url add Incoming https://github.com/zentixua/incoming/releases/download/v<версия>/incoming-<версия>.jar --meta-name incoming`.
 - Версию сборки (`version` в `pack.toml`) поднимать при каждом изменении состава: у всех игроков должен быть один набор.
   Новая версия на `main` выходит сама — CI выпускает `v<версия>` с `.mrpack` и экземпляром Prism, заметки берёт из
   её строки в «Версиях» ниже и английского перевода в `docs/releases/<version>.en.md`. Для каждой новой версии
   нужны и строка, и файл перевода: без них CI не пройдёт и релиз не выйдет.
 - `pack/` на `main` игроки ставят при следующем запуске игры: в `main` — только проверенное CI и только jar модов
-  из уже вышедших выпусков (PR сборки — после релиза).
+  из уже вышедших выпусков.
 
 ## Версии
 

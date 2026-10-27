@@ -13,7 +13,14 @@ the Almighty host bridge (server only) is at https://github.com/zentixua/almight
   Chat in Russian, briefly and to the point.
 - **`pack/` on `main` is the live modpack**: players' auto-updating instances (Prism, packwiz-installer before every
   launch) and the dedicated server install it from `main` on their next launch. Only CI-verified changes and jars
-  from published releases go into `main` (modpack PRs follow the mod release).
+  from published releases go into `main`.
+- **Updates are automatic** (`.github/workflows/update.yml`, `tools/update_pack.py`): every 3 hours it picks up new
+  Incoming and Almighty releases, weekly (Monday 02:41 UTC) all Modrinth mods, as a new patch version with a
+  generated README row and English notes. build.yml checks it on branch `pack-update`, then pushes that commit to
+  `main` and releases it; no PR or review round (there is no authored code). A failed update opens the issue
+  "Automatic pack update failed". Do not open pack PRs for a mod release; to get one in at once, run `update`
+  manually. Pinned mods stay out: Voxy (below) and Create, Sable, Create Aeronautics and Immersive Aircraft, which
+  Incoming's and Almighty's GameTests pin; update those by hand in a PR together with the mods' dev pins.
 - Keep the modpack clean and reliable: standard mechanisms, no workarounds; other mods' settings stay at their
   defaults, and every file in `config/` needs a reason in README.md. Add a required mod only on Artem's instruction.
 - Bump `version` in `pack.toml` for every change to the modpack's composition, and add a row to README.md's version
@@ -45,7 +52,8 @@ tools/boot_check.py      ← the modpack boots from scratch: server reaches "Don
 .github/workflows/build.yml  ← CI "Сборка модов": fresh index, .mrpack and Prism instance (artifact open-skies);
                                and "Запуск с нуля" (boot_check.py); a new version on main becomes release v<version>
                                with these files only if both pass (notes: README's version table row and
-                               docs/releases/<version>.en.md)
+                               docs/releases/<version>.en.md); on pack-update it also moves the checked update to main
+.github/workflows/update.yml ← automatic updates (tools/update_pack.py), see "People and rules"
 ```
 
 Modpack address for packwiz-installer: `https://raw.githubusercontent.com/zentixua/open-skies/main/pack/pack.toml`;
@@ -63,8 +71,8 @@ cd pack && packwiz mr export              # .mrpack: one-time installation witho
 python3 tools/prism_instance.py           # dist/Open-Skies.zip: new auto-updating instance
 ```
 
-New Incoming release: `packwiz url add Incoming https://github.com/zentixua/incoming/releases/download/v<version>/incoming-<version>.jar --meta-name incoming`;
-Almighty works the same way: `almighty-<version>.jar` from https://github.com/zentixua/almighty, `side = "server"`.
+A new Incoming or Almighty release reaches the pack by itself within 3 hours (`update`); to start it now, run the
+`update` workflow (GitHub MCP `actions_run_trigger`, workflow `update.yml`, ref `main`).
 
 ## Pitfalls
 

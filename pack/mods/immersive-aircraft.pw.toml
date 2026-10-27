@@ -1,6 +1,7 @@
 name = "Immersive Aircraft"
 filename = "immersive_aircraft-neoforge-1.7.0+1.21.1.jar"
 side = "both"
+pin = true
 
 [download]
 url = "https://cdn.modrinth.com/data/x3HZvrj6/versions/xO17G766/immersive_aircraft-neoforge-1.7.0%2B1.21.1.jar"
