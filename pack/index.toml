@@ -72,7 +72,7 @@ metafile = true
 
 [[files]]
 file = "mods/burnt-basic.pw.toml"
-hash = "fcfaa241bc2498186b607fbe6b95291b0f99c697f61b521957a4ee16fdcf4b94"
+hash = "e06ede2bd5cc90b5ee22dba28a70f3ea765af721f0368366c6c9317c8db17f96"
 metafile = true
 
 [[files]]
@@ -137,7 +137,7 @@ metafile = true
 
 [[files]]
 file = "mods/create-xaeros-map.pw.toml"
-hash = "ce4f3b213b52415cecadc297652ba0f1c506e4f987a7ae2bfda437f3bd405d5b"
+hash = "34fc08837336e7f5b3e97b43fc0f8df9dfe4456f764bcae2c9736413d2454205"
 metafile = true
 
 [[files]]
@@ -202,7 +202,7 @@ metafile = true
 
 [[files]]
 file = "mods/fzzy-config.pw.toml"
-hash = "932c65fb598293dba5dc60a76fc64c2579db427018b10dd4757dd421d9abcaf0"
+hash = "f2849c357f9c82d017ff71c6d5e91ac8e51d6b0f2de9e7ae8d95bfb81759cd63"
 metafile = true
 
 [[files]]
@@ -252,7 +252,7 @@ metafile = true
 
 [[files]]
 file = "mods/jei.pw.toml"
-hash = "2ffd0c6ed2e981835168a60cb3418482223ee02d22dd35d0bb541774fa89f81c"
+hash = "1af5a3356a1d4edbc9aaf92244ab8f76de5c9dfbfb7d9d2fa4a7ad660cf65215"
 metafile = true
 
 [[files]]
@@ -292,7 +292,7 @@ metafile = true
 
 [[files]]
 file = "mods/mezzconfig.pw.toml"
-hash = "cf5d87f046590b99d92096a79f6ea2f456290ba5d423c256f06674d2d10a1592"
+hash = "8691a6080607f512d7adbbc1c17911ba83db273a5b5f113711fd8408b8d6a9df"
 metafile = true
 
 [[files]]
@@ -362,7 +362,7 @@ metafile = true
 
 [[files]]
 file = "mods/sodium-extra.pw.toml"
-hash = "6ab228a1fa98348b7444c0715e4db592414d2102e441671ac5e79066596a912c"
+hash = "7ece7b8e65ac74bc1c705a3e25948ce5772c26ddf148514f29d90920ca1c3866"
 metafile = true
 
 [[files]]
