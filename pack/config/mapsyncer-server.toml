@@ -1,0 +1,4 @@
+[incremental_update]
+# MapSyncer 1.0.3 converts regions on the server thread in both automatic modes.
+# LSS updates nearby maps; keep MapSyncer's prepared cache as a snapshot.
+incrementalUpdateMode = "DISABLED"
