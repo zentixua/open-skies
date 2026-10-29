@@ -293,6 +293,7 @@ Default Options — только у игроков. Его библиотека 
 
 | версия | мод | что изменилось |
 |---|---|---|
+| 0.1.51 | 3.10.2 | Incoming 3.10.2 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.10.2.md)). Обновление автоматическое. |
 | 0.1.50 | 3.10.1 | Incoming 3.10.1 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.10.1.md)). Обновление автоматическое. |
 | 0.1.49 | 3.10.0 | Incoming 3.10.0 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.10.0.md)). Обновление автоматическое. |
 | 0.1.48 | 3.9.1 | Incoming 3.9.1 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.9.1.md)). Обновление автоматическое. |
