@@ -293,6 +293,7 @@ Default Options — только у игроков. Его библиотека 
 
 | версия | мод | что изменилось |
 |---|---|---|
+| 0.1.50 | 3.10.1 | Incoming 3.10.1 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.10.1.md)). Обновление автоматическое. |
 | 0.1.49 | 3.10.0 | Incoming 3.10.0 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.10.0.md)). Обновление автоматическое. |
 | 0.1.48 | 3.9.1 | Incoming 3.9.1 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.9.1.md)). Обновление автоматическое. |
 | 0.1.47 | 3.9.0 | Обновлены моды: Burnt 1.10.5.3, Create - Xaero's map 1.4.2, Fzzy Config 0.7.7+fix1+1.21+neoforge, Just Enough Items (JEI) 19.70.0.460, MezzConfig 0.6.9, Sodium Extra mc1.21.1-0.9.5+neoforge. Обновление автоматическое. |
