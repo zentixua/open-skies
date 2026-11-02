@@ -293,6 +293,7 @@ Default Options — только у игроков. Его библиотека 
 
 | версия | мод | что изменилось |
 |---|---|---|
+| 0.1.54 | 3.10.4 | Incoming 3.10.4 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.10.4.md)). Обновление автоматическое. |
 | 0.1.53 | 3.10.3 | Обновлены моды: Colorwheel 1.3.1+mc1.21.1, CreativeCore 2.13.52, Just Enough Items (JEI) 19.70.0.469, MezzConfig 0.6.10, More Culling 1.0.11, Not Enough Animations 1.12.7, Solas Shader 3.9. Обновление автоматическое. |
 | 0.1.52 | 3.10.3 | Incoming 3.10.3 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.10.3.md)). Обновление автоматическое. |
 | 0.1.51 | 3.10.2 | Incoming 3.10.2 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.10.2.md)). Обновление автоматическое. |
