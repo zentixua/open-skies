@@ -82,7 +82,7 @@ metafile = true
 
 [[files]]
 file = "mods/colorwheel.pw.toml"
-hash = "6867922a8ccface85edc8df2268e4996c6ab6867b9da34258b6bf6efc0bc2efa"
+hash = "48d92eb61acf8e2b6b1a659765d6ee1386bf439cf32f8de0dfa6eb0d737f7778"
 metafile = true
 
 [[files]]
@@ -147,7 +147,7 @@ metafile = true
 
 [[files]]
 file = "mods/creativecore.pw.toml"
-hash = "1438d9872c78eb499463ae9d3c104514b7034e90059be054b8b4f2b19b11486d"
+hash = "5041aa46f1b8a7a3db8601dc9cd049e714b24e24c157dceb7673391101c1148f"
 metafile = true
 
 [[files]]
@@ -252,7 +252,7 @@ metafile = true
 
 [[files]]
 file = "mods/jei.pw.toml"
-hash = "1af5a3356a1d4edbc9aaf92244ab8f76de5c9dfbfb7d9d2fa4a7ad660cf65215"
+hash = "b0c37ca9826781a6bf1373ae02a141b4202037515eb071ec2327410771de6ea5"
 metafile = true
 
 [[files]]
@@ -292,7 +292,7 @@ metafile = true
 
 [[files]]
 file = "mods/mezzconfig.pw.toml"
-hash = "8691a6080607f512d7adbbc1c17911ba83db273a5b5f113711fd8408b8d6a9df"
+hash = "1bf9a73f7f3879aeed5e6d482a5e864b036e5659cc0e2d0c1f8a8ac8d67507c0"
 metafile = true
 
 [[files]]
@@ -302,7 +302,7 @@ metafile = true
 
 [[files]]
 file = "mods/moreculling.pw.toml"
-hash = "f32f944f62c4ea97b2d1f8582bb5f1a0adf7f62983b35f75288e27025365d7d0"
+hash = "3dbd3f33fcf6f9d98eefbcc1973ab9a749942da531cedd9b0df7e67534ea6065"
 metafile = true
 
 [[files]]
@@ -317,7 +317,7 @@ metafile = true
 
 [[files]]
 file = "mods/not-enough-animations.pw.toml"
-hash = "e0f1cef5482844e62c6fc3c7771fc9ef8385c47092248f76aa1fa271220b24e8"
+hash = "fd84fcf376910b659fdfbcc2401aa545400b0d7c65834eb2fe22bae3a3c921c2"
 metafile = true
 
 [[files]]
@@ -432,5 +432,5 @@ metafile = true
 
 [[files]]
 file = "shaderpacks/solas-shader.pw.toml"
-hash = "6dad08af50b670e1c317c952104d504f3357eed21009623c4861de8b9ed8b36a"
+hash = "085114584baeb503e8e92c8f1c440a3aa4414a85093043bbde627d268766d482"
 metafile = true
