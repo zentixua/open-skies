@@ -1,8 +1,8 @@
 name = "Incoming"
-filename = "incoming-3.10.2.jar"
+filename = "incoming-3.10.3.jar"
 side = "both"
 
 [download]
-url = "https://github.com/zentixua/incoming/releases/download/v3.10.2/incoming-3.10.2.jar"
+url = "https://github.com/zentixua/incoming/releases/download/v3.10.3/incoming-3.10.3.jar"
 hash-format = "sha256"
-hash = "f381c65669bcded0191a45a27604111b0ebf92d85cfcaefcf5f1d1e6f15d401e"
+hash = "7766da166c6f6714f43b55383261c60fe7418ac5ea586fc77634e4f232773a44"
