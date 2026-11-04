@@ -66,6 +66,11 @@ hash = "1801f6f6bf0bd7eaf33544c0ad137f9162aa35239a030efe29a899f5c28bddfa"
 metafile = true
 
 [[files]]
+file = "mods/asyncparticles.pw.toml"
+hash = "0159f715f2245a23d4688c4be1c2c432317ab4897ce5ccede6b2976e7ab4721d"
+metafile = true
+
+[[files]]
 file = "mods/balm.pw.toml"
 hash = "603cdc47142b5aa5729cbbf265a473574c9e2b55561de4318e9842d3d4b3b995"
 metafile = true

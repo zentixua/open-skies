@@ -68,7 +68,7 @@ cd pack && packwiz mr export      # → Open Skies-<версия>.mrpack
 |---|---|
 | основа | Create, Sable, Create Aeronautics, Incoming (jar выпуска с GitHub) |
 | дальняя прорисовка | Voxy через Roxy (по выбору, включена; ниже), LOD Server Support (рельеф вдали присылает сервер) |
-| производительность | Sodium, Sodium Extra, Reese's Sodium Options, Iris, Colorwheel, Lithium, FerriteCore, ModernFix, ImmediatelyFast, Entity Culling, More Culling (+ Cloth Config), Dynamic FPS |
+| производительность | Sodium, Sodium Extra, Reese's Sodium Options, Iris, Colorwheel, Lithium, FerriteCore, ModernFix, ImmediatelyFast, Entity Culling, More Culling (+ Cloth Config), AsyncParticles, Dynamic FPS |
 | Create | Propulsion: Simulated, Aeroworks, Tweaked Controllers, Big Cannons (+ RPL), Connected, Deco, Diesel Generators, Aeronautics Hot Air Fix |
 | авиация и оружие | Immersive Aircraft, Man of Many Planes, Vic's Point Blank (+ GeckoLib), Point Blank Aeronautics compat, Do a Barrel Roll (полёт на элитрах с креном, + Forgified Fabric API) |
 | картинка и камера | шейдерпаки Photon, Solas, Complementary Unbound, BSL, MakeUp Ultra Fast (на выбор, ниже), Euphoria Patches (дополнение к Complementary), Aeronautics Camera Sync, 3D Skin Layers, Not Enough Animations, Ok Zoomer (зум, ниже) |
@@ -293,6 +293,7 @@ Default Options — только у игроков. Его библиотека 
 
 | версия | мод | что изменилось |
 |---|---|---|
+| 0.1.55 | 3.10.4 | AsyncParticles 21.1.4.10 (beta) на клиентах: асинхронная обработка и отрисовка частиц на GPU, настройки по умолчанию. |
 | 0.1.54 | 3.10.4 | Incoming 3.10.4 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.10.4.md)). Обновление автоматическое. |
 | 0.1.53 | 3.10.3 | Обновлены моды: Colorwheel 1.3.1+mc1.21.1, CreativeCore 2.13.52, Just Enough Items (JEI) 19.70.0.469, MezzConfig 0.6.10, More Culling 1.0.11, Not Enough Animations 1.12.7, Solas Shader 3.9. Обновление автоматическое. |
 | 0.1.52 | 3.10.3 | Incoming 3.10.3 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.10.3.md)). Обновление автоматическое. |
