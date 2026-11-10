@@ -293,6 +293,7 @@ Default Options — только у игроков. Его библиотека 
 
 | версия | мод | что изменилось |
 |---|---|---|
+| 0.1.56 | 3.11.0 | Incoming 3.11.0 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.11.0.md)). Обновление автоматическое. |
 | 0.1.55 | 3.10.4 | Обновлены моды: Balm 21.0.67+neoforge-1.21.1, Colorwheel 1.3.2+mc1.21.1, Contraption Lights (Bi-directional Coloured Dynamic Lights) 1.5.6, CreativeCore 2.13.53, Essential Mod 1.5.2, MezzConfig 0.6.11, Particle Rain v4.0.3+1.21.1-neoforge. Обновление автоматическое. |
 | 0.1.54 | 3.10.4 | Incoming 3.10.4 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.10.4.md)). Обновление автоматическое. |
 | 0.1.53 | 3.10.3 | Обновлены моды: Colorwheel 1.3.1+mc1.21.1, CreativeCore 2.13.52, Just Enough Items (JEI) 19.70.0.469, MezzConfig 0.6.10, More Culling 1.0.11, Not Enough Animations 1.12.7, Solas Shader 3.9. Обновление автоматическое. |
