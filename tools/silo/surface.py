@@ -59,7 +59,7 @@ def hash01(x, z, salt=0):
 
 class Site:
     radius = 190                 # volume half-size around the shaft axis
-    shaft_zone = 104             # the plain was not laid within this of a shaft; the site lays it
+    shaft_zone = 120             # the plain skipped 100 around each shaft (and Silo 1 had an older open cut to ~115)
     # the way in (s from the shell's outer face)
     station, inner_door, outer_door = 10, 10, 20
     slope_run, rise = 56, 14
