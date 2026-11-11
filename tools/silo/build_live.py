@@ -119,6 +119,7 @@ def main():
     ap.add_argument("--number", type=int, nargs="*", help="silos to build (default: all, Silo 1 first)")
     ap.add_argument("--dry", action="store_true")
     ap.add_argument("--max-positions", type=int, default=1_500_000)
+    ap.add_argument("--repair-213", type=int, nargs="*", help="silos whose first-draft open cut at 213 degrees is filled")
     a = ap.parse_args()
     from field import Field
     from silo import Silo, Spec
@@ -141,7 +142,8 @@ def main():
         if a.what in ("silo", "all"):
             go(silo.build(), f"silo{s['number']}")
         if a.what in ("site", "all"):
-            go(Site(silo, *field.slice(s["x"], s["z"], Site.radius)).build(), f"site{s['number']}")
+            old = 213 if s["number"] in (a.repair_213 or []) else None    # the first draft's open cut (Silo 1)
+            go(Site(silo, *field.slice(s["x"], s["z"], Site.radius), old_cut_deg=old).build(), f"site{s['number']}")
 
 
 if __name__ == "__main__":

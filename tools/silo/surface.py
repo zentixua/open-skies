@@ -74,7 +74,8 @@ class Site:
     floor_r, rim_r, out_r = 30, 42, 64
     floor_drop, berm = 2, 2
 
-    def __init__(self, silo: Silo, ground: np.ndarray, water: np.ndarray, top: np.ndarray, bed: np.ndarray | None = None):
+    def __init__(self, silo: Silo, ground: np.ndarray, water: np.ndarray, top: np.ndarray, bed: np.ndarray | None = None,
+                 old_cut_deg: float | None = None):
         """ground/water/top/bed over [axis - radius, axis + radius] in x and z, as field.Field.slice gives them:
         ground is the plain, bed the original ground under it."""
         self.silo = silo
@@ -100,6 +101,7 @@ class Site:
         self.top = np.where(top > MISSING, top, self.plain)
         self.bed = np.where(bed > MISSING, bed, self.plain) if bed is not None else self.plain
         self.p_portal = float(self.plain[R + int(px), R])
+        self.old_cut_deg = old_cut_deg      # an earlier draft's open cut along this bearing, to be filled
 
     # heights ---------------------------------------------------------------------------------------------------
     def target(self) -> np.ndarray:
@@ -145,6 +147,16 @@ class Site:
             ws = int(self.water[i, k])
             if ws > t:
                 col[a0:min(H, ws + 1 - oy)] = water
+        if self.old_cut_deg is not None:
+            a = math.radians(self.old_cut_deg)
+            along = self.X * math.cos(a) + self.Z * math.sin(a)
+            across = -self.X * math.sin(a) + self.Z * math.cos(a)
+            cut = (np.abs(across) <= 6) & (along >= 44) & (along <= self.shaft_zone + 4) & ~tunnel
+            stone = v.id("minecraft:stone")
+            for i, k in zip(*np.nonzero(cut)):
+                t = int(T[i, k])
+                ids[i, max(0, self.walk - 3 - oy):max(0, t - 3 - oy), k] = stone
+                ids[i, max(0, t - 3 - oy):max(0, t - oy), k] = dirt
         self.tunnel(v, T, f, fi, tunnel)
         self.portal(v, T)
         self.block(v, T)
@@ -161,7 +173,7 @@ class Site:
             col = ids[i, :, k]
             fl, t = int(fi[i, k]), int(T[i, k])
             roof = min(fl + self.room + 1, t)          # under the crater floor the roof is the ground's own slab
-            inside = abs(l) <= self.half and s >= 0
+            inside = abs(l) <= self.half and s >= -3          # from the shell's own doorway (r 43) outward
             # slip-formed pours: the wall concrete varies in bands of two rows
             for y in range(fl - 1, roof + 1):
                 band = conc[0] if hash01(s // 3, y // 2, 11) < 0.7 else conc[1 + int(hash01(s, y, 13) > 0.5)]
@@ -176,7 +188,11 @@ class Site:
                 if s % 7 == 3 and l == 0 and roof - 1 > fl + 2:
                     col[roof - oy] = lamp
                 if s in (self.inner_door, self.outer_door):
-                    col[fl + 1 - oy:fl + 5 - oy] = door
+                    # the thick door stands open: its leaf drawn back into a steel frame round the opening
+                    if abs(l) == self.half:
+                        col[fl + 1 - oy:fl + 5 - oy] = door
+                    else:
+                        col[fl + 5 - oy] = door
             # backfill above the roof up to the ground (an earlier open cut here is closed again)
             if roof < t:
                 col[roof + 1 - oy:t - oy] = dirt
