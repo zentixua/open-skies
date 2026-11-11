@@ -75,7 +75,7 @@ class Site:
     floor_drop, berm = 2, 2
 
     def __init__(self, silo: Silo, ground: np.ndarray, water: np.ndarray, top: np.ndarray, bed: np.ndarray | None = None,
-                 old_cut_deg: float | None = None, neighbours: list[tuple[int, int]] = ()):
+                 weight: np.ndarray | None = None, old_cut_deg: float | None = None, neighbours: list[tuple[int, int]] = ()):
         """neighbours: shaft x, z of the other silos; the ground each site lays is its own cell (columns nearer its
         shaft-to-portal line than any other silo's), and their craters are kept."""
         """ground/water/top/bed over [axis - radius, axis + radius] in x and z, as field.Field.slice gives them:
@@ -104,6 +104,7 @@ class Site:
         self.bed = np.where(bed > MISSING, bed, self.plain) if bed is not None else self.plain
         self.p_portal = float(self.plain[R + int(px), R])
         self.old_cut_deg = old_cut_deg      # an earlier draft's open cut along this bearing, to be filled
+        self.keep = (weight <= 0.05) if weight is not None else np.zeros(ground.shape, bool)   # towns: never touched
         reach = self.s_shell + self.portal_s
         def seg_dist(ax, az):               # distance to a silo's shaft-to-portal line (relative shaft position)
             t = np.clip((ax - self.X) / reach, 0, 1)
@@ -151,7 +152,7 @@ class Site:
         fi = np.floor(f).astype(int)
         # every column within 100 of any shaft is some site's (the plain skipped those): a cell's reach of 150 from
         # its own shaft-to-portal line covers it, and the whole crater
-        zone = ((self.own_line <= 150) | (self.d_axis <= self.shaft_zone)) & self.cell
+        zone = ((self.own_line <= 150) | (self.d_axis <= self.shaft_zone)) & self.cell & ~self.keep
         tunnel = (self.s >= -3) & (self.s <= self.ramp_end) & (np.abs(self.l) <= self.half + 1)
         y_lo = min(self.walk - 3, int(self.bed[zone].min()) - 4)
         y_hi = int(max(self.top[zone].max(), T[zone].max(), self.grade + 12)) + 2

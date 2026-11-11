@@ -104,13 +104,14 @@ class Field:
         self.shaped = shaped
 
     def slice(self, x: int, z: int, radius: int):
-        """For site.Site around x, z: plain height, water that stays, highest block, original ground."""
+        """For surface.Site around x, z: plain height, water that stays, highest block, original ground, plain weight
+        (0 at Zearth's towns, which no site may touch)."""
         i, k = x - radius - self.x0, z - radius - self.z0
         n = 2 * radius + 1
         sl = (slice(i, i + n), slice(k, k + n))
         water = np.where(self.filled[sl], MISSING, self.water[sl])
         top = np.maximum(self.top[sl], np.where(self.filled[sl], self.water[sl], MISSING))
-        return self.height[sl], water, top, self.ground[sl]
+        return self.height[sl], water, top, self.ground[sl], self.weight[sl]
 
     def tiles(self, size: int = 128, skip_site: float = 100):
         """Plain tiles, nearest to Silo 1 first: (name, Volume) without columns a silo site rebuilds anyway."""
