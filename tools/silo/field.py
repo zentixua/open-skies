@@ -54,7 +54,7 @@ def gaussian_conv(a: np.ndarray, w: np.ndarray, sigma_cells: float) -> np.ndarra
 class Field:
     def __init__(self, layout_path: str, world: str, cache_dir: str):
         self.layout = json.load(open(layout_path))
-        self.silos = self.layout["silos"]
+        self.silos = [s for s in self.layout["silos"] if not s.get("unplaced")]
         xs = [s["x"] for s in self.silos]; zs = [s["z"] for s in self.silos]
         m = int(EDGE + 3 * SIGMA + 16)
         self.x0, self.z0 = min(xs) - m, min(zs) - m

@@ -157,12 +157,60 @@ def hex_layout(n: int, spacing: float, rot: float) -> list[tuple[float, float]]:
     return [(x * c - z * s, x * s + z * c) for x, z in pts]
 
 
+REACH = 46 + 69.5     # shaft axis to portal centre, due west (surface.py)
+
+
+def seg_dist(px, pz, sx, sz):
+    """Distance from a point to a silo's shaft-to-portal line."""
+    t = min(max((sx - px) / REACH, 0.0), 1.0)
+    return math.hypot(px - (sx - t * REACH), pz - sz)
+
+
+def shift_off_structures(silos, a, x0, z0, bes, bemap, burmap, surf, water, clear=100):
+    """Move single silos (never Silo 1) off buried structures and surface builds, keeping every shaft clear of the
+    other silos' tunnels and craters."""
+    def bad(x, z):
+        bx, bz = (x - x0) // 16, (z - z0) // 16
+        if not (0 <= bx < bes.shape[0] and 0 <= bz < bes.shape[1]):
+            return True
+        return bool(burmap[bx, bz]) or bemap[bx, bz] > a.max_builds
+
+    def clash(i, x, z):
+        for j, o in enumerate(silos):
+            if j == i:
+                continue
+            if seg_dist(x, z, o["x"], o["z"]) < clear or seg_dist(o["x"], o["z"], x, z) < clear:
+                return True
+        return False
+
+    step = 8
+    rr = int(a.shift // step)
+    offsets = sorted(((dx * step, dz * step) for dx in range(-rr, rr + 1) for dz in range(-rr, rr + 1)
+                      if math.hypot(dx, dz) * step <= a.shift), key=lambda d: math.hypot(*d))
+    for i, s_ in enumerate(silos):
+        if s_["number"] == 1 or (not bad(s_["x"], s_["z"]) and not clash(i, s_["x"], s_["z"])):
+            continue
+        for dx, dz in offsets:
+            x, z = s_["x"] + dx, s_["z"] + dz
+            if not bad(x, z) and not clash(i, x, z):
+                print(f"silo {s_['number']} moved {dx},{dz}", file=sys.stderr)
+                gx, gz = (x - x0) // STEP, (z - z0) // STEP
+                s_.update(x=x, z=z, surface=int(surf[gx, gz]), water_here=bool(water[gx, gz]), moved=[dx, dz])
+                break
+        else:
+            print(f"silo {s_['number']}: no spot within {a.shift} m", file=sys.stderr)
+            s_["unplaced"] = True
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("world"); ap.add_argument("out")
     ap.add_argument("--spacing", type=float, default=200,
                     help="silo spacing; the explorethesilo model's neighbouring craters lie 153-226 m from their nearest")
     ap.add_argument("--centre", help="x,z: keep Silo 1 here (already built) and search rotations only")
+    ap.add_argument("--rot", type=int, help="with --centre: use this rotation, and shift single silos off buried "
+                    "structures and builds instead of rejecting the layout")
+    ap.add_argument("--shift", type=float, default=56, help="how far such a silo may move")
     ap.add_argument("--rots", default="0,58", help="rotation range in degrees; every portal must stay clear of the other "
                     "shafts and tunnels, which at spacing 200 holds best near 30 (112 m and more)")
     ap.add_argument("--min-y", type=int, default=-64); ap.add_argument("--height", type=int, default=384)
@@ -215,6 +263,8 @@ def main():
     burmap = conv(bup, ks)[sk:-sk, sk:-sk] > 0.5
     results = []
     r0, r1 = (int(v) for v in a.rots.split(","))
+    if a.centre and a.rot is not None:
+        r0 = r1 = a.rot
     for rot_deg in range(r0, r1 + 1, 2 if a.centre else 10):
         layout = np.array(hex_layout(50, a.spacing, math.radians(rot_deg)))
         if a.centre:
@@ -236,7 +286,8 @@ def main():
             wet += w; sdt += sd; bet += nb
             # the plain fills water and evens the ground, so both only cost blocks; builds and buried
             # structures must not be touched at all
-            ok &= (nb <= a.max_builds) & ~burmap[bx, bz]
+            if a.rot is None:
+                ok &= (nb <= a.max_builds) & ~burmap[bx, bz]
             pen += 10 * w + sd
         for i, j in zip(*np.nonzero(ok)):
             results.append((float(pen[i, j]), int(CX[i, j]), int(CZ[i, j]), rot_deg, float(wet[i, j] / 50),
@@ -254,6 +305,8 @@ def main():
         sx, sz = int(round(cx + px)), int(round(cz + pz))
         gx, gz = (sx - x0) // STEP, (sz - z0) // STEP
         silos.append({"number": i + 1, "x": sx, "z": sz, "surface": int(surf[gx, gz]), "water_here": bool(water[gx, gz])})
+    if a.rot is not None:
+        shift_off_structures(silos, a, x0, z0, bes, bemap, burmap, surf, water)
     # surface builds (towns, villages) near the field: the plain fades out before them (field.py)
     xs_, zs_ = [s_["x"] for s_ in silos], [s_["z"] for s_ in silos]
     towns = []
