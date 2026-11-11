@@ -75,7 +75,9 @@ class Site:
     floor_drop, berm = 2, 2
 
     def __init__(self, silo: Silo, ground: np.ndarray, water: np.ndarray, top: np.ndarray, bed: np.ndarray | None = None,
-                 old_cut_deg: float | None = None):
+                 old_cut_deg: float | None = None, neighbours: list[tuple[int, int]] = ()):
+        """neighbours: shaft x, z of the other silos; the ground each site lays is its own cell (columns nearer its
+        shaft-to-portal line than any other silo's), and their craters are kept."""
         """ground/water/top/bed over [axis - radius, axis + radius] in x and z, as field.Field.slice gives them:
         ground is the plain, bed the original ground under it."""
         self.silo = silo
@@ -102,17 +104,40 @@ class Site:
         self.bed = np.where(bed > MISSING, bed, self.plain) if bed is not None else self.plain
         self.p_portal = float(self.plain[R + int(px), R])
         self.old_cut_deg = old_cut_deg      # an earlier draft's open cut along this bearing, to be filled
+        reach = self.s_shell + self.portal_s
+        def seg_dist(ax, az):               # distance to a silo's shaft-to-portal line (relative shaft position)
+            t = np.clip((ax - self.X) / reach, 0, 1)
+            return np.hypot(self.X - (ax - t * reach), self.Z - az)
+        own = seg_dist(0, 0)
+        self.own_line = own
+        self.cell = np.ones_like(own, bool)
+        self.neighbour_portals = []
+        for nx_, nz_ in neighbours:
+            ax, az = nx_ - self.cx, nz_ - self.cz
+            if (ax, az) == (0, 0) or math.hypot(ax, az) > 2 * R + 2 * self.out_r:
+                continue
+            self.cell &= own <= seg_dist(ax, az)
+            pi, pk = R + ax - int(reach), R + az
+            if 0 <= pi < n and 0 <= pk < n:
+                self.neighbour_portals.append((np.hypot(self.X - (ax - reach), self.Z - az), float(self.plain[pi, pk])))
 
     # heights ---------------------------------------------------------------------------------------------------
-    def target(self) -> np.ndarray:
-        """Top block of the finished ground: the plain, with this silo's crater about the portal."""
-        d = self.d_portal
+    def crater(self, d: np.ndarray, p_floor: float, ground: np.ndarray) -> np.ndarray:
+        """Ground with one crater about a portal at distance d: level floor, berm ring, back to the plain."""
         prof = np.where(d <= self.floor_r, -self.floor_drop,
                         np.where(d <= self.rim_r,
                                  -self.floor_drop + (self.floor_drop + self.berm) * smooth(self.floor_r, self.rim_r, d),
                                  self.berm * (1 - smooth(self.rim_r, self.out_r, d))))
         w = smooth(self.floor_r, self.out_r, d)               # the floor is level, the rim follows the plain
-        return np.round((1 - w) * self.p_portal + w * self.plain + prof).astype(int)
+        return (1 - w) * p_floor + w * ground + prof - ground   # the change it makes
+
+    def target(self) -> np.ndarray:
+        """Top block of the finished ground: the plain, with every crater nearby (this silo's and its neighbours',
+        so a site never flattens the next one's)."""
+        t = self.plain + self.crater(self.d_portal, self.p_portal, self.plain)
+        for d, p in self.neighbour_portals:
+            t = t + self.crater(d, p, self.plain)
+        return np.round(t).astype(int)
 
     def floor_top(self, s: np.ndarray) -> np.ndarray:
         """Top block of the tunnel floor (float: half steps become slabs)."""
@@ -124,7 +149,9 @@ class Site:
         T = self.target()
         f = self.floor_top(self.s)
         fi = np.floor(f).astype(int)
-        zone = (self.d_axis <= self.shaft_zone) | (self.d_portal <= self.out_r + 2)
+        # every column within 100 of any shaft is some site's (the plain skipped those): a cell's reach of 150 from
+        # its own shaft-to-portal line covers it, and the whole crater
+        zone = ((self.own_line <= 150) | (self.d_axis <= self.shaft_zone)) & self.cell
         tunnel = (self.s >= -3) & (self.s <= self.ramp_end) & (np.abs(self.l) <= self.half + 1)
         y_lo = min(self.walk - 3, int(self.bed[zone].min()) - 4)
         y_hi = int(max(self.top[zone].max(), T[zone].max(), self.grade + 12)) + 2

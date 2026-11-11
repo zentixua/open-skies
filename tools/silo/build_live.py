@@ -143,7 +143,9 @@ def main():
             go(silo.build(), f"silo{s['number']}")
         if a.what in ("site", "all"):
             old = 213 if s["number"] in (a.repair_213 or []) else None    # the first draft's open cut (Silo 1)
-            go(Site(silo, *field.slice(s["x"], s["z"], Site.radius), old_cut_deg=old).build(), f"site{s['number']}")
+            others = [(o["x"], o["z"]) for o in field.silos if o is not s]
+            go(Site(silo, *field.slice(s["x"], s["z"], Site.radius), old_cut_deg=old, neighbours=others).build(),
+               f"site{s['number']}")
 
 
 if __name__ == "__main__":

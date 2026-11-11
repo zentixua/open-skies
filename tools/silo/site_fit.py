@@ -160,7 +160,11 @@ def hex_layout(n: int, spacing: float, rot: float) -> list[tuple[float, float]]:
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("world"); ap.add_argument("out")
-    ap.add_argument("--spacing", type=float, default=180)
+    ap.add_argument("--spacing", type=float, default=200,
+                    help="silo spacing; the explorethesilo model's neighbouring craters lie 153-226 m from their nearest")
+    ap.add_argument("--centre", help="x,z: keep Silo 1 here (already built) and search rotations only")
+    ap.add_argument("--rots", default="0,58", help="rotation range in degrees; every portal must stay clear of the other "
+                    "shafts and tunnels, which at spacing 200 holds best near 30 (112 m and more)")
     ap.add_argument("--min-y", type=int, default=-64); ap.add_argument("--height", type=int, default=384)
     ap.add_argument("--berm", type=float, default=70, help="radius that must be dry and gentle")
     ap.add_argument("--clear", type=float, default=200, help="radius free of surface builds (the plain reaches this far)")
@@ -210,10 +214,14 @@ def main():
     bup = np.pad(buried, sk, mode="constant")
     burmap = conv(bup, ks)[sk:-sk, sk:-sk] > 0.5
     results = []
-    for rot_deg in range(0, 60, 10):
+    r0, r1 = (int(v) for v in a.rots.split(","))
+    for rot_deg in range(r0, r1 + 1, 2 if a.centre else 10):
         layout = np.array(hex_layout(50, a.spacing, math.radians(rot_deg)))
-        cxs = np.arange(x0 + 1000, x0 + W * STEP - 1000, 64)
-        czs = np.arange(z0 + 1000, z0 + H * STEP - 1000, 64)
+        if a.centre:
+            cxs, czs = (np.array([int(v)]) for v in a.centre.split(","))
+        else:
+            cxs = np.arange(x0 + 1000, x0 + W * STEP - 1000, 64)
+            czs = np.arange(z0 + 1000, z0 + H * STEP - 1000, 64)
         CX, CZ = np.meshgrid(cxs, czs, indexing="ij")
         pen = np.zeros(CX.shape); wet = np.zeros(CX.shape); sdt = np.zeros(CX.shape)
         bet = np.zeros(CX.shape, np.int64); ok = np.ones(CX.shape, bool)
