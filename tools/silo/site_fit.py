@@ -160,29 +160,51 @@ def main():
         return [(i * step, j * step) for i in range(-rr, rr + 1) for j in range(-rr, rr + 1) if (i * i + j * j) * step * step <= radius * radius]
     berm = disc(a.berm, STEP * 2)
     clear = disc(a.clear, 16)
-    results = []
+    # Per-cell disc statistics, so each silo is a lookup (the same sums as sampling the discs silo by silo).
     W, H = surf.shape
+    bk = 2 * int(a.berm // (STEP * 2))  # berm disc offsets in 4-block cells (every second cell)
+    kb = np.zeros((2 * bk + 1, 2 * bk + 1))
+    for dx, dz in berm:
+        kb[dx // STEP + bk, dz // STEP + bk] = 1
+    ck = int(a.clear // 16)
+    kc = np.zeros((2 * ck + 1, 2 * ck + 1))
+    for dx, dz in clear:
+        kc[dx // 16 + ck, dz // 16 + ck] = 1
+
+    def conv(img, k):  # sum of img over kernel k centred on every cell (zero outside), via FFT
+        r = k.shape[0] // 2
+        sh = (img.shape[0] + k.shape[0], img.shape[1] + k.shape[1])
+        f = np.fft.irfft2(np.fft.rfft2(img, sh) * np.fft.rfft2(k[::-1, ::-1], sh), sh)
+        return f[r:r + img.shape[0], r:r + img.shape[1]]
+
+    n = kb.sum()
+    hf = surf.astype(float)
+    wmap = conv(water.astype(float), kb) / n
+    m1 = conv(hf, kb) / n
+    sdmap = np.sqrt(np.maximum(conv(hf * hf, kb) / n - m1 * m1, 0))
+    bep = np.pad(bes.astype(float), ck, mode="edge")  # edge cells repeat, like the old clip
+    bemap = np.rint(conv(bep, kc)[ck:-ck, ck:-ck]).astype(np.int64)
+    results = []
     for rot_deg in range(0, 60, 10):
-        layout = hex_layout(50, a.spacing, math.radians(rot_deg))
-        for cx in range(x0 + 1000, x0 + W * STEP - 1000, 64):
-            for cz in range(z0 + 1000, z0 + H * STEP - 1000, 64):
-                pen = 0.0; wet_total = 0; std_total = 0.0; be_total = 0; ok = True
-                for px, pz in layout:
-                    sx, sz = cx + px, cz + pz
-                    gx = np.array([int((sx + dx - x0) // STEP) for dx, dz in berm])
-                    gz = np.array([int((sz + dz - z0) // STEP) for dx, dz in berm])
-                    if gx.min() < 0 or gz.min() < 0 or gx.max() >= W or gz.max() >= H:
-                        ok = False; break
-                    w = water[gx, gz].mean()
-                    h = surf[gx, gz].astype(float)
-                    sd = h.std()
-                    bx = np.array([int((sx + dx - x0) // 16) for dx, dz in clear]); bz = np.array([int((sz + dz - z0) // 16) for dx, dz in clear])
-                    bx = np.clip(bx, 0, bes.shape[0] - 1); bz = np.clip(bz, 0, bes.shape[1] - 1)
-                    nb = int(bes[bx, bz].sum())
-                    wet_total += w; std_total += sd; be_total += nb
-                    pen += 40 * w * w + sd + 0.5 * nb
-                if ok:
-                    results.append((pen, cx, cz, rot_deg, wet_total / 50, std_total / 50, be_total))
+        layout = np.array(hex_layout(50, a.spacing, math.radians(rot_deg)))
+        cxs = np.arange(x0 + 1000, x0 + W * STEP - 1000, 64)
+        czs = np.arange(z0 + 1000, z0 + H * STEP - 1000, 64)
+        CX, CZ = np.meshgrid(cxs, czs, indexing="ij")
+        pen = np.zeros(CX.shape); wet = np.zeros(CX.shape); sdt = np.zeros(CX.shape)
+        bet = np.zeros(CX.shape, np.int64); ok = np.ones(CX.shape, bool)
+        for px, pz in layout:
+            sx, sz = CX + px, CZ + pz
+            gx = np.floor((sx - x0) / STEP).astype(np.int64); gz = np.floor((sz - z0) / STEP).astype(np.int64)
+            ok &= (gx - bk >= 0) & (gz - bk >= 0) & (gx + bk < W) & (gz + bk < H)
+            gxc = np.clip(gx, 0, W - 1); gzc = np.clip(gz, 0, H - 1)
+            bx = np.clip(np.floor((sx - x0) / 16).astype(np.int64), 0, bes.shape[0] - 1)
+            bz = np.clip(np.floor((sz - z0) / 16).astype(np.int64), 0, bes.shape[1] - 1)
+            w = wmap[gxc, gzc]; sd = sdmap[gxc, gzc]; nb = bemap[bx, bz]
+            wet += w; sdt += sd; bet += nb
+            pen += 40 * w * w + sd + 0.5 * nb
+        for i, j in zip(*np.nonzero(ok)):
+            results.append((float(pen[i, j]), int(CX[i, j]), int(CZ[i, j]), rot_deg, float(wet[i, j] / 50),
+                            float(sdt[i, j] / 50), int(bet[i, j])))
     results.sort()
     best = results[:15]
     for r in best:
