@@ -15,14 +15,24 @@ import os
 import numpy as np
 
 from heights import MISSING, read_area
-from site import hash01, smooth
+from surface import hash01, smooth
 from volume import Volume
 
 SIGMA = 40.0          # metres of the low-pass
 MAX_CHANGE = 9        # blocks the plain may move the natural ground
 CORE, EDGE = 150.0, 240.0
 TREES_OUT = 0.5       # plain weight above which trees are cleared
-SHORE = 8             # land within this many blocks of water is not lowered
+SHORE = 8             # shaped ground within this many blocks of remaining water stays above its surface
+FILL = 0.35           # plain weight above which water is filled
+
+
+def dilate_max(a: np.ndarray, r: int) -> np.ndarray:
+    """Maximum over a (2r+1)-square neighbourhood, by r 3x3 steps."""
+    out = a.copy()
+    for _ in range(r):
+        p = np.pad(out, 1, mode="edge")
+        out = np.max(np.stack([p[i:i + a.shape[0], j:j + a.shape[1]] for i in range(3) for j in range(3)]), axis=0)
+    return out
 
 
 def gaussian_conv(a: np.ndarray, w: np.ndarray, sigma_cells: float) -> np.ndarray:
@@ -37,7 +47,7 @@ def gaussian_conv(a: np.ndarray, w: np.ndarray, sigma_cells: float) -> np.ndarra
         return np.apply_along_axis(lambda v: np.convolve(v, g, mode="same"), 1, m)
     num = sep(a * w)
     den = sep(w)
-    return np.where(den > 1e-6, num / np.maximum(den, 1e-6), 0)
+    return np.where(den > 1e-3, num / np.maximum(den, 1e-6), np.nan)
 
 
 class Field:
@@ -60,7 +70,8 @@ class Field:
 
     def _plain(self) -> None:
         known = self.ground > MISSING
-        land = known & (self.water <= MISSING)
+        wet = known & (self.water > MISSING)
+        land = known & ~wet
         g = np.where(known, self.ground, 0).astype(float)
         smooth_g = gaussian_conv(g, land.astype(float), SIGMA)
         X = np.arange(self.nx)[:, None] + self.x0
@@ -69,28 +80,28 @@ class Field:
         for s in self.silos:
             d = np.minimum(d, np.hypot(X - s["x"], Z - s["z"]))
         rag = 30 * (hash01(X // 24, Z // 24, 7) - 0.5) + 12 * (hash01(X // 7, Z // 7, 9) - 0.5)
-        self.weight = 1 - smooth(CORE, EDGE, d + rag)
-        self.dist = d
-        change = np.clip(smooth_g - g, -MAX_CHANGE, MAX_CHANGE)
-        # never lower land near water
-        wet = (self.water > MISSING).astype(float)
-        near_water = np.zeros_like(wet, bool)
-        if wet.any():
-            k = np.ones(2 * SHORE + 1) / (2 * SHORE + 1)
-            nw = np.apply_along_axis(lambda v: np.convolve(v, k, mode="same"), 0, wet)
-            nw = np.apply_along_axis(lambda v: np.convolve(v, k, mode="same"), 1, nw)
-            near_water = nw > 0
-        change = np.where(near_water, np.maximum(change, 0), change)
-        plain = g + self.weight * change
-        self.height = np.where(land, np.round(plain), np.where(known, self.ground, MISSING)).astype(np.int32)
-        self.land = land
+        w = 1 - smooth(CORE, EDGE, d + rag)
+        self.weight, self.dist = w, d
+        # land eases toward the low-passed ground; water inside the plain is filled to it
+        # far from any land (open water) the fill comes up to a block above the water
+        smooth_g = np.where(np.isnan(smooth_g), np.where(wet, self.water + 1.0, g), smooth_g)
+        plain = np.where(land, g + w * np.clip(smooth_g - g, -MAX_CHANGE, MAX_CHANGE), smooth_g)
+        self.filled = wet & (w > FILL)
+        # banks hold the water that stays: shaped ground near it stays a block above its surface
+        wl = dilate_max(np.where(wet & ~self.filled, self.water, MISSING), SHORE)
+        plain = np.where(wl > MISSING, np.maximum(plain, wl + 1), plain)
+        shaped = known & (w > 0.02) & (land | self.filled)
+        self.height = np.where(shaped, np.round(plain), self.ground).astype(np.int32)
+        self.shaped = shaped
 
     def slice(self, x: int, z: int, radius: int):
-        """height (plain), water and top arrays around x, z, as heights.read_area returns them."""
+        """For site.Site around x, z: plain height, water that stays, highest block, original ground."""
         i, k = x - radius - self.x0, z - radius - self.z0
         n = 2 * radius + 1
         sl = (slice(i, i + n), slice(k, k + n))
-        return self.height[sl], self.water[sl], self.top[sl]
+        water = np.where(self.filled[sl], MISSING, self.water[sl])
+        top = np.maximum(self.top[sl], np.where(self.filled[sl], self.water[sl], MISSING))
+        return self.height[sl], water, top, self.ground[sl]
 
     def tiles(self, size: int = 128, skip_site: float = 100):
         """Plain tiles, nearest to Silo 1 first: (name, Volume) without columns a silo site rebuilds anyway."""
@@ -112,13 +123,13 @@ class Field:
     def tile(self, i: int, k: int, size: int, skip_site: float) -> Volume | None:
         sl = (slice(i, i + size), slice(k, k + size))
         w, h, n, top = self.weight[sl], self.height[sl], self.ground[sl], self.top[sl]
-        land, dist = self.land[sl], self.dist[sl]
-        work = land & (w > 0.02) & (dist > skip_site)
+        dist, filled, ws = self.dist[sl], self.filled[sl], self.water[sl]
+        work = self.shaped[sl] & (dist > skip_site)
         if not work.any():
             return None
         clear = work & (w > TREES_OUT)
         lo = int(np.minimum(h, n)[work].min()) - 3
-        hi = int(np.maximum(np.where(clear, top, h), np.maximum(h, n))[work].max()) + 1
+        hi = int(np.maximum(np.maximum(np.where(clear, top, h), np.maximum(h, n)), ws)[work].max()) + 1
         nx, nz = h.shape
         v = Volume((self.x0 + i, lo, self.z0 + k), (nx, hi - lo + 1, nz))
         ids = v.ids
@@ -129,10 +140,12 @@ class Field:
         for a, b in zip(*np.nonzero(work)):
             t, nat = int(h[a, b]), int(n[a, b])
             col = ids[a, :, b]
-            if t != nat:
+            if t != nat or filled[a, b]:
                 col[min(t, nat) - 2 - lo:t - lo] = dirt
                 col[t - lo] = grass
             up = int(top[a, b]) if clear[a, b] else nat
+            if filled[a, b]:
+                up = max(up, int(ws[a, b]))        # the water above the new ground goes
             if up > t:
                 col[t + 1 - lo:up + 1 - lo] = air
             if (t != nat or clear[a, b]) and tuft[a, b] and t + 1 - lo < col.shape[0]:

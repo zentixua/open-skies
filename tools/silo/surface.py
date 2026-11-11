@@ -38,14 +38,17 @@ def smooth(e0: float, e1: float, x):
 
 
 def hash01(x, z, salt=0):
-    h = (np.asarray(x, np.int64) * 73856093) ^ (np.asarray(z, np.int64) * 19349663) ^ (salt * 83492791)
-    h = (h ^ (h >> 13)) * 1274126177
-    return ((h ^ (h >> 16)) & 0xFFFF) / 65535.0
+    """Stable pseudo-random 0..1 per integer position (wrapping 64-bit arithmetic)."""
+    with np.errstate(over="ignore"):
+        h = (np.asarray(x, np.int64).astype(np.uint64) * np.uint64(73856093)) ^ \
+            (np.asarray(z, np.int64).astype(np.uint64) * np.uint64(19349663)) ^ np.uint64(salt * 83492791)
+        h = (h ^ (h >> np.uint64(13))) * np.uint64(1274126177)
+        return ((h ^ (h >> np.uint64(16))) & np.uint64(0xFFFF)) / 65535.0
 
 
 class Site:
     radius = 112          # volume half-size
-    clear = 96            # trees removed inside this radius
+    clear = 112           # trees (and filled water) removed inside this radius
     bowl = 34             # flat floor
     berm_in, berm_crest, berm_out = 46, 54, 70
     berm_height = 7
@@ -54,8 +57,9 @@ class Site:
     apron = 52            # the ramp is flat from the door out to this distance
     slope = 4.0           # blocks along per block up
 
-    def __init__(self, silo: Silo, ground: np.ndarray, water: np.ndarray, top: np.ndarray):
-        """ground/water/top: heights.read_area arrays over [cx - radius, cx + radius] in x and z."""
+    def __init__(self, silo: Silo, ground: np.ndarray, water: np.ndarray, top: np.ndarray, bed: np.ndarray | None = None):
+        """ground/water/top over [cx - radius, cx + radius] in x and z: heights.read_area arrays, or field.Field.slice
+        (ground is then the plain, and bed the original ground under it, so filled water leaves no pockets)."""
         self.silo = silo
         R = self.radius
         self.cx = silo.origin[0] + silo.R
@@ -75,6 +79,7 @@ class Site:
         self.nat = np.where(self.known, g, self.grade - 1)
         self.water = water
         self.top = np.where(top > MISSING, top, self.nat)
+        self.bed = np.where(bed > MISSING, bed, self.nat) if bed is not None else self.nat
 
     # height field ----------------------------------------------------------------------------------------------
     def target(self) -> np.ndarray:
@@ -102,7 +107,7 @@ class Site:
         ramp_zone = (self.along >= 45) & (self.along <= s_end + 1)
         ramp = ramp_zone & (np.abs(self.lat) <= self.ramp_half)
         wall = ramp_zone & (np.abs(self.lat) > self.ramp_half) & (np.abs(self.lat) <= self.ramp_half + 1)
-        y_lo = self.walk - 4
+        y_lo = min(self.walk - 4, int(self.bed[self.r <= R].min()) - 4)
         y_hi = int(max(self.top[self.r <= self.clear].max(), T.max(), self.grade + 12)) + 2
         v = Volume((self.cx - R, y_lo, self.cz - R), (2 * R + 1, y_hi - y_lo + 1, 2 * R + 1))
         ids = v.ids
@@ -122,7 +127,7 @@ class Site:
                 if not inside and t == n:
                     continue
                 col = ids[i, :, k]
-                lo = max(0, min(t, n) - 3 - oy)
+                lo = max(0, min(t, n, int(self.bed[i, k])) - 3 - oy)
                 # ground: dirt below the surface, a surface block on top
                 col[lo:max(0, t - oy)] = dirt
                 if 0 <= t - oy < H:
@@ -155,20 +160,21 @@ class Site:
                 top_wall = min(H - 1, max(surface, fl + 2) + 1 - oy)
                 for y in range(max(0, fl - 1 - oy), top_wall + 1):
                     col[y] = conc[0] if hash01(i, y, k) < 0.75 else conc[1 + int(hash01(k, y, i) > 0.6)]
-        self.portal(v)
+        self.portal(v, T)
         self.mast(v, int(T[R, R]))
         return v
 
-    def portal(self, v: Volume) -> None:
+    def portal(self, v: Volume, T: np.ndarray) -> None:
         """Concrete headwall over the shell at the end of the cut, a steel frame around the airlock door."""
         R = self.radius
         oy = v.origin[1]
         face = (self.along >= 45) & (self.along < 47) & (np.abs(self.lat) <= self.ramp_half + 1)
         door = np.abs(self.lat) < 2.6
         frame = (np.abs(self.lat) >= 2.6) & (np.abs(self.lat) < 3.6)
+        top = int(T[face].max()) + 1          # the headwall holds the berm above the door
         for i, k in zip(*np.nonzero(face)):
-            col = v.ids[:, :, :][i, :, k]
-            for y in range(self.walk - 1, self.grade + 2):
+            col = v.ids[i, :, k]
+            for y in range(self.walk - 1, min(top, v.size[1] - 1 + oy) + 1):
                 if door[i, k] and self.walk <= y <= self.walk + 3:
                     continue                                   # the silo's own outer door (iron) stays
                 if (frame[i, k] and self.walk <= y <= self.walk + 4) or (door[i, k] and y == self.walk + 4):

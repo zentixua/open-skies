@@ -4,9 +4,10 @@
 # ///
 """Find where the 50-silo complex fits a world best (run against a stopped copy or a golden; reads region files only).
 
-Pass 1 (cached in <out>/terrain.npz): for every chunk, surface and ocean-floor heights on a 4-block grid, block entity
+Pass 1 (cached in <out>/terrain3.npz): for every chunk, surface and ocean-floor heights on a 4-block grid, block entity
 count, and the biome around y 64. Pass 2: a hexagonal layout of 50 silos (Silo 1 in the centre, rings outward) is
-tried at many centres and rotations; each silo needs dry, gentle ground for its berm, away from existing builds.
+tried at many centres and rotations. The plain (field.py) fills water and evens the ground, so water and relief
+only cost; surface builds near a silo and buried structures under a shaft rule a placement out.
 
   uv run tools/silo/site_fit.py <world dir> <out dir> [--spacing 180] [--min-y -64]
 """
@@ -162,11 +163,14 @@ def main():
     ap.add_argument("--spacing", type=float, default=180)
     ap.add_argument("--min-y", type=int, default=-64); ap.add_argument("--height", type=int, default=384)
     ap.add_argument("--berm", type=float, default=70, help="radius that must be dry and gentle")
-    ap.add_argument("--clear", type=float, default=140, help="radius free of existing builds")
+    ap.add_argument("--clear", type=float, default=200, help="radius free of surface builds (the plain reaches this far)")
+    ap.add_argument("--max-builds", type=int, default=12, help="weighted surface block entities allowed in that radius")
+    ap.add_argument("--shaft", type=float, default=64, help="radius free of buried structures (trial chambers, cities)")
     a = ap.parse_args()
     os.makedirs(a.out, exist_ok=True)
     t = build_terrain(a.world, a.out, a.min_y, a.height)
     x0, z0, surf, floor, bes = int(t["x0"]), int(t["z0"]), t["surf"], t["floor"], t["bes"]
+    buried = (t["bes_under"] >= 5).astype(float)
     known = surf > -9999
     water = (surf > floor) | ~known
     print(f"terrain grid {surf.shape} origin {x0},{z0}", file=sys.stderr)
@@ -200,6 +204,11 @@ def main():
     sdmap = np.sqrt(np.maximum(conv(hf * hf, kb) / n - m1 * m1, 0))
     bep = np.pad(bes.astype(float), ck, mode="edge")  # edge cells repeat, like the old clip
     bemap = np.rint(conv(bep, kc)[ck:-ck, ck:-ck]).astype(np.int64)
+    sk = int(math.ceil(a.shaft / 16))
+    ax_ = np.arange(-sk, sk + 1)
+    ks = ((ax_[:, None] ** 2 + ax_[None, :] ** 2) * 256 <= (a.shaft + 8) ** 2).astype(float)
+    bup = np.pad(buried, sk, mode="constant")
+    burmap = conv(bup, ks)[sk:-sk, sk:-sk] > 0.5
     results = []
     for rot_deg in range(0, 60, 10):
         layout = np.array(hex_layout(50, a.spacing, math.radians(rot_deg)))
@@ -217,7 +226,10 @@ def main():
             bz = np.clip(np.floor((sz - z0) / 16).astype(np.int64), 0, bes.shape[1] - 1)
             w = wmap[gxc, gzc]; sd = sdmap[gxc, gzc]; nb = bemap[bx, bz]
             wet += w; sdt += sd; bet += nb
-            pen += 40 * w * w + sd + 0.5 * nb
+            # the plain fills water and evens the ground, so both only cost blocks; builds and buried
+            # structures must not be touched at all
+            ok &= (nb <= a.max_builds) & ~burmap[bx, bz]
+            pen += 10 * w + sd
         for i, j in zip(*np.nonzero(ok)):
             results.append((float(pen[i, j]), int(CX[i, j]), int(CZ[i, j]), rot_deg, float(wet[i, j] / 50),
                             float(sdt[i, j] / 50), int(bet[i, j])))

@@ -8,7 +8,10 @@ Each volume is sent as horizontal slabs, bottom to top, one build job per slab; 
 previous job has finished. Progress is kept in a state file, so an interrupted run continues where it stopped.
 
   ALMIGHTY_URL=http://10.0.6.2:25653 ALMIGHTY_TOKEN_FILE=.../config/almighty/token \\
-      uv run tools/silo/build_live.py silo --number 18 --x 3000 --z -2900 --surface 63 --state ~/silo-work/state
+      uv run tools/silo/build_live.py all --layout site/layout.json --world <golden world> --state ~/silo-work/state
+
+"plain" shapes the field (tiles nearest Silo 1 first), "silo" digs the shafts, "site" shapes the ground above each;
+"all" does the plain, then each silo with its site. Grade = mean plain height within 34 blocks of the axis.
 """
 from __future__ import annotations
 
@@ -100,23 +103,45 @@ def build(v: Volume, name: str, state_dir: str, bridge: Bridge, max_positions: i
     return st
 
 
+def grade_of(field, x: int, z: int) -> int:
+    h, *_ = field.slice(x, z, 34)
+    r = np.hypot(*np.meshgrid(np.arange(69) - 34, np.arange(69) - 34, indexing="ij"))
+    vals = h[(r <= 34) & (h > -9999)]
+    return int(round(float(vals.mean()))) if len(vals) else 64
+
+
 def main():
     ap = argparse.ArgumentParser()
-    sub = ap.add_subparsers(dest="what", required=True)
-    s = sub.add_parser("silo")
-    s.add_argument("--number", type=int, required=True)
-    s.add_argument("--x", type=int, required=True); s.add_argument("--z", type=int, required=True)
-    s.add_argument("--surface", type=int, required=True)
-    s.add_argument("--state", required=True)
-    s.add_argument("--dry", action="store_true")
-    s.add_argument("--max-positions", type=int, default=1_500_000)
+    ap.add_argument("what", choices=["plain", "silo", "site", "all"])
+    ap.add_argument("--layout", required=True, help="site_fit layout.json")
+    ap.add_argument("--world", required=True, help="golden copy of the world (region files are only read)")
+    ap.add_argument("--state", required=True)
+    ap.add_argument("--number", type=int, nargs="*", help="silos to build (default: all, Silo 1 first)")
+    ap.add_argument("--dry", action="store_true")
+    ap.add_argument("--max-positions", type=int, default=1_500_000)
     a = ap.parse_args()
+    from field import Field
     from silo import Silo, Spec
-    silo = Silo(Spec(number=a.number), a.x, a.surface, a.z)
-    v = silo.build()
-    print(f"silo {a.number}: origin {v.origin} size {v.size} states {len(v.palette)}", flush=True)
-    build(v, f"silo{a.number}", a.state, None if a.dry else Bridge(), a.max_positions, a.dry,
-          log=lambda m: print(m, flush=True))
+    from surface import Site
+    log = lambda m: print(time.strftime("%H:%M:%S "), m, flush=True)
+    field = Field(a.layout, a.world, a.state)
+    bridge = None if a.dry else Bridge()
+    go = lambda v, name: build(v, name, a.state, bridge, a.max_positions, a.dry, log)
+    if a.what in ("plain", "all"):
+        for name, v in field.tiles():
+            go(v, name)
+    if a.what == "plain":
+        return
+    for s in field.silos:
+        if a.number and s["number"] not in a.number:
+            continue
+        g = grade_of(field, s["x"], s["z"])
+        silo = Silo(Spec(number=s["number"]), s["x"], g, s["z"])
+        log(f"silo {s['number']} at {s['x']} {g} {s['z']}")
+        if a.what in ("silo", "all"):
+            go(silo.build(), f"silo{s['number']}")
+        if a.what in ("site", "all"):
+            go(Site(silo, *field.slice(s["x"], s["z"], Site.radius)).build(), f"site{s['number']}")
 
 
 if __name__ == "__main__":
