@@ -96,12 +96,23 @@ def scan_region(args):
             if s.get("Y") == 4 and "biomes" in s:
                 biome = s["biomes"]["palette"][0]
         cx, cz = rx * 32 + (i & 31), rz * 32 + (i >> 5)
-        out.append((cx, cz, ws[::STEP, ::STEP].copy(), of[::STEP, ::STEP].copy(), len(c.get("block_entities", [])), biome))
+        # block entities of builds on the surface (towns) and of buried structures (trial chambers, dungeons);
+        # bee nests grow in forests and are neither
+        ground = int(of.min())
+        top = top_under = 0
+        for be in c.get("block_entities", []):
+            if str(be.get("id", "")).endswith("bee_nest"):
+                continue
+            if be.get("y", -9999) >= ground - 6:
+                top += 1
+            else:
+                top_under += 1
+        out.append((cx, cz, ws[::STEP, ::STEP].copy(), of[::STEP, ::STEP].copy(), (top, top_under), biome))
     return out
 
 
 def build_terrain(world: str, out: str, min_y: int, height: int):
-    cache = os.path.join(out, "terrain.npz")
+    cache = os.path.join(out, "terrain2.npz")      # 2: surface and buried block entities counted apart
     if os.path.exists(cache):
         d = np.load(cache, allow_pickle=True)
         return {k: d[k] for k in d.files}
@@ -115,15 +126,15 @@ def build_terrain(world: str, out: str, min_y: int, height: int):
     x0, z0 = cxs.min() * 16, czs.min() * 16
     nx, nz = (cxs.max() - cxs.min() + 1) * 16 // STEP, (czs.max() - czs.min() + 1) * 16 // STEP
     surf = np.full((nx, nz), -9999, np.int32); floor = np.full((nx, nz), -9999, np.int32)
-    bes = np.zeros((nx // 4, nz // 4), np.int32)
+    bes = np.zeros((nx // 4, nz // 4), np.int32); under = np.zeros((nx // 4, nz // 4), np.int32)
     biomes = np.empty((nx // 4, nz // 4), dtype=object); biomes[:] = ""
     for cx, cz, ws, of, nbe, biome in rows:
         gx, gz = (cx * 16 - x0) // STEP, (cz * 16 - z0) // STEP
         surf[gx:gx + 4, gz:gz + 4] = ws.T
         floor[gx:gx + 4, gz:gz + 4] = of.T
-        bes[gx // 4, gz // 4] = nbe
+        bes[gx // 4, gz // 4], under[gx // 4, gz // 4] = nbe
         biomes[gx // 4, gz // 4] = biome
-    d = {"x0": np.array(x0), "z0": np.array(z0), "surf": surf, "floor": floor, "bes": bes, "biomes": biomes}
+    d = {"x0": np.array(x0), "z0": np.array(z0), "surf": surf, "floor": floor, "bes": bes, "bes_under": under, "biomes": biomes}
     np.savez_compressed(cache, **d)
     return d
 
