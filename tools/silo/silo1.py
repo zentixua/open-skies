@@ -114,17 +114,13 @@ class Silo1(Silo):
         self.cafeteria()
         self.generator_hall()
         self.digger_void()
-        try:                                    # turbine, control room, steam hatch: the same plant in every silo
-            from levels import Furnisher
-            extras = getattr(Furnisher(self), "generator_extras", None)
-            if extras:
-                extras()
-        except ImportError:
-            pass
         self.operations_room()
         self.leaders()
         for upper, lower in CRYO:
             self.cryo_hall(upper, lower, wake=(upper, lower) == CRYO[0])
+        import connect                          # panes, bars and wall parapets join up; orphan halves go
+        connect.tidy(v)
+        connect.connect(v)
         self.no_spawn_lights()
         self.service_ladder()
         return v
@@ -154,9 +150,10 @@ class Silo1(Silo):
         # walkway lanterns: cold soul light instead of warm flame (all levels; the storage levels keep only these)
         walk = self.ring(s.r_walk_in, s.r_atrium)
         sl = v.ids[:, y:y + s.pitch, :]
-        lantern = v.index.get("minecraft:lantern[hanging=true]")
-        if lantern is not None:
-            sl[(sl == lantern) & walk[:, None, :]] = v.id("minecraft:soul_lantern[hanging=true,waterlogged=false]")
+        for key in ("minecraft:lantern[hanging=true]", "minecraft:lantern[hanging=true,waterlogged=false]"):
+            lantern = v.index.get(key)
+            if lantern is not None:
+                sl[(sl == lantern) & walk[:, None, :]] = v.id("minecraft:soul_lantern[hanging=true,waterlogged=false]")
 
     def room_contents(self, n: int, y: int, b: int) -> None:
         s, v = self.s, self.v

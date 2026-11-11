@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import os
 import sys
 import time
@@ -145,6 +146,21 @@ def main():
         log(f"silo {s['number']} at {s['x']} {g} {s['z']}, tunnel {s.get('dir', 'W')}")
         if a.what in ("silo", "all"):
             go(turn_volume(silo.build(), k, s["x"], s["z"]), f"silo{s['number']}")
+            # the digger's bore out of the void (machines.py) reaches 111 m from the axis at the bottom; where that
+            # would cut into the next shaft (a neighbour lies on its bearing), the bore is left out for that silo
+            import machines
+            b = machines.bearing(machines.TUN_PHI) + k * math.pi / 2
+            r0, r1 = silo.s.void_radius - 2, silo.s.void_radius - 2 + machines.TUN_LEN + 1
+            ax_, az_ = s["x"] + r0 * math.cos(b), s["z"] + r0 * math.sin(b)
+            dx_, dz_ = (r1 - r0) * math.cos(b), (r1 - r0) * math.sin(b)
+            def clear(o):
+                t = max(0.0, min(1.0, ((o["x"] - ax_) * dx_ + (o["z"] - az_) * dz_) / (dx_ * dx_ + dz_ * dz_)))
+                return math.hypot(o["x"] - ax_ - t * dx_, o["z"] - az_ - t * dz_) - silo.s.r_outer
+            gap = min(clear(o) for o in field.silos if o is not s)
+            if gap >= 5:
+                go(turn_volume(silo.tunnel_volume(), k, s["x"], s["z"]), f"bore{s['number']}")
+            else:
+                log(f"silo {s['number']}: no bore, it would pass {gap:.0f} m from the next shaft")
         if a.what in ("site", "all"):
             old = 213 if s["number"] in (a.repair_213 or []) else None    # the first draft's open cut (Silo 1)
             others = []
