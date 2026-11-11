@@ -123,6 +123,7 @@ def main():
     a = ap.parse_args()
     from field import Field
     from silo import Silo, Spec
+    from silo1 import Silo1
     from surface import Site
     log = lambda m: print(time.strftime("%H:%M:%S "), m, flush=True)
     field = Field(a.layout, a.world, a.state)
@@ -133,20 +134,27 @@ def main():
             go(v, name)
     if a.what == "plain":
         return
+    from tunnels import TURNS
+    from turn import turn_grid, turn_points, turn_volume
     for s in field.silos:
         if a.number and s["number"] not in a.number:
             continue
         g = grade_of(field, s["x"], s["z"])
-        silo = Silo(Spec(number=s["number"]), s["x"], g, s["z"])
-        log(f"silo {s['number']} at {s['x']} {g} {s['z']}")
+        k = TURNS[s.get("dir", "W")]            # the tunnel's bearing: everything is built due west, then turned
+        silo = (Silo1 if s["number"] == 1 else Silo)(Spec(number=s["number"]), s["x"], g, s["z"])
+        log(f"silo {s['number']} at {s['x']} {g} {s['z']}, tunnel {s.get('dir', 'W')}")
         if a.what in ("silo", "all"):
-            go(silo.build(), f"silo{s['number']}")
+            go(turn_volume(silo.build(), k, s["x"], s["z"]), f"silo{s['number']}")
         if a.what in ("site", "all"):
             old = 213 if s["number"] in (a.repair_213 or []) else None    # the first draft's open cut (Silo 1)
-            others = [(o["x"], o["z"]) for o in field.silos if o is not s]
-            go(Site(silo, *field.slice(s["x"], s["z"], Site.radius), old_cut_deg=old, neighbours=others).build(),
-               f"site{s['number']}")
-
+            others = []
+            for o in field.silos:
+                if o is not s:
+                    (ox, oz), = turn_points([(o["x"], o["z"])], -k, s["x"], s["z"])
+                    others.append((ox, oz, (TURNS[o.get("dir", "W")] - k) % 4))
+            grids = [turn_grid(a_, -k) for a_ in field.slice(s["x"], s["z"], Site.radius)]
+            site = Site(silo, *grids, old_cut_deg=old, neighbours=others)
+            go(turn_volume(site.build(), k, s["x"], s["z"]), f"site{s['number']}")
 
 if __name__ == "__main__":
     main()

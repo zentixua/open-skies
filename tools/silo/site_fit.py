@@ -157,6 +157,15 @@ def hex_layout(n: int, spacing: float, rot: float) -> list[tuple[float, float]]:
     return [(x * c - z * s, x * s + z * c) for x, z in pts]
 
 
+def canon_layout(path: str, rot: float) -> tuple[list[tuple[float, float]], float]:
+    """The show's layout (canon_layout.json, Silo 1 first, then 2..50), in metres, turned by rot from gate-north."""
+    c = json.load(open(path))
+    e = c["edge_m"]
+    pts = [tuple(c["silos"][str(n)]) for n in range(1, 51)]
+    cs, sn = math.cos(rot), math.sin(rot)
+    return [(e * (x * cs - z * sn), e * (x * sn + z * cs)) for x, z in pts], e
+
+
 REACH = 46 + 69.5     # shaft axis to portal centre, due west (surface.py)
 
 
@@ -213,6 +222,8 @@ def main():
     ap.add_argument("--shift", type=float, default=56, help="how far such a silo may move")
     ap.add_argument("--rots", default="0,58", help="rotation range in degrees; every portal must stay clear of the other "
                     "shafts and tunnels, which at spacing 200 holds best near 30 (112 m and more)")
+    ap.add_argument("--canon", help="canon_layout.json: the show's layout instead of a hex grid; silos are never "
+                    "shifted, conflicts only cost (a rotation that avoids them wins)")
     ap.add_argument("--min-y", type=int, default=-64); ap.add_argument("--height", type=int, default=384)
     ap.add_argument("--berm", type=float, default=70, help="radius that must be dry and gentle")
     ap.add_argument("--clear", type=float, default=200, help="radius free of surface builds (the plain reaches this far)")
@@ -265,8 +276,23 @@ def main():
     r0, r1 = (int(v) for v in a.rots.split(","))
     if a.centre and a.rot is not None:
         r0 = r1 = a.rot
+    canon_dirs = {}
+
+    def make(rot_deg):
+        """Shaft positions relative to Silo 1's shaft (Silo 1 first)."""
+        if a.canon:
+            from tunnels import DIRS, REACH, assign, shafts
+            rings = canon_layout(a.canon, math.radians(rot_deg))[0]
+            if rot_deg not in canon_dirs:
+                dirs, worst = assign(rings, {0: "W"})
+                print(f"rotation {rot_deg}: tunnel bearings {''.join(dirs)}, worst clearance {worst:.1f} m", file=sys.stderr)
+                canon_dirs[rot_deg] = (dirs, worst)
+            dirs = canon_dirs[rot_deg][0]
+            sh = shafts(rings, dirs)
+            return [(x - sh[0][0], z - sh[0][1]) for x, z in sh]
+        return hex_layout(50, a.spacing, math.radians(rot_deg))
     for rot_deg in range(r0, r1 + 1, 2 if a.centre else 10):
-        layout = np.array(hex_layout(50, a.spacing, math.radians(rot_deg)))
+        layout = np.array(make(rot_deg))
         if a.centre:
             cxs, czs = (np.array([int(v)]) for v in a.centre.split(","))
         else:
@@ -286,7 +312,9 @@ def main():
             wet += w; sdt += sd; bet += nb
             # the plain fills water and evens the ground, so both only cost blocks; builds and buried
             # structures must not be touched at all
-            if a.rot is None:
+            if a.canon:
+                pen += 1000 * ((nb > a.max_builds) | burmap[bx, bz])
+            elif a.rot is None:
                 ok &= (nb <= a.max_builds) & ~burmap[bx, bz]
             pen += 10 * w + sd
         for i, j in zip(*np.nonzero(ok)):
@@ -299,13 +327,29 @@ def main():
     for r in best:
         print("pen %.1f centre %d,%d rot %d  water/silo %.3f  relief sd %.1f  block entities %d" % r)
     pen, cx, cz, rot_deg, *_ = best[0]
-    layout = hex_layout(50, a.spacing, math.radians(rot_deg))
+    layout = make(rot_deg)
     silos = []
     for i, (px, pz) in enumerate(layout):
         sx, sz = int(round(cx + px)), int(round(cz + pz))
         gx, gz = (sx - x0) // STEP, (sz - z0) // STEP
         silos.append({"number": i + 1, "x": sx, "z": sz, "surface": int(surf[gx, gz]), "water_here": bool(water[gx, gz])})
-    if a.rot is not None:
+    if a.canon:
+        from tunnels import DIRS, REACH
+        dirs = canon_dirs[rot_deg][0]
+        for s_, d in zip(silos, dirs):
+            s_["dir"] = d
+            s_["ring"] = [round(s_["x"] + REACH * DIRS[d][0], 1), round(s_["z"] + REACH * DIRS[d][1], 1)]
+        c = json.load(open(a.canon))
+        ring1 = silos[0]["ring"]; cs, sn = math.cos(math.radians(rot_deg)), math.sin(math.radians(rot_deg))
+        gx_, gz_ = c["gate"]
+        gate = [round(ring1[0] + c["edge_m"] * (gx_ * cs - gz_ * sn)), round(ring1[1] + c["edge_m"] * (gx_ * sn + gz_ * cs))]
+        print(f"gate at {gate[0]},{gate[1]}; worst tunnel clearance {canon_dirs[rot_deg][1]:.1f} m", file=sys.stderr)
+        for s_ in silos:
+            bx, bz = (s_["x"] - x0) // 16, (s_["z"] - z0) // 16
+            if burmap[bx, bz] or bemap[bx, bz] > a.max_builds:
+                s_["conflict"] = "buried structure" if burmap[bx, bz] else f"{int(bemap[bx, bz])} builds"
+                print(f"silo {s_['number']} at {s_['x']},{s_['z']}: {s_['conflict']}", file=sys.stderr)
+    elif a.rot is not None:
         shift_off_structures(silos, a, x0, z0, bes, bemap, burmap, surf, water)
     # surface builds (towns, villages) near the field: the plain fades out before them (field.py)
     xs_, zs_ = [s_["x"] for s_ in silos], [s_["z"] for s_ in silos]
@@ -314,7 +358,8 @@ def main():
         tx, tz = x0 + i * 16 + 8, z0 + k * 16 + 8
         if min(xs_) - 500 <= tx <= max(xs_) + 500 and min(zs_) - 500 <= tz <= max(zs_) + 500:
             towns.append([int(tx), int(tz)])
-    json.dump({"spacing": a.spacing, "centre": [cx, cz], "rotation_deg": rot_deg, "candidates": best, "silos": silos,
+    json.dump({"spacing": canon_layout(a.canon, 0)[1] if a.canon else a.spacing, "canon": bool(a.canon),
+               **({"gate": gate} if a.canon else {}), "centre": [cx, cz], "rotation_deg": rot_deg, "candidates": best, "silos": silos,
                "towns": towns},
               open(os.path.join(a.out, "layout.json"), "w"), indent=1)
     print(os.path.join(a.out, "layout.json"))

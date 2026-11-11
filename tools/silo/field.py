@@ -55,7 +55,8 @@ class Field:
     def __init__(self, layout_path: str, world: str, cache_dir: str):
         self.layout = json.load(open(layout_path))
         self.silos = [s for s in self.layout["silos"] if not s.get("unplaced")]
-        xs = [s["x"] for s in self.silos]; zs = [s["z"] for s in self.silos]
+        xs = [s["x"] for s in self.silos] + [s["ring"][0] for s in self.silos if "ring" in s]
+        zs = [s["z"] for s in self.silos] + [s["ring"][1] for s in self.silos if "ring" in s]
         m = int(EDGE + 3 * SIGMA + 16)
         self.x0, self.z0 = min(xs) - m, min(zs) - m
         self.nx, self.nz = max(xs) + m - self.x0 + 1, max(zs) + m - self.z0 + 1
@@ -78,8 +79,10 @@ class Field:
         X = np.arange(self.nx)[:, None] + self.x0
         Z = np.arange(self.nz)[None, :] + self.z0
         d = np.full((self.nx, self.nz), 1e9)
-        for s in self.silos:
+        for s in self.silos:            # the plain reaches out from each shaft and from its ring (crater)
             d = np.minimum(d, np.hypot(X - s["x"], Z - s["z"]))
+            if "ring" in s:
+                d = np.minimum(d, np.hypot(X - s["ring"][0], Z - s["ring"][1]))
         rag = 30 * (hash01(X // 24, Z // 24, 7) - 0.5) + 12 * (hash01(X // 7, Z // 7, 9) - 0.5)
         w = 1 - smooth(CORE, EDGE, d + rag)
         # Zearth's own towns and villages stay as built: the plain fades out before them

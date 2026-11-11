@@ -75,9 +75,11 @@ class Site:
     floor_drop, berm = 2, 2
 
     def __init__(self, silo: Silo, ground: np.ndarray, water: np.ndarray, top: np.ndarray, bed: np.ndarray | None = None,
-                 weight: np.ndarray | None = None, old_cut_deg: float | None = None, neighbours: list[tuple[int, int]] = ()):
-        """neighbours: shaft x, z of the other silos; the ground each site lays is its own cell (columns nearer its
-        shaft-to-portal line than any other silo's), and their craters are kept."""
+                 weight: np.ndarray | None = None, old_cut_deg: float | None = None, neighbours=()):
+        """neighbours: (shaft x, z[, quarter turns]) of the other silos, in this site's own frame (tunnel due west);
+        a neighbour turned k quarters clockwise runs its tunnel W, N, E or S for k = 0..3 (build_live turns the
+        inputs and the result for a silo that is not due west). The ground each site lays is its own cell (columns
+        nearer its shaft-to-portal line than any other silo's), and their craters are kept."""
         """ground/water/top/bed over [axis - radius, axis + radius] in x and z, as field.Field.slice gives them:
         ground is the plain, bed the original ground under it."""
         self.silo = silo
@@ -106,21 +108,27 @@ class Site:
         self.old_cut_deg = old_cut_deg      # an earlier draft's open cut along this bearing, to be filled
         self.keep = (weight <= 0.05) if weight is not None else np.zeros(ground.shape, bool)   # towns: never touched
         reach = self.s_shell + self.portal_s
-        def seg_dist(ax, az):               # distance to a silo's shaft-to-portal line (relative shaft position)
-            t = np.clip((ax - self.X) / reach, 0, 1)
-            return np.hypot(self.X - (ax - t * reach), self.Z - az)
+        bearing = ((-1, 0), (0, -1), (1, 0), (0, 1))      # W N E S: tunnel direction after 0..3 quarter turns
+        def seg_dist(ax, az, k=0):          # distance to a silo's shaft-to-portal line (relative shaft position)
+            dx, dz = bearing[k % 4]
+            t = np.clip(((self.X - ax) * dx + (self.Z - az) * dz) / reach, 0, 1)
+            return np.hypot(self.X - (ax + t * reach * dx), self.Z - (az + t * reach * dz))
         own = seg_dist(0, 0)
         self.own_line = own
         self.cell = np.ones_like(own, bool)
         self.neighbour_portals = []
-        for nx_, nz_ in neighbours:
+        for nb in neighbours:
+            nx_, nz_ = nb[0], nb[1]
+            k = nb[2] if len(nb) > 2 else 0
             ax, az = nx_ - self.cx, nz_ - self.cz
             if (ax, az) == (0, 0) or math.hypot(ax, az) > 2 * R + 2 * self.out_r:
                 continue
-            self.cell &= own <= seg_dist(ax, az)
-            pi, pk = R + ax - int(reach), R + az
+            self.cell &= own <= seg_dist(ax, az, k)
+            dx, dz = bearing[k % 4]
+            qx, qz = ax + reach * dx, az + reach * dz           # its portal
+            pi, pk = R + int(round(qx)), R + int(round(qz))
             if 0 <= pi < n and 0 <= pk < n:
-                self.neighbour_portals.append((np.hypot(self.X - (ax - reach), self.Z - az), float(self.plain[pi, pk])))
+                self.neighbour_portals.append((np.hypot(self.X - qx, self.Z - qz), float(self.plain[pi, pk])))
 
     # heights ---------------------------------------------------------------------------------------------------
     def crater(self, d: np.ndarray, p_floor: float, ground: np.ndarray) -> np.ndarray:
