@@ -49,8 +49,10 @@ class Spec:
 
 
 COLUMN_ANGLES = [64, 110, 158, 202, 250, 296]
-SCREEN_ANGLE, SCREEN_ARC = math.radians(170), math.radians(54)
-AIRLOCK_ANGLE = math.radians(213)
+SCREEN_ANGLE, SCREEN_ARC = math.radians(140), math.radians(54)
+# The model has the airlock at 210 degrees with the screen just to its left (170); here both turn by 30 so the way in
+# runs due west and the tunnel, portal and sensor block are block-aligned (surface.py).
+AIRLOCK_ANGLE = math.radians(180)
 
 # palette -------------------------------------------------------------------------------------------------------------
 CONCRETE = "minecraft:light_gray_concrete"
@@ -133,6 +135,8 @@ class Silo:
         self.cafeteria()
         self.generator_hall()
         self.digger_void()
+        from levels import Furnisher
+        Furnisher(self).all()
         return v
 
     def shell(self) -> None:
@@ -326,9 +330,7 @@ class Silo:
         corridor = (np.abs(((self.theta - a + math.pi) % TAU) - math.pi) * self.r < 2.6) & self.ring(s.r_inner_wall - 1, self.R + 1)
         v.mask(y, y + 3, corridor, AIR)
         v.mask(y - 1, y - 1, corridor, "minecraft:polished_andesite")
-        for rr, label in ((s.r_inner_wall + 0.5, "inner"), (s.r_outer - 0.5, "outer")):
-            ring = (np.abs(((self.theta - a + math.pi) % TAU) - math.pi) * self.r < 2.6) & self.ring(rr - 0.5, rr + 0.5)
-            v.mask(y, y + 3, ring, "minecraft:iron_block")
+        # the doorway through the shell is open; the station and the two thick doors are in the tunnel (surface.py)
 
     def generator_hall(self) -> None:
         s, v = self.s, self.v
