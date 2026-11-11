@@ -10,7 +10,7 @@ a margin). Then, for many candidate centres, silos are packed greedily: the best
 first, each at least --min-gap from the others; Silo 1 takes the cell nearest the centre. The centre whose 50
 silos are flattest and closest together wins. The grade (bowl floor) is the mean surface of the berm disc.
 
-  uv run tools/silo/layout_refine.py <site_fit out dir (terrain2.npz)> [--berm 64] [--min-gap 140]
+  uv run tools/silo/layout_refine.py <site_fit out dir (terrain3.npz)> [--berm 64] [--min-gap 140]
 """
 from __future__ import annotations
 
@@ -54,7 +54,7 @@ def main():
     ap.add_argument("--per-sd", type=float, default=60, help="metres of distance from the centre worth one unit of relief sd")
     ap.add_argument("--centre-step", type=int, default=128)
     a = ap.parse_args()
-    t = np.load(os.path.join(a.dir, "terrain2.npz"), allow_pickle=True)
+    t = np.load(os.path.join(a.dir, "terrain3.npz"), allow_pickle=True)
     x0, z0, surf, floor, bes = int(t["x0"]), int(t["z0"]), t["surf"], t["floor"], t["bes"]
     known = surf > -9999
     water = ((surf > floor) | ~known).astype(float)
@@ -68,7 +68,7 @@ def main():
     town = np.repeat(np.repeat(town_chunks, 4, 0), 4, 1)[:surf.shape[0], :surf.shape[1]]
     town = conv(town, disc_kernel(a.town_margin / STEP)) > 0.5
     # buried structures (trial chambers, dungeons, strongholds) stay whole: no shaft through them
-    buried = (t["bes_under"] >= 3).astype(float)
+    buried = (t["bes_under"] >= 5).astype(float)
     buried = np.repeat(np.repeat(buried, 4, 0), 4, 1)[:surf.shape[0], :surf.shape[1]]
     town |= conv(buried, disc_kernel(a.shaft / STEP)) > 0.5
     W, H = surf.shape

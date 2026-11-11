@@ -25,6 +25,9 @@ from concurrent.futures import ProcessPoolExecutor
 import numpy as np
 
 STEP = 4  # grid step in blocks
+BE_WEIGHT = {"bee_nest": 0, "beehive": 1, "sculk_sensor": 0, "calibrated_sculk_sensor": 0, "sculk_catalyst": 0,
+             "sculk_shrieker": 0, "brushable_block": 0, "trial_spawner": 5, "vault": 5, "command_block": 5,
+             "structure_block": 5, "jigsaw": 5}
 
 
 # --- minimal NBT reader (only what we need) --------------------------------------------------------------------------
@@ -96,23 +99,25 @@ def scan_region(args):
             if s.get("Y") == 4 and "biomes" in s:
                 biome = s["biomes"]["palette"][0]
         cx, cz = rx * 32 + (i & 31), rz * 32 + (i >> 5)
-        # block entities of builds on the surface (towns) and of buried structures (trial chambers, dungeons);
-        # bee nests grow in forests and are neither
+        # block entities of builds on the surface (towns) and of buried structures (trial chambers, ancient cities,
+        # dungeons, the map's own command machinery), weighted; natural ones (bee nests, deep dark sculk, suspicious
+        # sand and gravel) are neither
         ground = int(of.min())
         top = top_under = 0
         for be in c.get("block_entities", []):
-            if str(be.get("id", "")).endswith("bee_nest"):
+            w = BE_WEIGHT.get(str(be.get("id", "")).removeprefix("minecraft:"), 1)
+            if not w:
                 continue
             if be.get("y", -9999) >= ground - 6:
-                top += 1
+                top += w
             else:
-                top_under += 1
+                top_under += w
         out.append((cx, cz, ws[::STEP, ::STEP].copy(), of[::STEP, ::STEP].copy(), (top, top_under), biome))
     return out
 
 
 def build_terrain(world: str, out: str, min_y: int, height: int):
-    cache = os.path.join(out, "terrain2.npz")      # 2: surface and buried block entities counted apart
+    cache = os.path.join(out, "terrain3.npz")      # 3: surface and buried block entities, weighted
     if os.path.exists(cache):
         d = np.load(cache, allow_pickle=True)
         return {k: d[k] for k in d.files}
