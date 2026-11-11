@@ -254,7 +254,15 @@ def main():
         sx, sz = int(round(cx + px)), int(round(cz + pz))
         gx, gz = (sx - x0) // STEP, (sz - z0) // STEP
         silos.append({"number": i + 1, "x": sx, "z": sz, "surface": int(surf[gx, gz]), "water_here": bool(water[gx, gz])})
-    json.dump({"spacing": a.spacing, "centre": [cx, cz], "rotation_deg": rot_deg, "candidates": best, "silos": silos},
+    # surface builds (towns, villages) near the field: the plain fades out before them (field.py)
+    xs_, zs_ = [s_["x"] for s_ in silos], [s_["z"] for s_ in silos]
+    towns = []
+    for i, k in zip(*np.nonzero(bes >= 6)):
+        tx, tz = x0 + i * 16 + 8, z0 + k * 16 + 8
+        if min(xs_) - 500 <= tx <= max(xs_) + 500 and min(zs_) - 500 <= tz <= max(zs_) + 500:
+            towns.append([int(tx), int(tz)])
+    json.dump({"spacing": a.spacing, "centre": [cx, cz], "rotation_deg": rot_deg, "candidates": best, "silos": silos,
+               "towns": towns},
               open(os.path.join(a.out, "layout.json"), "w"), indent=1)
     print(os.path.join(a.out, "layout.json"))
 

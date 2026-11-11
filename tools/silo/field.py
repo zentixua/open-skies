@@ -24,6 +24,7 @@ CORE, EDGE = 150.0, 240.0
 TREES_OUT = 0.5       # plain weight above which trees are cleared
 SHORE = 8             # shaped ground within this many blocks of remaining water stays above its surface
 FILL = 0.35           # plain weight above which water is filled
+TOWN_KEEP = 12        # blocks around a town chunk left untouched
 
 
 def dilate_max(a: np.ndarray, r: int) -> np.ndarray:
@@ -81,6 +82,14 @@ class Field:
             d = np.minimum(d, np.hypot(X - s["x"], Z - s["z"]))
         rag = 30 * (hash01(X // 24, Z // 24, 7) - 0.5) + 12 * (hash01(X // 7, Z // 7, 9) - 0.5)
         w = 1 - smooth(CORE, EDGE, d + rag)
+        # Zearth's own towns and villages stay as built: the plain fades out before them
+        towns = self.layout.get("towns", [])
+        if towns:
+            dt = np.full((self.nx, self.nz), 1e9)
+            for tx, tz in towns:
+                if self.x0 - 100 <= tx <= self.x0 + self.nx + 100 and self.z0 - 100 <= tz <= self.z0 + self.nz + 100:
+                    dt = np.minimum(dt, np.maximum(np.abs(X - tx), np.abs(Z - tz)) - 8)
+            w = w * smooth(TOWN_KEEP, TOWN_KEEP + 48, dt)
         self.weight, self.dist = w, d
         # land eases toward the low-passed ground; water inside the plain is filled to it
         # far from any land (open water) the fill comes up to a block above the water
