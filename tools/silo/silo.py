@@ -40,7 +40,7 @@ class Spec:
     bays: int = 18
     cafe_height: int = 10             # level 1 cafeteria clear height
     cap: int = 3                      # concrete cap above level 1
-    cover: int = 12                   # earth over the cap up to grade (the bowl floor)
+    cover: int = 4                    # earth over the cap up to grade (the bowl floor); the exit ramp climbs cover+cap+cafe
     gen_height: int = 16              # generator hall below level 144
     slab: int = 9                     # "thirty feet" of concrete above the digger void
     void_height: int = 44
