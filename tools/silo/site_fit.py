@@ -234,6 +234,8 @@ def main():
             results.append((float(pen[i, j]), int(CX[i, j]), int(CZ[i, j]), rot_deg, float(wet[i, j] / 50),
                             float(sdt[i, j] / 50), int(bet[i, j])))
     results.sort()
+    if not results:
+        raise SystemExit("no placement fits; relax --max-builds or --shaft")
     best = results[:15]
     for r in best:
         print("pen %.1f centre %d,%d rot %d  water/silo %.3f  relief sd %.1f  block entities %d" % r)
