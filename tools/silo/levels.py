@@ -1,8 +1,14 @@
-"""Canon special levels of a silo, furnished over the generic residential levels built by silo.Silo.level.
+"""Canon special levels of a silo, furnished from the explorethesilo.com model over the levels built by silo.Silo.level.
 
-Level list and room descriptions from explorethesilo.com (show canon, novels where marked), condensed in
-/mnt/project-files/silo/canon-levels-explorethesilo.md. Angles are degrees in the silo frame (x east, z south),
-radii in blocks from the axis; each level has 4 clear rows (y .. y + 3) over its floor at y - 1.
+Source: silo3d.js (explorethesilo.com, taken apart for private use with Artem's permission): ROOM_BUILDERS it,
+watcher, market, judicial, workshop (room-local metres: x across the bay, z into the rock from ROOM_Z0), the sheriff's
+station by the airlock, dressingFor/variantFor (bays.py). Level list: levels.js (canon: true only).
+
+Rooms stand behind the special bay (bays.ROOM_BAY, bearing 0, so a room's depth runs along world +x and its x across
+along world +z) at 1 m = 1 block in plan; heights fall into the level's four clear rows (1 m each). Room-local x, s
+(depth from the room's front wall) map to cells by cell(): d = 18 + floor(s) from the axis, c = floor(x + W/2) - W//2.
+Where the model's rooms chain deeper than the 26 blocks between the shaft wall (r 17) and the shell (r 43), the chain
+is folded sideways and the fold is named at the room. Model colours are matched to the nearest vanilla block.
 """
 from __future__ import annotations
 
@@ -13,291 +19,513 @@ import numpy as np
 TAU = 2 * math.pi
 GOLDEN = math.radians(137.5)          # bridge rotation per level, as silo.GOLDEN
 AIR = "minecraft:air"
+DIRS = {"east": (1, 0), "west": (-1, 0), "south": (0, 1), "north": (0, -1)}   # world (dx, dz): east = +d, south = +c
+OPP = {"east": "west", "west": "east", "south": "north", "north": "south"}
+PLATE = "minecraft:heavy_weighted_pressure_plate[power=0]"
+SLAB_TOP = "minecraft:spruce_slab[type=top,waterlogged=false]"
+SEA = "minecraft:sea_lantern"
+HANG = "minecraft:lantern[hanging=true,waterlogged=false]"
+LANTERN = "minecraft:lantern[hanging=false,waterlogged=false]"
+
+# Terracotta and concrete colours (block top textures, averaged) for matching model colours.
+TERRACOTTA = {"white": (209, 178, 161), "orange": (161, 83, 37), "yellow": (186, 133, 35), "light_gray": (135, 107, 98),
+              "cyan": (86, 91, 91), "blue": (74, 59, 91), "brown": (77, 51, 35), "green": (76, 83, 42), "red": (143, 61, 46),
+              "gray": (57, 42, 35), "lime": (103, 117, 53), "purple": (118, 70, 86), "magenta": (149, 88, 108),
+              "pink": (161, 78, 78), "light_blue": (113, 108, 137), "black": (37, 22, 16)}
+
+
+def nearest(rgb, table: dict) -> str:
+    return min(table, key=lambda k: sum((a - b) ** 2 for a, b in zip(rgb, table[k])))
+
+
+def stairs(facing: str) -> str:
+    return f"minecraft:spruce_stairs[facing={facing},half=bottom,shape=straight,waterlogged=false]"
 
 
 class Furnisher:
     def __init__(self, silo):
         self.silo, self.s, self.v = silo, silo.s, silo.v
+        self.R = silo.R
+        self.n = 1
+        self.y = silo.level_y(1)
 
-    # helpers ----------------------------------------------------------------------------------------------------
-    def sector(self, a0: float, a1: float, r0: float, r1: float) -> np.ndarray:
-        return self.silo.sector(math.radians(a0), math.radians(a1)) & self.silo.ring(r0, r1)
+    # cells ------------------------------------------------------------------------------------------------------
+    def on(self, n: int) -> "Furnisher":
+        self.n, self.y = n, self.silo.level_y(n)
+        return self
 
-    def hall(self, n: int, a0: float, a1: float, r0: float, r1: float, floor: str | None = None,
-             walls: str | None = None, rows: int = 4) -> np.ndarray:
-        """Clear a sector of level n into one room; optionally new floor and a wall around its edge."""
-        y = self.silo.level_y(n)
-        m = self.sector(a0, a1, r0, r1)
-        self.v.mask(y, y + rows - 1, m, AIR)
-        if floor:
-            self.v.mask(y - 1, y - 1, m, floor)
-        if walls:
-            inner = self.sector(a0 + 1.5 * 57.3 / r1, a1 - 1.5 * 57.3 / r1, r0 + 1, r1 - 1)
-            self.v.mask(y, y + rows - 1, m & ~inner, walls)
-        return m
+    @staticmethod
+    def cell(x: float, s: float, W: int, d0: int = 18, cshift: int = 0) -> tuple[int, int]:
+        return d0 + math.floor(s), math.floor(x + W / 2) - W // 2 + cshift
 
-    def at(self, r: float, a: float) -> tuple[int, int]:
-        return self.silo.polar(r, math.radians(a))
+    def blk(self, d: int, c: int, dy: int, state: str) -> None:
+        self.v.set(self.R + d, self.y + dy, self.R + c, state)
 
-    def put(self, n: int, r: float, a: float, dy: int, state: str) -> None:
-        x, z = self.at(r, a)
-        self.v.set(x, self.silo.level_y(n) + dy, z, state)
+    def get(self, d: int, c: int, dy: int) -> str:
+        return self.v.get(self.R + d, self.y + dy, self.R + c)
 
-    def ceiling_lights(self, n: int, m: np.ndarray, state: str, every: int = 5) -> None:
-        y = self.silo.level_y(n) + 3
-        grid = ((self.silo.X % every) == 0) & ((self.silo.Z % every) == 0) & m
-        self.v.mask(y, y, grid, state)
+    def box(self, d0, d1, c0, c1, dy0, dy1, state) -> None:
+        d0, d1 = sorted((d0, d1))
+        c0, c1 = sorted((c0, c1))
+        self.v.box(self.R + d0, self.y + dy0, self.R + c0, self.R + d1, self.y + dy1, self.R + c1, state)
 
-    def facing(self, a_deg: float, outward: bool = True) -> str:
-        f = self.silo.facing_radial(math.radians(a_deg))
-        if outward:
-            return f
-        return {"east": "west", "west": "east", "north": "south", "south": "north"}[f]
+    def room(self, d0, d1, c0, c1, wall: str, floor: str, rows: int = 4, ceiling: str | None = None) -> None:
+        """A walled room with interior cells d0..d1 x c0..c1: walls one block thick on all sides, floor under it,
+        `rows` clear rows and a ceiling filling the rest of the level's four rows."""
+        far = max(math.hypot(d, c) for d in (d0 - 1, d1 + 1) for c in (c0 - 1, c1 + 1))
+        if far >= self.s.r_outer - 1:
+            raise ValueError(f"room reaches r {far:.1f} on level {self.n}")
+        self.box(d0 - 1, d1 + 1, c0 - 1, c1 + 1, 0, 3, wall)
+        self.box(d0, d1, c0, c1, 0, rows - 1, AIR)
+        if rows < 4:
+            self.box(d0, d1, c0, c1, rows, 3, ceiling or wall)
+        self.box(d0, d1, c0, c1, -1, -1, floor)
+
+    def entry(self) -> None:
+        """The special bay's door (BAY.roomDoor) through the shaft wall into a room whose walls rebuilt that wall."""
+        self.door(17, 0, "west")
+
+    def door(self, d: int, c: int, facing: str, width: int = 1, plates: bool = True, hinge: str = "left") -> None:
+        """Iron door(s) at (d, c) facing `facing`; a pair runs to the door's right. Heavy plates open them."""
+        fd, fc = DIRS[facing]
+        rd, rc = -fc, fd                       # right hand when looking along facing (x east, z south)
+        cells = [(d + i * rd, c + i * rc) for i in range(width)]
+        for i, (dd, cc) in enumerate(cells):
+            h = hinge if i == 0 else ("right" if hinge == "left" else "left")
+            for half, dy in (("lower", 0), ("upper", 1)):
+                self.blk(dd, cc, dy, f"minecraft:iron_door[facing={facing},half={half},hinge={h},open=false,powered=false]")
+            if plates:
+                for k in (1, -1):
+                    pd, pc = dd + k * fd, cc + k * fc
+                    if self.get(pd, pc, 0) == AIR:
+                        self.blk(pd, pc, 0, PLATE)
 
     # levels -----------------------------------------------------------------------------------------------------
     def all(self) -> None:
         self.judicial(13)
-        self.managers_row(15)
         self.it(19)
-        self.watcher_room(20)
+        self.watcher(20)
         self.checkpoint(30)
-        self.medical(50)
-        self.medical(62)
-        self.bazaar(100)
+        for n in (50, 62):
+            self.medical(n)
+        self.market(100)
         self.deputy_station(105)
         self.farm(122)
         self.barricade(130)
-        self.mechanical(140)
         self.workshop(144)
-        self.generator_extras()
-        self.digger_camp_and_door()
 
     def judicial(self, n: int) -> None:
-        """Seclusion holding: concrete corridor on steel grate, sealed doors along one wall, cold light; a cell."""
-        y = self.silo.level_y(n)
-        m = self.hall(n, 0, 120, 31, 43, floor="minecraft:waxed_weathered_copper_grate", walls="minecraft:gray_concrete")
-        corridor = self.sector(1, 119, 32, 35)
-        cells = m & ~corridor & ~self.sector(1, 119, 35, 36)
-        self.v.mask(y, y + 3, self.sector(1, 119, 35, 36), "minecraft:gray_concrete")
-        self.v.mask(y, y + 3, cells, "minecraft:gray_concrete")
-        for a in range(8, 116, 12):
-            x, z = self.at(35.5, a)
-            self.v.set(x, y, z, "minecraft:iron_block")
-            self.v.set(x, y + 1, z, "minecraft:iron_block")
-            self.v.set(x, y + 2, z, "minecraft:iron_trapdoor[facing=north,half=top,open=false]")
-            hx, hz = self.at(38.5, a)
-            self.v.box(hx - 1, y, hz - 1, hx + 1, y + 3, hz + 1, AIR)
-            self.v.set(hx, y + 3, hz, "minecraft:iron_bars")
-        self.ceiling_lights(n, corridor, "minecraft:pearlescent_froglight", 6)
-
-    def managers_row(self, n: int) -> None:
-        """Better apartments: carpet, shelves, plants."""
-        y = self.silo.level_y(n)
-        for b in range(self.s.bays):
-            a = (b + 0.5) * 360 / self.s.bays
-            room = self.sector(a - 9, a + 9, 31, 42)
-            self.v.mask(y - 1, y - 1, room, "minecraft:dark_oak_planks")
-            for k in (-6, 6):
-                self.put(n, 41.5, a + k, 0, "minecraft:bookshelf")
-                self.put(n, 41.5, a + k, 1, "minecraft:bookshelf")
-            self.put(n, 36, a, 0, "minecraft:potted_azalea_bush")
-            self.put(n, 33, a - 4, 0, "minecraft:red_carpet")
-            self.put(n, 33, a + 4, 0, "minecraft:red_carpet")
+        """Judicial's Seclusion Holding (model judicial(), from the Season 2 set): a long narrow concrete corridor on
+        a steel grate, round sealed hatches down the left wall, pipes along the right, cold panels overhead; at its
+        end a square cell with a tiled floor, a caged door and light falling through a ceiling grille."""
+        self.on(n)
+        W, D = 3, 13                                         # model W 3.4, D 13, H 3.3
+        dark = "minecraft:gray_concrete"
+        self.room(18, 30, -1, 1, dark, "minecraft:polished_deepslate", rows=3)
+        self.entry()
+        self.box(18, 30, -1, 1, 0, 0, "minecraft:iron_trapdoor[facing=north,half=bottom,open=false,powered=false,waterlogged=false]")
+        for s in (2.2, 5.4, 8.6, 11.4):                      # hatches: sealed, no plates, solid behind
+            d, _ = self.cell(0, s, W)
+            self.blk(d, -2, 0, "minecraft:iron_door[facing=south,half=lower,hinge=left,open=false,powered=false]")
+            self.blk(d, -2, 1, "minecraft:iron_door[facing=south,half=upper,hinge=left,open=false,powered=false]")
+            self.box(d, d, -3, -3, 0, 1, dark)
+        for d in range(18, 31):                              # pipes along the right wall: 2.75 / 2.98 m and 0.35 m
+            self.blk(d, 1, 2, "minecraft:lightning_rod[facing=east,powered=false,waterlogged=false]")
+        z = 1.2
+        while z < D - 0.5:                                   # dark ribs every 1.6 m on both walls
+            d, _ = self.cell(0, z, W)
+            for c in (-2, 2):
+                if self.get(d, c, 0) == dark:
+                    self.box(d, d, c, c, 0, 2, "minecraft:polished_deepslate")
+            z += 1.6
+        z = 1.6
+        while z < D - 1:                                     # cold panels overhead every 2.8 m
+            d, _ = self.cell(0, z, W)
+            self.blk(d, 0, 3, SEA)
+            z += 2.8
+        # the cell: CW 4.4 x CD 4.4, CH 3.6, through a narrow open door 1.5 x 2.3 at the corridor's end
+        self.room(32, 35, -2, 1, dark, "minecraft:deepslate_tiles", rows=3)
+        self.box(31, 31, 0, 0, 0, 1, AIR)
+        self.blk(31, 0, -1, "minecraft:polished_deepslate")
+        self.box(33, 34, 0, 0, 3, 3, "minecraft:iron_bars")   # the grille, and daylight-coloured light over it
+        self.box(33, 34, 0, 0, 4, 4, SEA)
+        self.box(33, 34, -3, -3, 0, 1, "minecraft:iron_bars")  # the caged door in the cell's left wall
+        self.box(33, 34, -4, -4, 0, 1, dark)
 
     def it(self, n: int) -> None:
-        """IT: round office under radiating lights, the server hall, and the Vault."""
-        y = self.silo.level_y(n)
-        office = self.hall(n, 20, 160, 18, 43, floor="minecraft:polished_andesite", walls="minecraft:light_gray_concrete")
-        # radiating ceiling light from one point
-        cx, cz = self.at(30, 90)
-        for k in range(12):
-            ang = k * TAU / 12
-            for t in range(2, 12):
-                x, z = cx + int(round(t * math.cos(ang))), cz + int(round(t * math.sin(ang)))
-                if 0 <= x < self.v.size[0] and 0 <= z < self.v.size[2] and office[x, z]:
-                    self.v.set(x, y + 3, z, "minecraft:pearlescent_froglight" if t % 3 == 0 else "minecraft:smooth_quartz")
-        for r in (22, 26, 34, 38):
-            for a in range(28, 156, 9):
-                f = self.facing(a, outward=False)
-                self.put(n, r, a, 0, "minecraft:spruce_slab[type=top]")
-                self.put(n, r, a, 1, "minecraft:black_stained_glass_pane")
-                self.put(n, r + 1, a, 0, f"minecraft:spruce_stairs[facing={f}]")
-        # server hall: racks of lit lamps powered from behind
-        hall = self.hall(n, 165, 290, 18, 43, floor="minecraft:polished_deepslate", walls="minecraft:gray_concrete")
-        for r in (22, 26, 30, 34, 38):
-            for a in np.arange(170, 286, 360 / (TAU * r) * 1.0):
-                x, z = self.at(r, a)
-                if not hall[x, z]:
+        """IT (model it()): the offices under a radiating light, the server room, the Vault, the Head of IT's office.
+        The model chains offices (14 m), server room (12 m) and vault (13.4 m) straight back, 41 m; here the offices
+        and the server room keep the line and the vault opens off the server room's left wall."""
+        self.on(n)
+        paint = "minecraft:polished_tuff"                   # wall paint 0x7c877e, grey-green
+        con = "minecraft:light_gray_concrete"
+        W = 15                                              # offices HW 15 x HD 14 x HH 4.6
+        self.room(18, 31, -7, 7, paint, "minecraft:polished_andesite")
+        self.entry()
+        dc, cc = 24, 0                                      # the room's centre (zh)
+        for d in (24, 25):                                  # round light 1.5 m in the centre
+            for c in (-1, 0, 1):
+                self.blk(d, c, 3, SEA)
+        for k in range(8):                                  # eight light planes at 3.9 m between eight beams
+            a = k * math.pi / 4 + math.pi / 8
+            self.blk(round(dc + 0.5 + math.cos(a) * 3.9), round(math.sin(a) * 3.9), 3, SEA)
+            a3 = a                                          # eight columns at 6.4 across, 6.0 deep
+            self.box(round(dc + 0.5 + math.cos(a3) * 6.0), round(dc + 0.5 + math.cos(a3) * 6.0),
+                     round(math.sin(a3) * 6.4), round(math.sin(a3) * 6.4), 0, 3, paint)
+        for c in (-8, 8):                                   # arched recesses and round lamps on the side walls
+            z = 1.2
+            while z < 14 - 0.6:
+                d, _ = self.cell(0, z, W)
+                if not (c > 0 and abs(d - 24.5) < 1.4):
+                    self.box(d, d, c, c, 0, 1, "minecraft:black_concrete")
+                    dl, _ = self.cell(0, z + 0.85, W)
+                    self.blk(dl, c, 3, "minecraft:shroomlight")
+                z += 1.75
+        for x in (-5.2, -2.9, 2.9, 5.2):                    # desks with a beige monitor, a task lamp and a chair
+            for dz in (3.4, 0.4, -2.6, -5.2):
+                if x > 0 and abs(dz) < 1:
                     continue
-                self.v.box(x, y, z, x, y + 2, z, "minecraft:polished_blackstone")
-                self.v.set(x, y + 1, z, "minecraft:redstone_lamp[lit=true]")
-                self.v.set(x, y + 3, z, "minecraft:redstone_block")
-                self.v.set(x, y + 2, z, "minecraft:redstone_lamp[lit=true]")
-        # the Vault: steel walls, a round door, the things that do not exist
-        vault = self.hall(n, 300, 340, 31, 43, floor="minecraft:iron_block", walls="minecraft:iron_block")
-        dx, dz = self.at(31.5, 320)
-        for oy in range(0, 4):
-            for o in (-1, 0, 1):
-                xx, zz = self.at(31.5, 320 + o * 2.2)
-                self.v.set(xx, y + oy, zz, "minecraft:waxed_copper_block" if oy in (0, 3) or o else "minecraft:waxed_oxidized_copper")
-        for a, r in ((310, 40), (320, 41), (330, 40)):
-            self.put(n, r, a, 0, "minecraft:chest")
-        self.put(n, 36, 320, 0, "minecraft:lectern")
-        self.ceiling_lights(n, vault, "minecraft:pearlescent_froglight", 5)
+                d = 24 - round(dz)
+                c0 = round(x - 0.4)
+                for c in (c0, c0 + 1):
+                    self.blk(d, c, 0, SLAB_TOP)
+                self.blk(d, c0, 1, "minecraft:smooth_sandstone_slab[type=bottom,waterlogged=false]")
+                self.blk(d, c0 + 1, 1, LANTERN)
+                self.blk(d - 1, c0, 0, stairs("west"))
+        # server room: SW 10 x SD 12 x SH 3.6, door 2.4 wide in the offices' back wall; racks in four rows
+        self.room(33, 42, -4, 5, con, "minecraft:polished_deepslate", rows=3, ceiling=con)
+        self.box(32, 32, 0, 1, 0, 1, AIR)
+        self.door(32, 0, "west", width=2, hinge="right")
+        for c in (-3, -1, 2, 4):
+            for d in range(34, 42):
+                self.blk(d, c, 0, "minecraft:observer[facing=up,powered=false]")
+                self.blk(d, c, 1, "minecraft:observer[facing=down,powered=false]")
+        for c in (-2, 3):                                   # cable trays at 2.75 m
+            self.box(34, 41, c, c, 2, 2, "minecraft:iron_trapdoor[facing=north,half=top,open=false,powered=false,waterlogged=false]")
+        for d in (35, 37, 40):                              # light panels on the axis every 2.4 m
+            self.blk(d, 0, 3, SEA)
+            self.blk(d, 1, 3, SEA)
+        # the Vault, D 13.4 x 13 x H 4.4: a round stepped bowl round a lit pedestal, behind a heavy door
+        self.room(29, 39, -19, -9, con, "minecraft:polished_andesite")
+        vd, vc = 34, -14
+        prof = [(6.3, 4), (6.02, 4), (5.72, 3), (5.42, 3), (5.1, 2), (4.78, 2), (4.5, 1)]
+        for d in range(29, 40):
+            for c in range(-19, -8):
+                r = math.hypot(d + 0.5 - (vd + 0.5), c + 0.5 - (vc + 0.5))
+                if r >= 5.2:
+                    self.box(d, d, c, c, 0, 3, con)
+                elif r >= 4.6:
+                    self.box(d, d, c, c, 0, 1, con)         # the stepped tiers: two risers, then the wall
+                elif r >= 4.1:
+                    self.blk(d, c, 0, "minecraft:smooth_stone_slab[type=bottom,waterlogged=false]")
+        for d in (vd - 1, vd, vd + 1):
+            for c in (vc - 1, vc, vc + 1):
+                self.blk(d, c, 3, SEA)                      # the round light 2.3 m over the middle
+        self.blk(vd + 1, vc, 0, "minecraft:polished_andesite")          # the pedestal 2.7 m wide, 0.34 m high
+        for c in (vc - 1, vc + 1):
+            self.blk(vd + 1, c, 0, "minecraft:smooth_stone_slab[type=bottom,waterlogged=false]")
+        self.box(vd + 2, vd + 2, vc - 1, vc + 1, 1, 2, "minecraft:light_blue_stained_glass")   # the hologram 3.7 x 2.3
+        self.box(36, 37, -8, -5, 0, 2, AIR)                 # passage from the server room's left wall
+        self.box(36, 37, -8, -5, -1, -1, "minecraft:polished_andesite")
+        self.box(35, 38, -8, -5, 3, 3, con)
+        self.box(35, 35, -8, -5, 0, 2, con)
+        self.box(38, 38, -8, -5, 0, 2, con)
+        self.door(36, -5, "south", width=2)
+        self.blk(36, -4, 3, SEA)                            # the fitting in front of the vault door
+        self.box(36, 37, -9, -9, 0, 1, AIR)
+        # the Head of IT's office: corridor 2.2 x 5 off the offices' right wall, office 7.2 x 6.4 x 3.2
+        self.room(24, 25, 9, 12, paint, "minecraft:polished_andesite", rows=3)
+        self.door(24, 8, "north", width=2, hinge="right")
+        self.room(21, 27, 14, 20, paint, "minecraft:dark_oak_planks", rows=3)
+        self.door(24, 13, "north")
+        for d in range(21, 28):                             # shelves of books along the back wall
+            self.box(d, d, 20, 20, 0, 2, "minecraft:bookshelf")
+        for c in range(15, 19):                             # and along the side
+            self.box(21, 21, c, c, 0, 2, "minecraft:bookshelf")
+        for d in (22, 23, 24):
+            self.blk(d, 18, 0, "minecraft:dark_oak_slab[type=top,waterlogged=false]")       # the desk
+        self.blk(23, 19, 0, "minecraft:spruce_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]")
+        self.blk(22, 18, 1, LANTERN)
+        for c in (15, 16, 17):                              # sofa, two armchairs and a low table on a rug
+            self.blk(27, c, 0, "minecraft:dark_oak_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]")
+        self.blk(25, 15, 0, "minecraft:dark_oak_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]")
+        self.blk(25, 17, 0, "minecraft:dark_oak_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]")
+        self.blk(26, 16, 0, "minecraft:dark_oak_slab[type=bottom,waterlogged=false]")
+        for d, c in ((25, 16), (26, 15), (26, 17)):
+            self.blk(d, c, 0, "minecraft:red_carpet")
+        self.blk(24, 17, 2, HANG)
 
-    def watcher_room(self, n: int) -> None:
-        """A janitorial closet that leads on into the hidden Watcher Room: a wall of feeds."""
-        y = self.silo.level_y(n)
-        closet = self.hall(n, 196, 204, 31, 34, floor="minecraft:stone_bricks", walls="minecraft:light_gray_concrete")
-        self.put(n, 32.5, 200, 0, "minecraft:cauldron")
-        self.put(n, 33.2, 198, 0, "minecraft:barrel")
-        room = self.hall(n, 188, 212, 35, 43, floor="minecraft:polished_deepslate", walls="minecraft:gray_concrete")
-        self.v.mask(y, y, self.sector(199, 201, 33, 36), AIR)
-        self.v.mask(y + 1, y + 1, self.sector(199, 201, 33, 36), AIR)
-        wall = self.sector(189, 211, 42, 43)
-        self.v.mask(y + 1, y + 3, wall, "minecraft:black_stained_glass")
-        self.v.mask(y + 3, y + 3, self.sector(189, 211, 41, 42), "minecraft:redstone_block")
-        self.v.mask(y + 2, y + 2, self.sector(189, 211, 41, 42), "minecraft:redstone_lamp[lit=true]")
-        for a in (194, 200, 206):
-            self.put(n, 39, a, 0, "minecraft:dark_oak_slab[type=top]")
+    def watcher(self, n: int) -> None:
+        """Recycling's janitorial closet and, through its back door, the Watcher Room (model watcher()): two tiers of
+        angled monitors on an arc of 6.2 m, a curved console desk at 5 m, swivel chairs at 3.9 m, a round light."""
+        self.on(n)
+        con, paint = "minecraft:light_gray_concrete", "minecraft:gray_concrete"
+        self.room(18, 19, -1, 1, con, "minecraft:polished_andesite", rows=3)   # closet 3.2 x 2.4 x 3.6
+        self.entry()
+        for c in (-1, 1):                                   # shelves of boxes both sides at 0.9, 1.6, 2.3 m
+            for d in (18, 19):
+                self.blk(d, c, 0, "minecraft:barrel[facing=up,open=false]")
+                self.blk(d, c, 1, SLAB_TOP)
+                self.blk(d, c, 2, "minecraft:spruce_slab[type=bottom,waterlogged=false]")
+        self.blk(19, -1, 0, "minecraft:cauldron")         # the mop bucket
+        self.blk(18, 0, 2, HANG)
+        W, R = 13, 6.2                                      # room 13.4 x 9.0 x 4.6, arc centre 1.2 m in
+        self.room(21, 29, -6, 6, paint, "minecraft:polished_deepslate")
+        self.blk(20, 0, 0, AIR)
+        self.blk(20, 0, 1, AIR)
+        cd, cc = 21 + 1.2, 0.5                              # arc centre in cell coordinates
+        for d in range(21, 30):
+            for c in range(-6, 7):
+                dx, dz = d + 0.5 - cd, c + 0.5 - cc
+                r, a = math.hypot(dx, dz), math.degrees(math.atan2(dz, dx))
+                if abs(a) > 82:
+                    continue
+                if r >= R - 0.5 and r < R + 0.5:
+                    self.blk(d, c, 2, "minecraft:gray_stained_glass")     # monitors, two tiers at 2.3 and 3.3 m
+                    self.blk(d, c, 3, "minecraft:gray_stained_glass")
+                    self.blk(d, c, 1, paint)
+                    self.blk(d, c, 0, paint)
+                elif r >= R + 0.5:
+                    self.box(d, d, c, c, 0, 1, paint)
+                    self.box(d, d, c, c, 2, 3, SEA)                        # the feeds' glow behind the screens
+                elif 4.55 <= r < 5.65 and abs(a) < 76:
+                    self.blk(d, c, 0, "minecraft:polished_blackstone_slab[type=top,waterlogged=false]")   # the desk
+                    if 5.0 <= r:
+                        self.blk(d, c, 1, "minecraft:daylight_detector[inverted=false,power=0]")      # consoles
+                elif 1.45 <= r < 2.25:
+                    self.blk(d, c, 3, SEA)                                       # the round ceiling light
+        for k in range(7):                                  # swivel chairs at 3.9 m, -60..60 degrees, facing the screens
+            a = math.radians(-60 + 20 * k)
+            d, c = math.floor(cd + 3.9 * math.cos(a)), math.floor(cc + 3.9 * math.sin(a))
+            back = self.silo.facing_radial(a + math.pi)       # the back toward the arc's centre
+            self.blk(d, c, 0, stairs(back))
 
-    def checkpoint(self, n: int) -> None:
-        """Judicial checkpoint at the landing: a gate across the bridge and a guard desk."""
-        a = math.degrees((n * GOLDEN) % TAU)
-        y = self.silo.level_y(n)
-        gate = self.sector(a - 8, a + 8, 13, 14.5)
-        self.v.mask(y, y + 2, gate, "minecraft:iron_bars")
-        for o in (-12, 12):
-            self.put(n, 16, a + o, 0, "minecraft:polished_deepslate")
-            self.put(n, 16, a + o, 1, "minecraft:lantern")
-
-    def medical(self, n: int) -> None:
-        """Mids Medical: white wards, rows of beds, clean cold light."""
-        y = self.silo.level_y(n)
-        ward = self.hall(n, 30, 150, 18, 43, floor="minecraft:white_concrete", walls="minecraft:white_concrete")
-        for r in (24, 31, 38):
-            for a in range(36, 146, 8):
-                f = self.facing(a)
-                self.put(n, r, a, 0, f"minecraft:white_bed[facing={f},part=head]")
-                ox, oz = {"east": (-1, 0), "west": (1, 0), "south": (0, -1), "north": (0, 1)}[f]
-                x, z = self.at(r, a)
-                self.v.set(x + ox, y, z + oz, f"minecraft:white_bed[facing={f},part=foot]")
-        self.put(n, 20, 90, 0, "minecraft:brewing_stand")
-        self.put(n, 20, 95, 0, "minecraft:white_concrete")
-        self.ceiling_lights(n, ward, "minecraft:pearlescent_froglight", 4)
-
-    def bazaar(self, n: int) -> None:
-        """The Bazaar (novels): the whole level one market of family stalls under canopies."""
-        y = self.silo.level_y(n)
-        market = self.hall(n, 0, 360, 18, 43, floor="minecraft:spruce_planks")
-        # keep the rooms' back wall as the outer wall
-        self.v.mask(y, y + 3, self.silo.ring(42, 43), "minecraft:light_gray_concrete")
-        colours = ["red", "orange", "yellow", "lime", "cyan", "blue", "purple", "brown", "white", "green"]
-        k = 0
-        for r in (22, 29, 36):
-            step = 360 / int(TAU * r / 6)
-            for a in np.arange(0, 360, step):
-                x, z = self.at(r, a)
-                c = colours[(k * 7 + self.s.number) % len(colours)]
-                k += 1
-                for ox, oz in ((-1, -1), (1, -1), (-1, 1), (1, 1)):
-                    self.v.set(x + ox, y, z + oz, "minecraft:spruce_fence")
-                    self.v.set(x + ox, y + 1, z + oz, "minecraft:spruce_fence")
-                self.v.box(x - 1, y + 2, z - 1, x + 1, y + 2, z + 1, f"minecraft:{c}_wool")
-                self.v.set(x, y, z, ("minecraft:barrel[facing=up]", "minecraft:chest", "minecraft:composter",
-                                     "minecraft:smoker", "minecraft:loom")[k % 5])
-                self.v.set(x + 1, y + 3, z, "minecraft:lantern[hanging=true]")
-        self.ceiling_lights(n, market, "minecraft:ochre_froglight", 7)
+    def market(self, n: int) -> None:
+        """The Market (model market()): a narrow alley with a long food counter under red pendant shades, and the
+        Traders' Hall of six family pitches. The model's hall lies behind the alley (16 + 12.5 m); here it opens off
+        the alley's left wall at its centre line."""
+        self.on(n)
+        con, dark = "minecraft:light_gray_concrete", "minecraft:gray_concrete"
+        self.room(18, 33, -2, 1, con, "minecraft:polished_andesite")             # alley 4.2 x 16 x 4.8
+        self.entry()
+        for d in range(20, 32):                                                  # the counter, 1.05 m, 11 m long
+            self.blk(d, 1, 0, "minecraft:stripped_spruce_wood[axis=x]")
+        for d in (19, 22, 25, 28, 31):                                           # pillars every 3 m
+            self.box(d, d, -2, -2, 0, 3, "minecraft:polished_andesite")
+            self.box(d, d, 2, 2, 0, 3, "minecraft:polished_andesite")
+        self.blk(24, 1, 1, "minecraft:brewing_stand[has_bottle_0=false,has_bottle_1=false,has_bottle_2=false]")  # pretzel stand
+        self.blk(21, 1, 1, "minecraft:cauldron")                                # the urn with its tap
+        self.blk(22, 1, 1, "minecraft:flower_pot")                              # metal cups
+        for s in (2.5, 5.7, 8.9, 12.1):                                          # red shades with their bulbs
+            d, _ = self.cell(0, s, 4)
+            self.blk(d, -1, 3, "minecraft:red_stained_glass")
+            self.blk(d, -1, 2, HANG)
+        # the traders' hall TW 9 x TD 12.5 x TH 5.4: across runs along d (25..33), depth along -c from the alley
+        self.room(25, 33, -15, -4, dark, "minecraft:spruce_planks")
+        self.box(29, 30, -3, -3, 0, 1, AIR)                                     # doorway 1.8 x 2.6
+        self.box(29, 30, -3, -3, -1, -1, "minecraft:polished_andesite")
+        cloth = [(158, 92, 56), (77, 107, 87), (140, 122, 77), (115, 56, 51), (87, 92, 112), (148, 133, 107)]
+        trades = ["cloth", "pots", "tools", "lamps", "boots", "jars"]
+        for k in range(6):
+            sd = -1 if k < 3 else 1
+            c = -3 - round(2.4 + (k % 3) * 3.7)                                 # pitch centre
+            wall_d = 25 if sd < 0 else 33                                        # trader's side, by the wall
+            cnt_d = wall_d - sd                                                  # counter row
+            colour = nearest(cloth[k], TERRACOTTA)
+            for cs in (c - 1, c, c + 1):
+                self.blk(cnt_d, cs, 0, "minecraft:spruce_planks")              # counter 1.0 m
+                self.blk(wall_d, cs, 3, f"minecraft:{colour}_terracotta")      # awning, high at the wall
+                self.blk(cnt_d, cs, 3, f"minecraft:{colour}_terracotta")
+            for cs in (c - 2, c + 2):                                           # partitions 2.5 m, pillars between
+                if cs >= -15:
+                    self.box(cnt_d, cnt_d, cs, cs, 0, 1, "minecraft:spruce_planks")
+                    self.box(wall_d, wall_d, cs, cs, 0, 3, "minecraft:polished_andesite")
+            self.blk(wall_d, c, 2, HANG)                                         # the pitch's own bulb
+            self.blk(wall_d, c + 1, 0, "minecraft:spruce_slab[type=bottom,waterlogged=false]")   # stool
+            trade = trades[k]
+            if trade == "cloth":
+                for cs in (c - 1, c, c + 1):
+                    self.blk(cnt_d, cs, 1, f"minecraft:{nearest(cloth[(cs + k) % 6], TERRACOTTA)}_carpet")
+                for cs in (c - 1, c):
+                    wb = nearest(cloth[(cs + 2) % 6], TERRACOTTA)
+                    self.blk(wall_d, cs, 1, f"minecraft:{wb}_wall_banner[facing={'east' if sd < 0 else 'west'}]")
+            elif trade == "pots":
+                for cs in (c - 1, c, c + 1):
+                    self.blk(cnt_d, cs, 1, "minecraft:flower_pot")
+                self.blk(wall_d, c - 1, 0, "minecraft:decorated_pot[cracked=false,facing=north,waterlogged=false]")
+            elif trade == "tools":
+                self.blk(cnt_d, c, 0, "minecraft:smithing_table")
+                self.blk(cnt_d, c - 1, 1, "minecraft:grindstone[face=floor,facing=north]")
+                self.blk(wall_d, c - 1, 1, f"minecraft:spruce_trapdoor[facing={'east' if sd < 0 else 'west'},half=bottom,open=true,powered=false,waterlogged=false]")
+            elif trade == "lamps":
+                for cs in (c - 1, c, c + 1):
+                    self.blk(cnt_d, cs, 1, LANTERN)
+                    self.blk(cnt_d - sd, cs, 2, HANG)
+            elif trade == "boots":
+                for cs in (c - 1, c):
+                    self.blk(wall_d, cs, 0, SLAB_TOP)
+                    self.blk(wall_d, cs, 1, "minecraft:brown_carpet")
+            else:
+                for cs in (c - 1, c, c + 1):
+                    self.blk(cnt_d, cs, 1, "minecraft:decorated_pot[cracked=false,facing=north,waterlogged=false]")
+                self.blk(cnt_d - sd, c + 1, 0, "minecraft:brown_wool")       # sacks of seed
+        for s in (1.4, 5.3, 9.2):                                                # string lights across the aisle
+            c = -3 - round(s) - 1
+            for d in (27, 29, 31):
+                self.blk(d, c, 3, HANG)
+        for c in range(-14, -4):                                                 # the runner down the aisle
+            if self.get(29, c, 0) == AIR:
+                self.blk(29, c, 0, "minecraft:brown_carpet")
+        for d, c in ((27, -6), (31, -9), (27, -12)):                             # produce crates
+            self.blk(d, c, 0, "minecraft:composter[level=7]")
+        for d, c in ((30, -13), (28, -13)):                                      # crates in the aisle
+            self.blk(d, c, 0, "minecraft:barrel[facing=up,open=false]")
+        # the far end: a shop front, its shutter half up on a lit back room
+        self.box(28, 30, -16, -16, 0, 0, AIR)
+        self.box(28, 30, -16, -16, -1, -1, "minecraft:spruce_planks")
+        self.box(28, 30, -17, -17, 0, 0, "minecraft:shroomlight")
+        self.box(28, 30, -16, -16, 1, 2, "minecraft:iron_trapdoor[facing=east,half=bottom,open=true,powered=false,waterlogged=false]")
+        for d in (30, 31):
+            self.blk(d, -15, 0, "minecraft:brown_wool")                        # sacks by the shop front
 
     def deputy_station(self, n: int) -> None:
-        y = self.silo.level_y(n)
-        m = self.hall(n, 60, 90, 31, 43, floor="minecraft:polished_andesite", walls="minecraft:light_gray_concrete")
-        self.v.mask(y, y + 3, self.sector(80, 89, 37, 42) & ~self.sector(81, 88, 38, 41), "minecraft:iron_bars")
-        self.put(n, 34, 70, 0, "minecraft:dark_oak_planks")
-        self.put(n, 34, 70, 1, "minecraft:lantern")
-        self.ceiling_lights(n, m, "minecraft:pearlescent_froglight", 5)
+        """Deputy station. Canon names the level only; its room follows the model's own Sheriff's station by the
+        airlock (the same department): 12.4 m wide, 10 m deep, 4.3 m high, open on to the walkway through a 3.8 x 3.0 m
+        doorway; two desks with chairs on the left, the holding cell's barred front on the right, a bench in the cell,
+        a noticeboard by the door, long fluorescent tubes and filing cabinets."""
+        self.on(n)
+        W = 12
+        olive = "minecraft:green_terracotta"
+        self.room(18, 27, -6, 5, olive, "minecraft:polished_deepslate")
+        self.box(16, 17, -2, 1, 0, 2, AIR)                                       # the open doorway, no door
+        self.box(16, 17, -2, 1, -1, -1, "minecraft:polished_deepslate")
+        for s0, s1, ac, sc in ((3.4, 5.0, -2.7, 3.97), (6.3, 7.9, -2.6, 6.87)):
+            for s in (s0, (s0 + s1) / 2, s1 - 0.01):
+                d, c = self.cell(ac, s, W)
+                self.blk(d, c, 0, SLAB_TOP)
+                self.blk(d, c, 1, "minecraft:green_carpet")
+            d, c = self.cell(ac + 1.4, sc + 0.23, W)
+            self.blk(d, c, 0, stairs("south"))
+            self.blk(self.cell(ac, s0, W)[0], self.cell(ac, s0, W)[1], 1, LANTERN)
+        for d in range(19, 24):                                                  # the cell's barred front
+            self.box(d, d, 2, 2, 0, 2, "minecraft:iron_bars")
+        for d in range(20, 23):
+            self.blk(d, 5, 0, "minecraft:spruce_slab[type=bottom,waterlogged=false]")   # bench at SW - 1
+        for d in (24, 25, 26):
+            self.box(d, d, -6, -6, 0, 1, "minecraft:barrel[facing=east,open=false]")    # filing cabinets
+        for c in (-5, -4):
+            self.blk(18, c, 1, "minecraft:spruce_trapdoor[facing=east,half=bottom,open=true,powered=false,waterlogged=false]")
+        for s in (2.2, 5.0, 7.8):                                                # tubes on rods, either side
+            for ac in (-2.6, 2.6):
+                d, c = self.cell(ac, s, W)
+                self.blk(d, c, 3, "minecraft:end_rod[facing=east]")
+        for s in (1.8, 4.6, 7.4):                                                # globe lamps on the left wall
+            d, _ = self.cell(0, s, W)
+            self.blk(d, -7, 2, "minecraft:ochre_froglight")
+
+    def workshop(self, n: int) -> None:
+        """Walker's workshop (model workshop()): dim and cluttered, a round bench strewn with radios and test gear,
+        racks against the back wall, red crates, a bank of small drawers, a desk with a green CRT, cage pendants,
+        two pipes high on the left wall, a round vent and an arched dark opening."""
+        self.on(n)
+        W, D = 10, 9
+        con = "minecraft:gray_concrete"
+        self.room(18, 26, -5, 4, con, "minecraft:polished_deepslate")          # 10 x 9 x 3.8
+        self.entry()
+        cd, cx = 18 + 4.5, 0.0
+        for d in range(18, 27):
+            for c in range(-5, 5):
+                if math.hypot(d + 0.5 - cd, c + 0.5 - cx) <= 1.8:
+                    self.blk(d, c, 0, SLAB_TOP)                                  # bench top at 0.92 m
+        self.blk(23, -1, 1, "minecraft:note_block[instrument=harp,note=0,powered=false]")   # radios
+        self.blk(23, 0, 1, "minecraft:daylight_detector[inverted=false,power=0]")       # the lit meter
+        self.blk(22, 1, 1, LANTERN)                                                     # desk lamp
+        for c in (-3, -2):                                                       # left rack
+            self.blk(26, c, 0, "minecraft:barrel[facing=west,open=false]")
+            self.blk(26, c, 1, "minecraft:note_block[instrument=harp,note=0,powered=false]")
+            self.blk(26, c, 2, "minecraft:jukebox[has_record=false]")
+        self.blk(26, 0, 0, "minecraft:dropper[facing=west,triggered=false]")    # right rack, red crates low
+        self.blk(26, 0, 1, "minecraft:note_block[instrument=harp,note=0,powered=false]")
+        self.box(26, 26, 1, 1, 0, 1, "minecraft:red_concrete")
+        self.box(26, 26, 0, 1, 2, 2, "minecraft:barrel[facing=west,open=false]")
+        for c in (-5, -4):                                                       # tools on a board
+            self.blk(26, c, 1, "minecraft:spruce_trapdoor[facing=west,half=bottom,open=true,powered=false,waterlogged=false]")
+        self.blk(27, 1, 2, "minecraft:waxed_copper_grate")                     # round vent in the back wall
+        for d in (24, 25):                                                       # drawer bank on the right wall
+            self.box(d, d, 4, 4, 0, 2, "minecraft:chiseled_bookshelf[facing=north,slot_0_occupied=false,slot_1_occupied=false,slot_2_occupied=false,slot_3_occupied=false,slot_4_occupied=false,slot_5_occupied=false]")
+        for d in (21, 22):                                                       # desk, green CRT, swivel chair
+            self.blk(d, 4, 0, "minecraft:smooth_stone_slab[type=top,waterlogged=false]")
+        self.blk(21, 4, 1, "minecraft:green_terracotta")
+        self.blk(22, 3, 0, stairs("north"))
+        for d in range(18, 27):                                                  # two pipes high on the left wall
+            self.blk(d, -5, 3, "minecraft:lightning_rod[facing=east,powered=false,waterlogged=false]")
+        for (x, s) in ((0, 4.5), (-1.5, 5.7), (1.6, 3.5), (-3.4, 7.0), (-2.2, 0.35)):   # cage pendants
+            d, c = self.cell(x, s, W)
+            if self.get(d, c, 3) == AIR:
+                self.blk(d, c, 3, HANG)
+        d, _ = self.cell(0, 4.5 + 0.8, W)                                        # the dark arched opening, left wall
+        self.box(d - 1, d, -6, -6, 0, 1, "minecraft:black_concrete")
+        self.blk(25, 4, 3, "minecraft:shroomlight")                              # the wall lamp over the drawers
+
+    def checkpoint(self, n: int) -> None:
+        """Level 30: Judicial's checkpoint on the stair (canon). A barred gate across the bridge with a door."""
+        self.on(n)
+        silo, v, y = self.silo, self.v, self.y
+        a = (n * GOLDEN) % TAU
+        d = np.abs(((silo.theta - a + math.pi) % TAU) - math.pi)
+        gate = (np.abs(d * silo.r) < 2.6) & (d < math.pi / 2) & silo.ring(self.s.r_walk_in - 2, self.s.r_walk_in - 1)
+        v.mask(y, y + 2, gate, "minecraft:iron_bars")
+        x, z = silo.polar(self.s.r_walk_in - 1.5, a)
+        f = silo.facing_radial(a)
+        for dy, half in ((0, "lower"), (1, "upper")):
+            v.set(x, y + dy, z, f"minecraft:iron_door[facing={f},half={half},hinge=left,open=false,powered=false]")
+        for k in (-1, 1):
+            dx, dz = DIRS[f]
+            if v.get(x + k * dx, y, z + k * dz) == AIR:
+                v.set(x + k * dx, y, z + k * dz, PLATE)
+
+    def medical(self, n: int) -> None:
+        """Mids Medical: the bays are clinics (model BAY.medical); their front rooms hold two beds each."""
+        self.on(n)
+        silo, s = self.silo, self.s
+        for b in range(s.bays):
+            a = silo.bay_center(b)
+            for k in (-0.22, 0.22):
+                ang = a + k * math.radians(360 / s.bays)
+                x, z = silo.polar(s.r_corridor_in - 3, ang)
+                f = silo.facing_radial(ang)
+                dx, dz = DIRS[f]
+                if self.v.get(x, self.y, z) == AIR and self.v.get(x - dx, self.y, z - dz) == AIR:
+                    self.v.set(x, self.y, z, f"minecraft:white_bed[facing={f},occupied=false,part=head]")
+                    self.v.set(x - dx, self.y, z - dz, f"minecraft:white_bed[facing={f},occupied=false,part=foot]")
 
     def farm(self, n: int) -> None:
-        """Lower Mids Farm: hydroponic rows under grow lights across the whole level."""
-        y = self.silo.level_y(n)
-        farm = self.hall(n, 0, 360, 18, 42, floor="minecraft:dirt")
+        """Lower Mids Farm: the bays are glazed grow rooms (model BAY.farm); behind the glass, crops in rows on
+        watered soil under grow lights."""
+        self.on(n)
+        silo, s, v, y = self.silo, self.s, self.v, self.y
+        front = silo.ring(s.r_atrium + 1, s.r_corridor_in - 1) & (v.ids[:, y, :] == v.id(AIR))
+        X, Z = silo.X, silo.Z
+        water = front & ((X % 4) == 0) & ((Z % 9) != 0)
+        land = front & ~water
+        v.mask(y - 1, y - 1, water, "minecraft:water")
+        v.mask(y - 1, y - 1, land, "minecraft:farmland[moisture=7]")
         crops = ["minecraft:wheat[age=7]", "minecraft:carrots[age=7]", "minecraft:potatoes[age=7]", "minecraft:beetroots[age=3]"]
-        X, Z = self.silo.X, self.silo.Z
-        water = farm & ((X % 5) == 0)
-        land = farm & ~water
-        self.v.mask(y - 1, y - 1, water, "minecraft:water")
-        self.v.mask(y - 1, y - 1, land, "minecraft:farmland[moisture=7]")
         for i, c in enumerate(crops):
-            self.v.mask(y, y, land & ((Z // 6) % 4 == i), c)
-        self.v.mask(y + 3, y + 3, farm & ((X % 5) == 0) & ((Z % 3) == 0), "minecraft:verdant_froglight")
+            v.mask(y, y, land & ((Z // 5) % 4 == i), c)
+        v.mask(y + 3, y + 3, front & ((X % 4) == 2) & ((Z % 3) == 0), "minecraft:verdant_froglight")
 
     def barricade(self, n: int) -> None:
-        """The barricade at the landing: junk piled across the bridge."""
-        a = math.degrees((n * GOLDEN) % TAU)
-        y = self.silo.level_y(n)
-        m = self.sector(a - 14, a + 14, 13, 17)
-        junk = ["minecraft:barrel[facing=up]", "minecraft:cobblestone_wall", "minecraft:iron_bars",
-                "minecraft:oak_planks", "minecraft:scaffolding[distance=0,bottom=false]", "minecraft:anvil[facing=north]"]
+        """Level 130, the barricade (canon): junk piled across the landing where the bridge reaches the walkway."""
+        self.on(n)
+        silo, v, y = self.silo, self.v, self.y
+        a = (n * GOLDEN) % TAU
+        d = np.abs(((silo.theta - a + math.pi) % TAU) - math.pi)
+        m = (d * silo.r < 4) & (d < math.pi / 2) & silo.ring(self.s.r_walk_in - 1, self.s.r_walk_in + 2)
+        junk = ["minecraft:barrel[facing=up,open=false]", "minecraft:cobblestone_wall", "minecraft:oak_planks",
+                "minecraft:scaffolding[bottom=false,distance=0,waterlogged=false]", "minecraft:anvil[facing=north]",
+                "minecraft:chipped_anvil[facing=east]", "minecraft:iron_bars"]
         xs, zs = np.nonzero(m)
         for i, (x, z) in enumerate(zip(xs, zs)):
             for dy in range(0, 2 + (i % 2)):
-                self.v.set(x, y + dy, z, junk[(i * 3 + dy) % len(junk)])
-
-    def mechanical(self, n: int) -> None:
-        """Mechanical: hot, loud pipes and furnaces through the rooms."""
-        y = self.silo.level_y(n)
-        m = self.hall(n, 90, 270, 18, 43, floor="minecraft:waxed_weathered_copper_grate", walls="minecraft:gray_concrete")
-        for r in (21, 27, 33, 39):
-            ring = self.silo.ring(r, r + 1) & m
-            self.v.mask(y + 3, y + 3, ring, "minecraft:waxed_weathered_cut_copper")
-        for a in range(100, 265, 15):
-            self.put(n, 41, a, 0, "minecraft:blast_furnace[facing=" + self.facing(a, False) + "]")
-            self.put(n, 41, a + 5, 0, "minecraft:furnace[facing=" + self.facing(a, False) + "]")
-            self.put(n, 24, a, 0, "minecraft:waxed_weathered_copper")
-            self.put(n, 24, a, 1, "minecraft:chain[axis=y]")
-            self.put(n, 24, a, 2, "minecraft:chain[axis=y]")
-        self.ceiling_lights(n, m, "minecraft:verdant_froglight", 6)
-
-    def workshop(self, n: int) -> None:
-        """Walker's electronics workshop: a cluttered bench room nobody has left in decades."""
-        m = self.hall(n, 150, 175, 31, 43, floor="minecraft:spruce_planks", walls="minecraft:gray_concrete")
-        things = ["minecraft:smithing_table", "minecraft:crafting_table", "minecraft:lectern", "minecraft:barrel[facing=up]",
-                  "minecraft:copper_bulb[lit=true]", "minecraft:lightning_rod", "minecraft:target",
-                  "minecraft:dropper[facing=up]"]
-        i = 0
-        for a in np.arange(152, 174, 2.0):
-            for r in (41, 33):
-                self.put(n, r, a, 0, things[i % len(things)])
-                i += 1
-        for a in (156, 163, 170):
-            self.put(n, 37, a, 3, "minecraft:lantern[hanging=true]")
-
-    def generator_extras(self) -> None:
-        """Steam main from the wall to the turbine, and the hatch to the pressure chamber."""
-        silo, v = self.silo, self.v
-        yf = silo.yi(silo.gen_floor_rel)
-        a = math.radians(120)
-        for t in range(24, 42):
-            x, z = silo.polar(t, a)
-            v.box(x, yf + 3, z - 1, x, yf + 5, z + 1, "minecraft:waxed_weathered_copper")
-        hx, hz = silo.polar(26, math.radians(140))
-        v.box(hx - 1, yf - 1, hz - 1, hx + 1, yf - 1, hz + 1, "minecraft:iron_trapdoor[facing=north,half=top,open=false]")
-
-    def digger_camp_and_door(self) -> None:
-        """George's camp inside the digger body; across the water a tunnel ends at a huge metal door."""
-        silo, v = self.silo, self.v
-        floor = silo.yi(silo.void_floor_rel)
-        c = silo.R
-        v.set(c + 2, floor + 3, c, "minecraft:red_bed[facing=east,part=head]")
-        v.set(c + 1, floor + 3, c, "minecraft:red_bed[facing=east,part=foot]")
-        v.set(c - 2, floor + 3, c + 1, "minecraft:chest")
-        v.set(c - 2, floor + 3, c - 1, "minecraft:lantern")
-        v.set(c, floor + 3, c + 2, "minecraft:lectern")
-        a = math.radians(30)
-        for t in range(int(self.s.void_radius) - 2, silo.R):
-            x, z = silo.polar(t, a)
-            v.box(x - 2, floor + 3, z - 2, x + 2, floor + 7, z + 2, AIR)
-            v.box(x - 2, floor + 2, z - 2, x + 2, floor + 2, z + 2, "minecraft:polished_deepslate")
-        x, z = silo.polar(silo.R - 1, a)
-        v.box(x - 3, floor + 2, z - 3, x + 3, floor + 8, z + 3, "minecraft:iron_block")
-        v.box(x - 1, floor + 4, z - 1, x + 1, floor + 6, z + 1, "minecraft:waxed_oxidized_copper")
+                v.set(x, y + dy, z, junk[(i * 3 + dy) % len(junk)])
