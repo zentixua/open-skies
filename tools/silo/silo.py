@@ -101,6 +101,9 @@ MEDICAL_WALL = "minecraft:white_concrete"
 MOSS = "minecraft:moss_block"
 LEAVES = "minecraft:azalea_leaves[distance=7,persistent=true,waterlogged=false]"
 CRATE = "minecraft:barrel[facing=up,open=false]"
+# store rooms' stacked crates: a block with no block entity. Barrels are containers (one block entity each); Silo 1's
+# storage levels alone held 97 739 of them (12.11 offline build), weight in every chunk load and save for nothing seen
+STOCK = "minecraft:stripped_spruce_wood[axis=y]"
 SACK = "minecraft:brown_wool"
 DRUM = "minecraft:cauldron"
 HANG = "minecraft:lantern[hanging=true,waterlogged=false]"
@@ -626,7 +629,7 @@ class Silo:
                 continue
             if any((c[0] + dx, c[1] + dz) not in cellset for dx, dz in ((1, 0), (-1, 0), (0, 1), (0, -1))):
                 if v.get(c[0], y, c[1]) == AIR:
-                    v.set(c[0], y, c[1], CRATE)
+                    v.set(c[0], y, c[1], STOCK)
 
     def alley_lights(self, n: int, y: int, t: dict, lamp: str) -> None:
         """Lamps in the alleys' ceilings every few blocks (S2 alleys: lanterns and a lit lattice overhead)."""

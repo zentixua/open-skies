@@ -180,8 +180,28 @@ def to_tag(value):
     raise TypeError(type(value))
 
 
+def split_inline_nbt(v: Volume) -> None:
+    """States written for /setblock as `name[props]{snbt}` (event.py's banners): keep `name[props]` in the palette and
+    move the SNBT to the volume's block entities at every cell that holds it."""
+    for i, st in enumerate(v.palette):
+        if not isinstance(st, str) or "{" not in st:
+            continue
+        cut = st.index("{")
+        base, snbt = st[:cut], st[cut:]
+        data = {k: val for k, val in nbtlib.parse_nbt(snbt).items()}
+        bid = be_id(canonical(base))
+        if bid:
+            data.setdefault("id", String(bid))
+        for x, y, z in np.argwhere(v.ids == i):
+            if (int(x), int(y), int(z)) not in v.block_entities:
+                v.block_entities[(int(x), int(y), int(z))] = dict(data)
+        v.palette[i] = base
+
+
 def apply(world_dir: str, vols: list[Volume], dim_min_y: int, log=print) -> dict:
     """Write volumes into <world_dir>/region. Returns stats."""
+    for v in vols:
+        split_inline_nbt(v)
     by_region: dict[tuple[int, int], list[tuple[int, int]]] = defaultdict(list)
     chunks_needed = set()
     for v in vols:
