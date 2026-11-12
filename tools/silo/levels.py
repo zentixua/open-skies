@@ -277,6 +277,8 @@ class Furnisher:
                 continue
             if r >= 4.6:                                     # racks, two tiers stepping up toward the wall
                 self.box(d, d, c, c, 0, 2, "minecraft:observer[facing=up,powered=false]")
+                if (d + c) % 2 == 0:                         # lit rack panels (S2 ew t1126s: the racks glow)
+                    self.blk(d, c, 1, "minecraft:waxed_oxidized_copper_bulb[lit=true,powered=false]")
             elif r >= 3.7 and abs(a) > 140:
                 continue                                     # the way in
             elif r >= 3.7:

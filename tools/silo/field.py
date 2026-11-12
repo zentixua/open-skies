@@ -1,8 +1,9 @@
 """The plain the complex stands on: one open grassland across the whole field, easing into the natural land.
 
-In the show's 2052 scenes the silos lie in one levelled field of mown grass. Here the field is a single height
-(the median of the natural ground under it, or the layout's "level"), and the plain weight falls from 1 within
-CORE of the nearest silo to 0 at EDGE, with a ragged edge so the forest boundary reads as natural. Inside the plain trees are cleared; water stays, and land next to water is never lowered (so no
+In the show's 2052 scenes the silos lie in one levelled field of mown grass. Here the field is one height (the
+median of the natural ground under it, or the layout's "level") with a gentle roll of +-UNDULATE blocks, over the
+whole complex: the plain weight is 1 within CORE of the convex hull of all shafts and rings and falls to 0 at EDGE,
+with a smooth ragged edge so the forest boundary reads as natural. Water inside the plain is filled. Inside the plain trees are cleared; water stays, and land next to water is never lowered (so no
 water spills). Each silo's own site (site.py) blends into this plain.
 """
 from __future__ import annotations
@@ -19,7 +20,8 @@ from volume import Volume
 
 SIGMA = 40.0          # metres of the low-pass
 MAX_CHANGE = 9        # blocks the plain may move the natural ground
-CORE, EDGE = 150.0, 240.0
+CORE, EDGE = 150.0, 240.0   # plain weight 1 within CORE of the complex's hull, 0 at EDGE (a 90 m blend to Zearth)
+UNDULATE = 2.0        # blocks: the plain's gentle roll over ~100 m (the 2052 field is mown but not a table)
 TREES_OUT = 0.5       # plain weight above which trees are cleared
 SHORE = 8             # shaped ground within this many blocks of remaining water stays above its surface
 FILL = 0.35           # plain weight above which water is filled
@@ -49,6 +51,38 @@ def gaussian_conv(a: np.ndarray, w: np.ndarray, sigma_cells: float) -> np.ndarra
     den = sep(w)
     return np.where(den > 1e-3, num / np.maximum(den, 1e-6), np.nan)
 
+
+
+def smooth_noise(nx: int, nz: int, cell: int, seed: int) -> np.ndarray:
+    """Value noise in [0, 1] with one random value per `cell` metres, cubic-interpolated: no steps between cells
+    (the old ragged edge used hash01(X // 24, Z // 24), constant per 24 m cell, and its jumps in the plain weight
+    left 2-3 block dirt steps)."""
+    from scipy.ndimage import zoom
+    gx, gz = nx // cell + 4, nz // cell + 4
+    i = np.arange(gx)[:, None]
+    k = np.arange(gz)[None, :]
+    coarse = hash01(i, k, seed)
+    fine = zoom(coarse, cell, order=3)
+    return np.clip(fine[cell:cell + nx, cell:cell + nz], 0.0, 1.0)
+
+
+def hull_distance(points, x0: int, z0: int, nx: int, nz: int) -> np.ndarray:
+    """Distance from each column to the convex hull of the points (0 inside): the complex as one area, so the plain
+    covers everything between the silos (Artem 11.11: one open plain, the 2052 look), not a disc round each."""
+    from scipy.spatial import ConvexHull
+    pts = np.asarray(points, float)
+    poly = pts[ConvexHull(pts).vertices]                  # counter-clockwise in (x, z)
+    X = np.arange(nx, dtype=np.float32)[:, None] + x0
+    Z = np.arange(nz, dtype=np.float32)[None, :] + z0
+    d = np.full((nx, nz), np.inf, np.float32)
+    inside = np.ones((nx, nz), bool)
+    for (ax, az), (bx, bz) in zip(poly, np.roll(poly, -1, axis=0)):
+        ex, ez = bx - ax, bz - az
+        L2 = ex * ex + ez * ez
+        t = np.clip(((X - ax) * ex + (Z - az) * ez) / L2, 0, 1)
+        d = np.minimum(d, np.hypot(X - (ax + t * ex), Z - (az + t * ez)))
+        inside &= (ex * (Z - az) - ez * (X - ax)) >= 0
+    return np.where(inside, 0.0, d)
 
 class Field:
     def __init__(self, layout_path: str, world: str, cache_dir: str):
@@ -82,16 +116,23 @@ class Field:
             d = np.minimum(d, np.hypot(X - s["x"], Z - s["z"]))
             if "ring" in s:
                 d = np.minimum(d, np.hypot(X - s["ring"][0], Z - s["ring"][1]))
-        rag = 30 * (hash01(X // 24, Z // 24, 7) - 0.5) + 12 * (hash01(X // 7, Z // 7, 9) - 0.5)
-        w = 1 - smooth(CORE, EDGE, d + rag)
-        # Zearth's own towns and villages stay as built: the plain fades out before them
+        pts = [(s["x"], s["z"]) for s in self.silos] + [tuple(s["ring"]) for s in self.silos if "ring" in s]
+        dh = hull_distance(pts, self.x0, self.z0, self.nx, self.nz)
+        rag = 30 * (smooth_noise(self.nx, self.nz, 48, 7) - 0.5) + 12 * (smooth_noise(self.nx, self.nz, 14, 9) - 0.5)
+        w = 1 - smooth(CORE, EDGE, dh + rag)
+        # Zearth's own towns and villages stay as built only beyond the complex: inside the hull's core they are
+        # levelled with the rest of the field; in the blend the plain fades out before them
         towns = self.layout.get("towns", [])
         if towns:
             dt = np.full((self.nx, self.nz), 1e9)
             for tx, tz in towns:
+                i_, k_ = tx - self.x0, tz - self.z0
+                if 0 <= i_ < self.nx and 0 <= k_ < self.nz and dh[i_, k_] < CORE - 20:
+                    continue
                 if self.x0 - 100 <= tx <= self.x0 + self.nx + 100 and self.z0 - 100 <= tz <= self.z0 + self.nz + 100:
                     dt = np.minimum(dt, np.maximum(np.abs(X - tx), np.abs(Z - tz)) - 8)
-            w = w * smooth(TOWN_KEEP, TOWN_KEEP + 48, dt)
+            w = w * smooth(TOWN_KEEP, TOWN_KEEP + 96, dt)          # wide: a 48 m fade left 2-7 block steps
+        del dh
         self.weight, self.dist = w, d
         # land eases toward the low-passed ground; water inside the plain is filled to it
         # far from any land (open water) the fill comes up to a block above the water
@@ -109,7 +150,9 @@ class Field:
         core = known & land & (w >= 0.99)
         self.level = int(self.layout.get("level") or round(float(np.median(g[core]))))
         base = np.where(land, g, np.where(wet, self.water + 1.0, g))
-        plain = base + w * (self.level - base)
+        roll = UNDULATE * (2 * smooth_noise(self.nx, self.nz, 110, 13) - 1)     # presentation: a gentle roll
+        plain = base + w * (self.level + roll - base)
+        del roll
         self.filled = wet & (w > FILL)
         # banks hold the water that stays: shaped ground near it stays a block above its surface
         wl = dilate_max(np.where(wet & ~self.filled, self.water, MISSING), SHORE)
