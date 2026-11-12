@@ -293,6 +293,7 @@ Default Options — только у игроков. Его библиотека 
 
 | версия | мод | что изменилось |
 |---|---|---|
+| 0.1.60 | 3.13.0 | Incoming 3.13.0 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.13.0.md)). Обновление автоматическое. |
 | 0.1.59 | 3.12.1 | Incoming 3.12.1 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.12.1.md)). Обновление автоматическое. |
 | 0.1.58 | 3.12.0 | Incoming 3.12.0 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.12.0.md)). Обновление автоматическое. |
 | 0.1.57 | 3.11.0 | NeoForge 21.1.265 (packwiz-installer спросит, обновить ли его в экземпляре, — согласиться). Все остальные моды уже на последних выпусках для 1.21.1. |
