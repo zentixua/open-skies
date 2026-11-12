@@ -4,8 +4,9 @@
 Along the tunnel axis, s blocks out from the shell (the model's s from the shaft wall):
   s 0-10   the Sheriff's Station (desk, holding cell)
   s 10     inner thick door; s 10-20 the airlock chamber; s 20 outer thick door (both rectangular)
-  s 20-76  the ramp, 7 wide, climbing 1 in 4 to the crater floor (model: 60 m for 15 m; here 56 for 14)
-  s 63-76  the portal: two leaves lying flush in the crater floor, splitting along the centreline (9 x 13)
+  s 20-76  the ramp, 7 wide, climbing to the crater floor (model: 60 m for 15 m; here 56 for 6..26, the floor's
+           height over the outer door)
+  s 63-76  the stair head, open to the sky between curbs (S3E09 06, 07, 09; the model's flush leaves seal it later)
   s 53-60  the sensor block 3 behind the portal: walls leaning in, a thick cap slab overhanging all round, an alcove
            facing the portal with a pale stone cone on three round steps and the camera on top
 Each silo's entrance sits in its own crater: a flat floor to 30 from the portal, a berm 2 over the plain at 42, back
@@ -107,6 +108,15 @@ class Site:
         self.top = np.where(top > MISSING, top, self.plain)
         self.bed = np.where(bed > MISSING, bed, self.plain) if bed is not None else self.plain
         self.p_portal = float(self.plain[R + int(px), R])
+        # the ramp climbs from the outer door to the crater floor (the model: "climbing to the crater floor"), so
+        # its rise is the floor's height over the door, not a fixed 14: the shaft's grade (its own 34 m round) and
+        # the portal's plain 115 m out differ by up to ~10, and a fixed rise left the head above or below the floor
+        # (Silo 18 on 25567: head 4 over the bowl, under the camera block). Kept within 6..26 (slabs climb 0.5 a
+        # block at most); outside that the crater floor follows the ramp instead.
+        base = self.walk - 1
+        floor = int(round(self.p_portal - self.floor_drop))
+        self.rise = min(26, max(6, floor - base))
+        self.p_portal = float(base + self.rise + self.floor_drop)
         self.old_cut_deg = old_cut_deg      # an earlier draft's open cut along this bearing, to be filled
         self.keep = (weight <= 0.05) if weight is not None else np.zeros(ground.shape, bool)   # towns: never touched
         reach = self.s_shell + self.portal_s
@@ -236,6 +246,9 @@ class Site:
             # backfill above the roof up to the ground (an earlier open cut here is closed again)
             if roof < t:
                 col[roof + 1 - oy:t - oy] = dirt
+            # and below the floor: an earlier ramp at a lower rise left its air there
+            if s >= 0 and fl - 1 > self.walk - 2:
+                col[self.walk - 2 - oy:fl - 1 - oy] = dirt
         self.station_room(v, fi)
 
     def station_room(self, v: Volume, fi) -> None:
@@ -254,7 +267,7 @@ class Site:
         at(9, 3, 0, "minecraft:gray_bed[facing=west,part=foot]")
 
     def portal(self, v: Volume, T) -> None:
-        """Two leaves flush in the crater floor over the head of the ramp, a pale rim round them."""
+        """The open stair head over the last portal_l blocks of the ramp, a pale concrete curb round it."""
         oy, R = v.origin[1], self.radius
         s0 = self.ramp_end - self.portal_l
         for s in range(s0 - 1, self.ramp_end + 2):
@@ -265,12 +278,14 @@ class Site:
                 if rim:
                     v.set(i, t - oy, k, RIM)
                     continue
-                v.set(i, t - oy, k, SEAM if l == 0 else PLATE)
-                # under the leaves the ramp is open to the floor
+                # opening day (S3E09 06, 07, 09): the stair head is an open trench between concrete curbs flush
+                # with the lawn, roofed further down; the model's flush leaves are the sealed silo of later years
+                if abs(l) > self.half:
+                    v.set(i, t - oy, k, RIM)
+                    continue
                 fl = int(math.floor(self.floor_top(np.array(float(s)))))
-                if abs(l) <= self.half:
-                    for y in range(fl + 1 + (1 if self.floor_top(np.array(float(s))) - fl >= 0.5 else 0), t):
-                        v.set(i, y - oy, k, AIR)
+                for y in range(fl + 1 + (1 if self.floor_top(np.array(float(s))) - fl >= 0.5 else 0), t + 1):
+                    v.set(i, y - oy, k, AIR)
 
     def block(self, v: Volume, T) -> None:
         """The camera block (S3E09 07, 08): two thick light concrete piers with sloped outer faces, a dark recessed

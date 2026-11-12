@@ -193,6 +193,7 @@ def main():
                     others.append((ox, oz, (TURNS[o.get("dir", "W")] - k) % 4))
             grids = [turn_grid(a_, -k) for a_ in field.slice(s["x"], s["z"], Site.radius)]
             site = Site(silo, *grids, old_cut_deg=old, neighbours=others)
+            log(f"site {s['number']}: grade {g}, crater floor {site.p_portal - site.floor_drop:.0f}, ramp rise {site.rise}")
             go(turn_volume(site.build(), k, s["x"], s["z"]), f"site{s['number']}")
 
 if __name__ == "__main__":
