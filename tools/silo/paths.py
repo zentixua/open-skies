@@ -239,7 +239,9 @@ def main():
     ap.add_argument("--event", action="store_true", help="also Silo 1's opening-day set (event.py), with its path and apron")
     ap.add_argument("--state", help="build_live state directory (for --event)")
     ap.add_argument("--trees", action="store_true", help="also plant the berm and plain trees")
+    ap.add_argument("--event-only", action="store_true", help="only rebuild Silo 1's opening-day set (implies --event)")
     a = ap.parse_args()
+    a.event = a.event or a.event_only
     layout = json.load(open(a.layout))
     cells, road = plan(layout)
     one = next(s_ for s_ in layout["silos"] if s_["number"] == 1)
@@ -288,6 +290,8 @@ def main():
     htile = (h18["x"] // T, h18["z"] // T) if h18 else None
     for key in list(ftiles) + list(ttiles) + ([htile] if htile else []):
         tiles.setdefault(key, [])
+    if a.event_only:
+        tiles = {}
     for (tx, tz), cols in sorted(tiles.items()):
         area = br.call("area.prepare", {"from": [tx * T, tz * T], "to": [tx * T + T - 1, tz * T + T - 1], "wait": 50})
         try:

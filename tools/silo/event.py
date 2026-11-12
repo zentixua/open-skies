@@ -21,13 +21,13 @@ Sources: /mnt/project-files/silo/frames/s3e09/ and its notes.md (frames named by
   waist-high stand, a white-canopied cart near it.
 
 Ours (no frame gives it):
-- The tent size (7 x 7) and the 12 m ring radius, fitted inside the floor (r 30).
+- The tent reach (6 m from each pole) and the 12 m ring radius, fitted inside the floor (r 30).
 - The audience centre 21 m north, so the stage's back reaches r 33 at the berm's foot.
 - The number of chair rows.
 - Where the plaque, carts and crates stand.
 - The flower species.
-- Each block standing for a material (bent wood = stripped dark oak, fabric = white wool, slats = bamboo planks,
-  truss = iron bars).
+- Each block standing for a material (bent wood = dark oak fence, roof fabric = white wool, tent fabric = smooth
+  quartz slabs, slats = stripped birch, truss = iron bars, chairs = smooth stone slab and iron trapdoor).
 
 build(ring_x, ring_z, floor_y) gives the set as a Volume in world coordinates; the floor's top block is floor_y and
 nothing is placed in it. ground_paths(ring_x, ring_z) gives the path and apron columns, for the live laying in
@@ -53,21 +53,23 @@ TENTS = {"W": 270, "SW": 225, "SE": 135, "E": 90}   # bearings from north, clock
 SMALL_TENTS = [(-28, 2), (-28, 6), (-25, 4)]          # the three to the west (03)
 
 # materials
-RIB = "minecraft:stripped_dark_oak_wood"
+RIB = "minecraft:dark_oak_fence"            # thin bent ribs: a fence reads as a rod, full wood as a stepped wall (08, 12.11)
 DECK = "minecraft:dark_oak_planks"
 DECK_EDGE = "minecraft:dark_oak_slab[type=top]"
-SLAT = "minecraft:bamboo_planks"
+SLAT = "minecraft:stripped_birch_log[axis=y]"   # pale timber with vertical grain (11, 13); bamboo read bright yellow
 CURTAIN = "minecraft:orange_terracotta"
 GOLD = "minecraft:gold_block"
 FABRIC = "minecraft:white_wool"
-TENT_FABRIC = "minecraft:smooth_quartz"
-TENT_SLOPE = "minecraft:smooth_quartz_stairs"
-TENT_EAVE = "minecraft:smooth_quartz_slab[type=bottom]"
+TENT_FABRIC = "minecraft:smooth_quartz_slab"
+TENT_PEAK, TENT_EAVE, TENT_REACH = 5.0, 2.0, 6     # m over the floor at the pole, at the edge; edge radius (14, 15)
 TRUSS = "minecraft:iron_bars"
 LAMP = "minecraft:lantern[hanging=true]"
 BANNER = "minecraft:white_concrete"
 POLE = "minecraft:spruce_fence"
-CHAIR = "minecraft:polished_diorite_stairs[facing=south,half=bottom]"   # back to the south: seated facing the stage
+SEAT = "minecraft:smooth_stone_slab[type=bottom]"
+CHAIR_BACK = "minecraft:iron_trapdoor[facing=south,half=bottom,open=true]"   # a thin grey plate on the seat's south
+BANNER_CLOTH = ('minecraft:white_wall_banner[facing=south]{patterns:[{color:"yellow",pattern:"minecraft:flower"},'
+                '{color:"yellow",pattern:"minecraft:border"}]}')         # the gold emblem on white cloth (11)
 SOIL = "minecraft:moss_block"
 FLOWERS = ["minecraft:pink_tulip", "minecraft:allium", "minecraft:oxeye_daisy", "minecraft:white_tulip",
            "lilac", "peony"]                                              # pink spikes and white heads (11, 13)
@@ -93,17 +95,31 @@ class Event:
 
     def build(self) -> Volume:
         self.stage()
-        for name, b in TENTS.items():
-            a = math.radians(b)
-            self.stretch_tent(round(C[0] + TENT_RING * math.sin(a)), round(C[1] - TENT_RING * math.cos(a)))
         self.chairs()
         for x, z in SMALL_TENTS:
             self.gazebo(x, z)
         self.plaque(1, -7)
-        self.crates(11, -17)
+        self.crates(-6, -8)                    # clear of the tents' fabric
         self.cart(10, -14, canopy=False)       # the dark cart backstage (17)
-        self.cart(4, -9, canopy=True)          # the white-canopied cart by the plaque (19)
+        self.cart(-8, -7, canopy=True)         # the white-canopied cart by the plaque (19), clear of the fabric
+        self.stretch_tents([(round(C[0] + TENT_RING * math.sin(math.radians(b))),
+                             round(C[1] - TENT_RING * math.cos(math.radians(b)))) for b in TENTS.values()])
+        self.clear_rest()
         return self.v
+
+    def clear_rest(self) -> None:
+        """Air over the rest of the bowl floor (r <= 27, outside the portal and the camera block): a rebuilt set leaves
+        nothing of an earlier one."""
+        for dx in range(-27, 28):
+            for dz in range(-27, 28):
+                if dx * dx + dz * dz > 27 * 27:
+                    continue
+                if _in(dx, dz, (PORTAL[0] - 1, PORTAL[1] + 1, PORTAL[2] - 1, PORTAL[3] + 1)) or \
+                        _in(dx, dz, (CAMERA[0] - 1, CAMERA[1] + 1, CAMERA[2] - 1, CAMERA[3] + 1)):
+                    continue
+                for h in range(1, self.v.size[1]):
+                    if self.v.get(dx + self.R, h, dz + self.R) is None:
+                        self.v.set(dx + self.R, h, dz + self.R, AIR)
 
     # the stage -------------------------------------------------------------------------------------------------
     def stage(self) -> None:
@@ -161,9 +177,7 @@ class Event:
             for x in range(bx, bx + 3):
                 for h in range(1, 8):
                     self.put(x, h, zf, BANNER)
-            for (i, j) in ((0, 0), (1, 0), (2, 0), (0, 1), (2, 1), (0, 2), (1, 2), (2, 2)):
-                self.put(bx + i, 6 - j, zf, GOLD)
-            self.put(bx + 1, 5, zf, "minecraft:raw_gold_block")
+            self.put(bx + 1, 6, zf + 1, BANNER_CLOTH)
 
     @staticmethod
     def arch(half: int, rise: int) -> list[tuple[int, int]]:
@@ -180,30 +194,42 @@ class Event:
         return sorted(cells)
 
     # the tents -------------------------------------------------------------------------------------------------
-    def stretch_tent(self, x: int, z: int) -> None:
-        """Cream-white fabric pulled up on a tall centre pole, eaves on corner poles (14, 15): 7 x 7. The fabric slopes
-        (stairs rising to the pole) rather than stepping in whole blocks: the shader frames of 12.11 read the stepped
-        wool as flat white plates. Eaves ~2.5 m (a bottom slab in the third block), peak ~4.5 m."""
-        for dx in range(-3, 4):
-            for dz in range(-3, 4):
-                d = max(abs(dx), abs(dz))
-                if d == 3:
-                    self.put(x + dx, 3, z + dz, TENT_EAVE)
-                elif d == 0:
-                    self.put(x + dx, 4, z + dz, TENT_FABRIC)
-                    self.put(x + dx, 5, z + dz, TENT_EAVE)
-                else:
-                    # the high side toward the pole; corners take their shape from the neighbours as they are placed
-                    if abs(dx) >= abs(dz):
-                        facing = "west" if dx > 0 else "east"
-                    else:
-                        facing = "north" if dz > 0 else "south"
-                    self.put(x + dx, 5 - d, z + dz, f"{TENT_SLOPE}[facing={facing},half=bottom]")
-        for dx, dz in ((-3, -3), (-3, 3), (3, -3), (3, 3)):
-            for h in (1, 2):
-                self.put(x + dx, h, z + dz, POLE)
-        for h in range(1, 4):
-            self.put(x, h, z, POLE)
+    def stretch_tents(self, poles: list[tuple[float, float]]) -> None:
+        """Cream-white stretch fabric pulled up on tall timber poles and down to short ones at the edge (14, 15): over
+        each column the fabric hangs at the highest of the poles' cones (peak 5 m at the pole, 2 m at 6 m out), so
+        neighbouring tents join in saddles as stretch tents do. One layer of half slabs: half-metre steps read as a
+        sloping sheet; whole-block steps and stairs read as white plates (shader frames 12.11). Only empty cells."""
+        def sheet(px, pz):
+            best = None
+            for cx, cz in poles:
+                d = math.hypot(px + 0.5 - (cx + 0.5), pz + 0.5 - (cz + 0.5))
+                if d <= TENT_REACH:
+                    h = TENT_PEAK - (TENT_PEAK - TENT_EAVE) * d / TENT_REACH
+                    best = h if best is None else max(best, h)
+            return None if best is None else math.floor(best * 2) / 2
+        xs = [int(math.floor(c[0])) for c in poles]; zs = [int(math.floor(c[1])) for c in poles]
+        for x in range(min(xs) - TENT_REACH - 1, max(xs) + TENT_REACH + 2):
+            for z in range(min(zs) - TENT_REACH - 1, max(zs) + TENT_REACH + 2):
+                h = sheet(x, z)
+                if h is None or _in(x, z, PORTAL) or _in(x, z, CAMERA):
+                    continue
+                layer, top = int(h), h - int(h) >= 0.5
+                if self.v.get(x + self.R, layer, z + self.R) is None:
+                    self.put(x, layer, z, f"{TENT_FABRIC}[type={'top' if top else 'bottom'}]")
+        for cx, cz in poles:
+            x, z = int(math.floor(cx)), int(math.floor(cz))
+            for h in range(1, int(TENT_PEAK)):                 # the centre pole up to the peak
+                if self.v.get(x + self.R, h, z + self.R) is None:
+                    self.put(x, h, z, POLE)
+            for k in range(8):                                  # short poles round the edge, where no other tent is over
+                a = k * math.pi / 4
+                ex, ez = int(math.floor(cx + (TENT_REACH - 0.5) * math.cos(a))), int(math.floor(cz + (TENT_REACH - 0.5) * math.sin(a)))
+                h = sheet(ex, ez)
+                if h is None or h > TENT_EAVE + 0.5 or _in(ex, ez, PORTAL) or _in(ex, ez, CAMERA):
+                    continue
+                for hh in range(1, int(h)):
+                    if self.v.get(ex + self.R, hh, ez + self.R) is None:
+                        self.put(ex, hh, ez, POLE)
 
     def gazebo(self, x: int, z: int) -> None:
         """A small white tent: 3 x 3 roof on four white posts."""
@@ -216,11 +242,14 @@ class Event:
 
     # seats, plaque, carts, crates ------------------------------------------------------------------------------
     def chairs(self) -> None:
-        """Grey folding chairs in rows facing the stage, an aisle down the middle (11, 14)."""
-        for z in (-22, -20, -18):
+        """Grey folding chairs in long rows facing the stage, an aisle down the middle (11, 14): a half-height seat,
+        and its back a thin open trapdoor standing on the seat's south edge (solid stairs read as stone blocks from
+        behind, shader frame 08 of 12.11)."""
+        for z in (-22, -20, -18, -16, -14):
             for x in range(C[0] - 6, C[0] + 7):
                 if x != C[0]:
-                    self.put(x, 1, z, CHAIR)
+                    self.put(x, 1, z, SEAT)
+                    self.put(x, 1, z + 1, CHAIR_BACK)
 
     def plaque(self, x: int, z: int) -> None:
         """The founders' plaque: a slanted metal plate on a waist-high stand, read from the path to the west (19, 20)."""
