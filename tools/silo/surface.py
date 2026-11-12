@@ -106,9 +106,11 @@ class Site:
         """Bowl, inner bank, crest and outer bank: the change from the plain."""
         P = self.plain
         floor = self.grade
-        crest = P + self.berm
+        # the crest stays floor_drop + berm over the floor all round: on a rolling plain (field.UNDULATE) a crest
+        # at plain + berm sank 2 lower on the plain's low side, and the camera of 17 saw 16 over it (12.11)
+        crest = np.maximum(P, floor + self.floor_drop) + self.berm
         inner = floor + (crest - floor) * smooth(self.floor_r, self.crest_r, d)
-        outer = P + self.berm * (1 - smooth(self.crest_r, self.out_r, d))
+        outer = P + (crest - P) * (1 - smooth(self.crest_r, self.out_r, d))
         return np.where(d <= self.floor_r, floor, np.where(d <= self.crest_r, inner, outer))
 
     def target(self) -> np.ndarray:

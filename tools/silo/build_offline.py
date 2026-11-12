@@ -186,6 +186,8 @@ class Builder:
         road_g = turn_grid(self.grid(self.road_cells, x, z, R), -k)
         others = [turn_points([(o["x"], o["z"])], -k, x, z)[0] for o in self.layout["silos"] if o is not s]
         gap_b = math.pi if h01(n, 2) < 0.5 else None
+        if gap_b is not None and self.gap_faces_group(s, gap_b + k * math.pi / 2):
+            gap_b = None                     # the berm hides the silos of a group from each other (layout-facts.md)
         site = Site(silo, *grids, neighbours=others, paths=paths_g, road=road_g, gap_bearing=gap_b, wobble=n != 1)
         svol = turn_volume(site.build(), k, x, z)
         self.heights[n] = (x - R, z - R, turn_grid(site.T, k), turn_grid(site.zone, k))
@@ -197,6 +199,24 @@ class Builder:
         self.apply(vols, f"silo {n}")
         self.mark(f"silo{n}", {"grade": grade, "dir": s["dir"], "bore": bore is not None, "gap": gap_b is not None,
                                "lights": list(silo.lights), "bottom": vol.origin[1]})
+
+    GROUPS = [(2, 6), (7, 13), (14, 21), (22, 28), (29, 35), (36, 42), (43, 50)]   # founders' plaque hubs
+
+    def gap_faces_group(self, s: dict, bearing: float, margin: float = math.radians(30)) -> bool:
+        """Would a berm gap at this world bearing (atan2(dz, dx)) open toward another silo of the same group? Through
+        a gap the camera of 17 saw 16 (12.11 line-of-sight check), which the show rules out ("the six other silos in
+        their group" could see fugitives only once they were on the berm, S3E10)."""
+        n = s["number"]
+        grp = next((g for g in self.GROUPS if g[0] <= n <= g[1]), None)
+        if not grp:
+            return False
+        for o in self.layout["silos"]:
+            if o is s or not grp[0] <= o["number"] <= grp[1]:
+                continue
+            b = math.atan2(o["z"] - s["z"], o["x"] - s["x"])
+            if abs((b - bearing + math.pi) % (2 * math.pi) - math.pi) < margin:
+                return True
+        return False
 
     def field_height(self, x: int, z: int) -> int:
         """Plain level round a shaft: the mean plain height within 34 of the axis (build_live.grade_of)."""
