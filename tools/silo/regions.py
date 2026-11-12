@@ -11,6 +11,7 @@ import copy
 import io
 import math
 import os
+import time
 import struct
 import zlib
 from collections import defaultdict
@@ -226,7 +227,8 @@ def apply(world_dir: str, vols: list[Volume], dim_min_y: int, log=print) -> dict
             root = tag if "sections" in tag else tag[""]
             changed = edit_chunk(root, cx, cz, vols, dim_min_y, stats)
             if changed:
-                region[i] = (ts, encode_chunk(tag))
+                # stamp the save time: LSS and reset.sh's mark_stale judge a chunk's freshness by this header field
+                region[i] = (int(time.time()), encode_chunk(tag))
                 stats["chunks"] += 1
         write_region(path, region)
     log(f"regions: {stats}")
