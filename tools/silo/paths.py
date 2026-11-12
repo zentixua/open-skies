@@ -1,0 +1,185 @@
+# /// script
+# requires-python = ">=3.11"
+# dependencies = ["numpy", "httpx>=0.27"]
+# ///
+"""The footpaths of the 2052 complex, from the show's high oblique (Reddit frame 1, rectified by canon_fit.py).
+
+What the frame shows, and what is laid here (dirt path on the finished ground, short grass above it removed):
+- a pale path circle round every ring, where its crater meets the plain (r 64);
+- the axis road due north from Silo 1 to the gate, and on south to Silo 2 (3 wide);
+- the founders' lines of the plaque (S3E09) as paths from Silo 1's circle: due west to 42, due east to 25, curving
+  south-west to 30 and south-east to 10; to the north a cross path 40 m beyond the 44 and 17 circles, joining the axis;
+- between neighbouring rings of a flower, a short link where their circles nearly touch;
+- from each circle a stub in to the crater floor, along the way out of the ramp (each ring's own bearing);
+- seven rosette discs, each in the triangle of three rings where the frame shows one (concentric path rings).
+The rings in the frame stand within 20-40 m of the fitted layout, so the paths are laid relative to the built rings
+(topology from the frame) rather than traced pixel by pixel.
+
+  ALMIGHTY_URL=... ALMIGHTY_TOKEN_FILE=... uv run tools/silo/paths.py <layout.json> [--dry] [--png out.png]
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import math
+import os
+import sys
+import time
+
+import numpy as np
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+RING_PATH_R = 64          # surface.Site.out_r: the crater's outer foot
+FLOOR_R = 30              # surface.Site.floor_r
+LINK_MAX = 1.08           # flower neighbours: centres within this many ring spacings
+ROSETTES = [(49, 48, 43), (31, 30, 29), (32, 33, 29), (35, 29, 34), (19, 20, 14), (12, 7, 11), (13, 7, 8)]
+ROSETTE_R = 18
+BEARING = {"W": (-1, 0), "N": (0, -1), "E": (1, 0), "S": (0, 1)}
+
+SCRIPT = r"""
+import net.minecraft.world.level.levelgen.Heightmap
+import net.minecraft.core.BlockPos
+import net.minecraft.world.level.block.Blocks
+def lvl = server.overworld()
+int n = 0, skipped = 0
+for (c in args.cols) {
+  int x = c[0] as int, z = c[1] as int
+  if (lvl.getChunkSource().getChunkNow(x >> 4, z >> 4) == null) { skipped++; continue }
+  int y = lvl.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z) - 1
+  def pos = new BlockPos(x, y, z)
+  def st = lvl.getBlockState(pos)
+  if (st.is(Blocks.GRASS_BLOCK) || st.is(Blocks.DIRT) || st.is(Blocks.COARSE_DIRT) || st.is(Blocks.PODZOL)) {
+    def up = pos.above()
+    def su = lvl.getBlockState(up)
+    if (!su.isAir()) {
+      if (!su.canBeReplaced()) continue
+      lvl.setBlock(up, Blocks.AIR.defaultBlockState(), 3)
+    }
+    lvl.setBlock(pos, Blocks.DIRT_PATH.defaultBlockState(), 3)
+    n++
+  }
+}
+return [placed: n, unloaded: skipped]
+"""
+
+
+def stamp(cells: set, x: float, z: float, w: int) -> None:
+    r = (w - 1) / 2
+    for dx in range(-int(math.ceil(r)), int(math.ceil(r)) + 1):
+        for dz in range(-int(math.ceil(r)), int(math.ceil(r)) + 1):
+            if math.hypot(dx, dz) <= r + 0.5:
+                cells.add((int(math.floor(x + dx + 0.5)), int(math.floor(z + dz + 0.5))))
+
+
+def line(cells, pts, w=2):
+    for (x0, z0), (x1, z1) in zip(pts, pts[1:]):
+        n = max(1, int(math.hypot(x1 - x0, z1 - z0) * 2))
+        for t in np.linspace(0, 1, n + 1):
+            stamp(cells, x0 + t * (x1 - x0), z0 + t * (z1 - z0), w)
+
+
+def curve(p0, c, p1, n=40):
+    """Quadratic Bezier from p0 through control c to p1."""
+    return [((1 - t) ** 2 * p0[0] + 2 * (1 - t) * t * c[0] + t * t * p1[0],
+             (1 - t) ** 2 * p0[1] + 2 * (1 - t) * t * c[1] + t * t * p1[1]) for t in np.linspace(0, 1, n)]
+
+
+def on_circle(c, toward, r=RING_PATH_R):
+    dx, dz = toward[0] - c[0], toward[1] - c[1]
+    L = math.hypot(dx, dz)
+    return (c[0] + r * dx / L, c[1] + r * dz / L)
+
+
+def plan(layout: dict) -> tuple[set, set]:
+    """(path cells, axis road cells) in world x, z."""
+    ring = {s["number"]: tuple(s["ring"]) for s in layout["silos"] if not s.get("unplaced")}
+    bearing = {s["number"]: s.get("dir", "W") for s in layout["silos"]}
+    spacing = layout["spacing"]
+    cells, road = set(), set()
+    # circles
+    for c in ring.values():
+        n = int(2 * math.pi * RING_PATH_R * 2)
+        line(cells, [(c[0] + RING_PATH_R * math.cos(a), c[1] + RING_PATH_R * math.sin(a))
+                     for a in np.linspace(0, 2 * math.pi, n)], 2)
+    # stubs: out of the ramp, from the floor's edge to the circle
+    for k, c in ring.items():
+        dx, dz = BEARING[bearing[k]]
+        line(cells, [(c[0] + FLOOR_R * dx, c[1] + FLOOR_R * dz), (c[0] + RING_PATH_R * dx, c[1] + RING_PATH_R * dz)], 2)
+    # links inside flowers
+    nums = sorted(ring)
+    for i in nums:
+        for j in nums:
+            if i < j and math.dist(ring[i], ring[j]) <= LINK_MAX * spacing:
+                line(cells, [on_circle(ring[i], ring[j]), on_circle(ring[j], ring[i])], 2)
+    one = ring[1]
+    gate = tuple(layout["gate"])
+    # axis road: gate to Silo 1's circle, Silo 1 to Silo 2
+    line(road, [gate, (one[0], one[1] - RING_PATH_R)], 3)
+    two = ring[2]
+    line(road, [(one[0], one[1] + RING_PATH_R), on_circle(two, one)], 3)
+    # founders' lines
+    line(cells, [on_circle(one, ring[42]), on_circle(ring[42], one)], 2)
+    line(cells, [on_circle(one, ring[25]), on_circle(ring[25], one)], 2)
+    for k, side in ((30, -1), (10, 1)):
+        a = (one[0] + side * 20, one[1] + RING_PATH_R - 4)
+        b = on_circle(ring[k], one)
+        line(cells, curve(a, (a[0] + side * 30, a[1] + 60), b), 2)
+    zc = min(ring[44][1], ring[17][1]) - RING_PATH_R - 40
+    for k in (44, 17):
+        top = (ring[k][0] + (20 if k == 44 else -20), ring[k][1] - RING_PATH_R + 2)
+        line(cells, [(one[0], zc)] + curve((one[0] + (top[0] - one[0]) * 0.6, zc), (top[0], zc), top, 20), 2)
+    # rosettes
+    for tri in ROSETTES:
+        cx = sum(ring[t][0] for t in tri) / 3
+        cz = sum(ring[t][1] for t in tri) / 3
+        for r, gap in ((ROSETTE_R, 0.0), (ROSETTE_R - 5, math.pi), (ROSETTE_R - 10, 0.0)):
+            pts = [(cx + r * math.cos(a), cz + r * math.sin(a)) for a in np.linspace(gap + 0.35, gap + 2 * math.pi - 0.35, int(r * 8))]
+            line(cells, pts, 2)
+        stamp(cells, cx, cz, 3)
+    return cells - road, road
+
+
+def main():
+    ap = argparse.ArgumentParser()
+    ap.add_argument("layout")
+    ap.add_argument("--dry", action="store_true")
+    ap.add_argument("--png")
+    a = ap.parse_args()
+    layout = json.load(open(a.layout))
+    cells, road = plan(layout)
+    allc = sorted(cells | road)
+    print(f"{len(cells)} path cells, {len(road)} road cells", flush=True)
+    if a.png:
+        from PIL import Image
+        xs = [c[0] for c in allc]; zs = [c[1] for c in allc]
+        x0, z0 = min(xs), min(zs)
+        img = np.zeros((max(zs) - z0 + 1, max(xs) - x0 + 1), np.uint8)
+        for x, z in allc:
+            img[z - z0, x - x0] = 255
+        Image.fromarray(img).save(a.png)
+    if a.dry:
+        return
+    from build_live import Bridge
+    br = Bridge()
+    T = 256
+    tiles = {}
+    for x, z in allc:
+        tiles.setdefault((x // T, z // T), []).append([x, z])
+    for (tx, tz), cols in sorted(tiles.items()):
+        area = br.call("area.prepare", {"from": [tx * T, tz * T], "to": [tx * T + T - 1, tz * T + T - 1], "wait": 50})
+        try:
+            for attempt in range(3):
+                res = br.call("script", {"code": SCRIPT, "args": {"cols": cols}, "timeout_ms": 10000})
+                if not res.get("ok"):
+                    raise RuntimeError(f"script: {res}")
+                print(f"tile {tx * T},{tz * T}: {res.get('value')}", flush=True)
+                if not res["value"].get("unloaded"):
+                    break
+                time.sleep(10)
+        finally:
+            br.call("area.release", {"id": area["id"]})
+
+
+if __name__ == "__main__":
+    main()
