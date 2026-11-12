@@ -1,0 +1,1151 @@
+[
+ {
+  "conflicts": 3,
+  "pen": 569.6,
+  "centre": [
+   1488,
+   -3056
+  ],
+  "rot": 152,
+  "water": 0.627,
+  "sd": 5.12,
+  "worst_tunnel": 110.1,
+  "extent": [
+   2775,
+   2227
+  ],
+  "margin": 65,
+  "silos": [
+   {
+    "n": 1,
+    "x": 1488,
+    "z": -3056,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 2,
+    "x": 1150,
+    "z": -3663,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 3,
+    "x": 1255,
+    "z": -4243,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 4,
+    "x": 1054,
+    "z": -4042,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 5,
+    "x": 813,
+    "z": -3913,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 6,
+    "x": 437,
+    "z": -3704,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 7,
+    "x": 718,
+    "z": -3252,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 8,
+    "x": 599,
+    "z": -2779,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 9,
+    "x": 983,
+    "z": -2912,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 10,
+    "x": 1103,
+    "z": -3155,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 11,
+    "x": 953,
+    "z": -3379,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 12,
+    "x": 452,
+    "z": -3361,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 13,
+    "x": 333,
+    "z": -3119,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 14,
+    "x": 1323,
+    "z": -2399,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 15,
+    "x": 1247,
+    "z": -2016,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 16,
+    "x": 1590,
+    "z": -2025,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 17,
+    "x": 1574,
+    "z": -2299,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 18,
+    "x": 1535,
+    "z": -2566,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 19,
+    "x": 1169,
+    "z": -2781,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 20,
+    "x": 957,
+    "z": -2614,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 21,
+    "x": 996,
+    "z": -2116,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 22,
+    "x": 278,
+    "z": -2415,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 23,
+    "x": 430,
+    "z": -2032,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 24,
+    "x": 758,
+    "z": -2313,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 25,
+    "x": 722,
+    "z": -2581,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 26,
+    "x": 357,
+    "z": -2798,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 27,
+    "x": 28,
+    "z": -2517,
+    "conflict": "1011 builds",
+    "water": true,
+    "shift": null
+   },
+   {
+    "n": 28,
+    "x": 180,
+    "z": -2134,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 29,
+    "x": 1667,
+    "z": -3569,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 30,
+    "x": 1501,
+    "z": -3357,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 31,
+    "x": 1883,
+    "z": -3434,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 32,
+    "x": 2050,
+    "z": -3647,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 33,
+    "x": 1834,
+    "z": -4013,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 34,
+    "x": 1567,
+    "z": -4051,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 35,
+    "x": 1285,
+    "z": -3723,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 36,
+    "x": 2549,
+    "z": -3588,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 37,
+    "x": 2386,
+    "z": -3207,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 38,
+    "x": 2755,
+    "z": -3414,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 39,
+    "x": 2803,
+    "z": -3680,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 40,
+    "x": 2481,
+    "z": -3969,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 41,
+    "x": 2227,
+    "z": -3878,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 42,
+    "x": 2179,
+    "z": -3381,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 43,
+    "x": 2117,
+    "z": -2859,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 44,
+    "x": 1954,
+    "z": -2477,
+    "conflict": "buried structure",
+    "water": false,
+    "shift": null
+   },
+   {
+    "n": 45,
+    "x": 2272,
+    "z": -2425,
+    "conflict": "24 builds",
+    "water": false,
+    "shift": null
+   },
+   {
+    "n": 46,
+    "x": 2323,
+    "z": -2684,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 47,
+    "x": 2371,
+    "z": -2950,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 48,
+    "x": 2049,
+    "z": -3240,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 49,
+    "x": 1795,
+    "z": -3148,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 50,
+    "x": 1632,
+    "z": -2767,
+    "conflict": "16 builds",
+    "water": true,
+    "shift": [
+     -8,
+     -8
+    ]
+   }
+  ]
+ },
+ {
+  "conflicts": 4,
+  "pen": 566.4,
+  "centre": [
+   3248,
+   -2800
+  ],
+  "rot": 128,
+  "water": 0.39,
+  "sd": 7.43,
+  "worst_tunnel": 106.0,
+  "extent": [
+   2255,
+   2632
+  ],
+  "margin": 213,
+  "silos": [
+   {
+    "n": 1,
+    "x": 3248,
+    "z": -2800,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 2,
+    "x": 2692,
+    "z": -3216,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 3,
+    "x": 2590,
+    "z": -3846,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 4,
+    "x": 2372,
+    "z": -3466,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 5,
+    "x": 2320,
+    "z": -3135,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 6,
+    "x": 2005,
+    "z": -3059,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 7,
+    "x": 2617,
+    "z": -2608,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 8,
+    "x": 2491,
+    "z": -2223,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 9,
+    "x": 2845,
+    "z": -2464,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 10,
+    "x": 2856,
+    "z": -2733,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 11,
+    "x": 2512,
+    "z": -2993,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 12,
+    "x": 2158,
+    "z": -2752,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 13,
+    "x": 2263,
+    "z": -2367,
+    "conflict": "25 builds",
+    "water": false,
+    "shift": null
+   },
+   {
+    "n": 14,
+    "x": 3249,
+    "z": -2248,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 15,
+    "x": 3394,
+    "z": -1789,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 16,
+    "x": 3761,
+    "z": -1899,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 17,
+    "x": 3635,
+    "z": -2144,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 18,
+    "x": 3490,
+    "z": -2372,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 19,
+    "x": 3105,
+    "z": -2476,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 20,
+    "x": 2979,
+    "z": -2006,
+    "conflict": "buried structure",
+    "water": false,
+    "shift": [
+     16,
+     8
+    ]
+   },
+   {
+    "n": 21,
+    "x": 3124,
+    "z": -1778,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 22,
+    "x": 2499,
+    "z": -1932,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 23,
+    "x": 2641,
+    "z": -1471,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 24,
+    "x": 2884,
+    "z": -1824,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 25,
+    "x": 2742,
+    "z": -2054,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 26,
+    "x": 2241,
+    "z": -2046,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 27,
+    "x": 2113,
+    "z": -1808,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 28,
+    "x": 2371,
+    "z": -1463,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 29,
+    "x": 3262,
+    "z": -3494,
+    "conflict": "30 builds",
+    "water": false,
+    "shift": [
+     24,
+     24
+    ]
+   },
+   {
+    "n": 30,
+    "x": 3080,
+    "z": -3117,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 31,
+    "x": 3455,
+    "z": -3306,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 32,
+    "x": 3406,
+    "z": -3684,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 33,
+    "x": 3212,
+    "z": -3872,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 34,
+    "x": 2952,
+    "z": -3798,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 35,
+    "x": 2771,
+    "z": -3421,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 36,
+    "x": 3770,
+    "z": -3718,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 37,
+    "x": 3950,
+    "z": -3340,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 38,
+    "x": 4260,
+    "z": -3642,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 39,
+    "x": 4080,
+    "z": -4020,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 40,
+    "x": 3820,
+    "z": -4095,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 41,
+    "x": 3626,
+    "z": -3908,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 42,
+    "x": 3690,
+    "z": -3415,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 43,
+    "x": 3903,
+    "z": -2875,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 44,
+    "x": 3852,
+    "z": -2498,
+    "conflict": "buried structure",
+    "water": false,
+    "shift": null
+   },
+   {
+    "n": 45,
+    "x": 4221,
+    "z": -2543,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 46,
+    "x": 4162,
+    "z": -2800,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 47,
+    "x": 4098,
+    "z": -3062,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 48,
+    "x": 3723,
+    "z": -3253,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 49,
+    "x": 3412,
+    "z": -2951,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 50,
+    "x": 3592,
+    "z": -2573,
+    "conflict": "",
+    "water": true
+   }
+  ]
+ },
+ {
+  "conflicts": 7,
+  "pen": 505.2,
+  "centre": [
+   1872,
+   1712
+  ],
+  "rot": 180,
+  "water": 0.905,
+  "sd": 1.05,
+  "worst_tunnel": 109.9,
+  "extent": [
+   3117,
+   2114
+  ],
+  "margin": 18,
+  "silos": [
+   {
+    "n": 1,
+    "x": 1872,
+    "z": 1712,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 2,
+    "x": 1858,
+    "z": 1018,
+    "conflict": "55 builds",
+    "water": true,
+    "shift": null
+   },
+   {
+    "n": 3,
+    "x": 2271,
+    "z": 711,
+    "conflict": "buried structure",
+    "water": true,
+    "shift": [
+     -24,
+     48
+    ]
+   },
+   {
+    "n": 4,
+    "x": 1884,
+    "z": 678,
+    "conflict": "23 builds",
+    "water": true,
+    "shift": [
+     -8,
+     0
+    ]
+   },
+   {
+    "n": 5,
+    "x": 1611,
+    "z": 679,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 6,
+    "x": 1337,
+    "z": 639,
+    "conflict": "14 builds",
+    "water": true,
+    "shift": [
+     -8,
+     -8
+    ]
+   },
+   {
+    "n": 7,
+    "x": 1332,
+    "z": 1333,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 8,
+    "x": 1113,
+    "z": 1491,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 9,
+    "x": 1359,
+    "z": 1602,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 10,
+    "x": 1578,
+    "z": 1444,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 11,
+    "x": 1551,
+    "z": 1176,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 12,
+    "x": 1190,
+    "z": 949,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 13,
+    "x": 855,
+    "z": 1222,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 14,
+    "x": 1302,
+    "z": 2330,
+    "conflict": "buried structure",
+    "water": true,
+    "shift": [
+     -16,
+     -16
+    ]
+   },
+   {
+    "n": 15,
+    "x": 1212,
+    "z": 2585,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 16,
+    "x": 1478,
+    "z": 2671,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 17,
+    "x": 1593,
+    "z": 2421,
+    "conflict": "13 builds",
+    "water": true,
+    "shift": [
+     -8,
+     -8
+    ]
+   },
+   {
+    "n": 18,
+    "x": 1684,
+    "z": 2166,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 19,
+    "x": 1393,
+    "z": 1845,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 20,
+    "x": 1012,
+    "z": 2009,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 21,
+    "x": 921,
+    "z": 2263,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 22,
+    "x": 591,
+    "z": 1703,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 23,
+    "x": 497,
+    "z": 2187,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 24,
+    "x": 879,
+    "z": 2025,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 25,
+    "x": 973,
+    "z": 1772,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 26,
+    "x": 684,
+    "z": 1449,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 27,
+    "x": 418,
+    "z": 1495,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 28,
+    "x": 209,
+    "z": 1864,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 29,
+    "x": 2427,
+    "z": 1295,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 30,
+    "x": 1950,
+    "z": 1404,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 31,
+    "x": 2283,
+    "z": 1679,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 32,
+    "x": 2646,
+    "z": 1454,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 33,
+    "x": 2674,
+    "z": 1186,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 34,
+    "x": 2341,
+    "z": 912,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 35,
+    "x": 1978,
+    "z": 1136,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 36,
+    "x": 2943,
+    "z": 1856,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 37,
+    "x": 2776,
+    "z": 2068,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 38,
+    "x": 3043,
+    "z": 2106,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 39,
+    "x": 3326,
+    "z": 1778,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 40,
+    "x": 3109,
+    "z": 1412,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 41,
+    "x": 2842,
+    "z": 1605,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 42,
+    "x": 2560,
+    "z": 1702,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 43,
+    "x": 2219,
+    "z": 2297,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 44,
+    "x": 1937,
+    "z": 2394,
+    "conflict": "",
+    "water": false
+   },
+   {
+    "n": 45,
+    "x": 2153,
+    "z": 2753,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 46,
+    "x": 2435,
+    "z": 2432,
+    "conflict": "buried structure",
+    "water": true,
+    "shift": [
+     -40,
+     32
+    ]
+   },
+   {
+    "n": 47,
+    "x": 2602,
+    "z": 2220,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 48,
+    "x": 2386,
+    "z": 1854,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 49,
+    "x": 2119,
+    "z": 1815,
+    "conflict": "",
+    "water": true
+   },
+   {
+    "n": 50,
+    "x": 1836,
+    "z": 2143,
+    "conflict": "",
+    "water": true
+   }
+  ]
+ }
+]
