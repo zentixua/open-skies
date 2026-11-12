@@ -873,7 +873,8 @@ class Silo:
             v.set(X_, y + 3, Z_, "minecraft:sea_lantern")
 
     def way_out(self) -> None:
-        """Holding cell 3 -> the airlock (a thick door ≈2.4 m at each end, BFDG 46:23) -> a U-turn -> the ribbed ramp
+        """Holding cell 3 -> the airlock (a thick door ≈2.4 m at each end, BFDG 46:23; "these two big sliding doors
+        each weigh 25 tons", S3E09: here each is a pair of iron leaves in a steel frame) -> a U-turn -> the ribbed ramp
         climbing toward the centre over the level-1 rooms -> a slot with steps opening on the bowl floor at about
         half its radius (SPEC 5, S1E02 #25/#27, S3E09 #77). The slot's curb and the camera block are surface.py's."""
         v = self.v

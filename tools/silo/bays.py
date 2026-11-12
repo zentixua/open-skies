@@ -45,13 +45,14 @@ def seeded(a: float, b: float, c: float = 0) -> float:
     return ((h ^ ((h & 0xFFFFFFFF) >> 16)) & 0xFFFFFFFF) / 4294967296
 
 
-# Canon levels (levels.js, canon: true), number -> (name, department). Everything else is residential.
+# Canon levels (levels.js, canon: true), number -> (name, department). Everything else is residential. Judicial on 14
+# and water filtration on 55 follow the dialogue (canon/layout-facts.md: S2E10, S3E09) over levels.js's 13.
 CANON = {
-    1: ("The Top", "Sheriff's Department"), 13: ("Judicial", "Judicial"), 14: ("Residential", None),
+    1: ("The Top", "Sheriff's Department"), 13: ("Residential", None), 14: ("Judicial", "Judicial"),
     15: ("Manager's Row", "Administration"), 17: ("Residential", None), 19: ("IT", "IT"),
     20: ("Recycling and the Watcher Room", "Recycling"), 30: ("Checkpoint", "Judicial"), 31: ("Residential", None),
     36: ("Residential", None), 42: ("Residential", None), 45: ("Residential", None), 47: ("The Great Stair", None),
-    50: ("Mids Medical", "Medical"), 52: ("Residential", None), 62: ("Mids Medical", "Medical"),
+    50: ("Mids Medical", "Medical"), 52: ("Residential", None), 55: ("Water Filtration", None), 62: ("Mids Medical", "Medical"),
     100: ("The Bazaar", "Supply"), 105: ("Deputy Station", "Sheriff's Department"), 120: ("The Rail", None),
     122: ("Lower Mids Farm", "Farming"), 124: ("Residential", None), 130: ("The Barricade", None),
     140: ("Mechanical", "Mechanical"), 144: ("The Bottom", "Mechanical"),

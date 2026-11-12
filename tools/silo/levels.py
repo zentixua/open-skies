@@ -106,12 +106,13 @@ class Furnisher:
 
     # levels -----------------------------------------------------------------------------------------------------
     def all(self) -> None:
-        self.judicial(13)
+        self.judicial(14)                 # "Level 14" Judicial and the Safeguard pipe (S2E10; layout-facts.md)
         self.it(19)
         self.watcher(20)
         self.checkpoint(30)
         for n in (50, 62):
             self.medical(n)
+        self.filtration(55)               # "ten levels up on 55 ... water filtration" (S3E09; layout-facts.md)
         self.market(100)
         self.deputy_station(105)
         for n in (80, 122):
@@ -156,6 +157,14 @@ class Furnisher:
         self.box(33, 34, 0, 0, 4, 4, SEA)
         self.box(33, 34, -3, -3, 0, 1, "minecraft:iron_bars")  # the caged door in the cell's left wall
         self.box(33, 34, -4, -4, 0, 1, dark)
+        # the Safeguard line: where the pipes from Silo 1 enter the silo ("This is where the pipes enter each of the
+        # silos", S3E08; "Level 14", S2E10). Not seen on screen in detail: a copper trunk out of the cell's back wall,
+        # along the ceiling to a valve wheel (a lever on the pipe) over the corridor's end
+        PIPE = "minecraft:waxed_oxidized_cut_copper"
+        self.box(36, 36, 1, 1, 2, 3, PIPE)                    # through the back wall
+        self.box(32, 35, 1, 1, 2, 2, PIPE)
+        self.blk(31, 1, 2, "minecraft:waxed_oxidized_copper_bulb[lit=false,powered=false]")
+        self.blk(31, 0, 2, "minecraft:lever[face=wall,facing=west,powered=false]")
 
     def it(self, n: int) -> None:
         """IT (model it()): the offices under a radiating light, the server room, the Vault, the Head of IT's office.
@@ -528,6 +537,27 @@ class Furnisher:
                 if self.v.get(x, self.y, z) == AIR and self.v.get(x - dx, self.y, z - dz) == AIR:
                     self.v.set(x, self.y, z, f"minecraft:white_bed[facing={f},occupied=false,part=head]")
                     self.v.set(x - dx, self.y, z - dz, f"minecraft:white_bed[facing={f},occupied=false,part=foot]")
+
+    def filtration(self, n: int) -> None:
+        """Water filtration on 55 (S3E09). Not seen on screen: the level's ring behind the facades opened into one hall
+        of settling basins (water in tiled troughs between walkways) fed by copper mains along the ceiling, the stair
+        and gallery passing through as on a farm level."""
+        self.on(n)
+        silo, s, v, y = self.silo, self.s, self.v, self.y
+        top = y + s.pitch - 2
+        hall = silo.ring(s.r_facade, s.r_inner_wall)
+        v.mask(y, top, hall, AIR)
+        v.mask(y - 1, y - 1, hall, "minecraft:smooth_stone")
+        posts = silo.ring(s.r_facade, s.r_facade + 1.0) & (np.mod(silo.theta, TAU / 48) < 0.04)
+        v.mask(y, top, posts, "minecraft:light_gray_concrete")
+        basins = silo.ring(s.r_facade + 3, s.r_inner_wall - 2) & (np.mod(silo.theta, TAU / 24) > 0.05)
+        v.mask(y - 2, y - 2, basins, "minecraft:cyan_terracotta")
+        v.mask(y - 1, y - 1, basins, "minecraft:water")
+        rims = silo.ring(s.r_facade + 2, s.r_facade + 3) | silo.ring(s.r_inner_wall - 2, s.r_inner_wall - 1)
+        v.mask(y, y, rims & ~posts, "minecraft:polished_andesite_slab[type=bottom,waterlogged=false]")
+        mains = silo.ring(s.r_inner_wall - 3, s.r_inner_wall - 2) | silo.ring(s.r_facade + 4, s.r_facade + 5)
+        v.mask(top, top, mains, "minecraft:waxed_weathered_cut_copper")
+        v.mask(top, top, hall & ~mains & ((silo.X % 6) == 3) & ((silo.Z % 6) == 0), SEA)
 
     def farm(self, n: int) -> None:
         """A farm level (Gold Derby 8:25, Valette 1x3gyL/01, 05): one tall open storey the full width of the silo behind a
