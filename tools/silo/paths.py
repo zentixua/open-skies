@@ -60,7 +60,15 @@ for (c in args.cols) {
     n++
   }
 }
-return [placed: n, unloaded: skipped]
+int greened = 0
+for (c in (args.floors ?: [])) {      // crater floors laid before 2052 grass: coarse dirt back to grass
+  int x = c[0] as int, z = c[1] as int
+  if (lvl.getChunkSource().getChunkNow(x >> 4, z >> 4) == null) { skipped++; continue }
+  int y = lvl.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z) - 1
+  def pos = new BlockPos(x, y, z)
+  if (lvl.getBlockState(pos).is(Blocks.COARSE_DIRT)) { lvl.setBlock(pos, Blocks.GRASS_BLOCK.defaultBlockState(), 3); greened++ }
+}
+return [placed: n, greened: greened, unloaded: skipped]
 """
 
 
@@ -149,6 +157,15 @@ def main():
     layout = json.load(open(a.layout))
     cells, road = plan(layout)
     allc = sorted(cells | road)
+    floors = set()
+    for s_ in layout["silos"]:
+        if "ring" in s_:
+            rx, rz = s_["ring"]
+            for dx in range(-FLOOR_R - 4, FLOOR_R + 5):
+                for dz in range(-FLOOR_R - 4, FLOOR_R + 5):
+                    if math.hypot(dx, dz) <= FLOOR_R + 4:
+                        floors.add((int(math.floor(rx + dx)), int(math.floor(rz + dz))))
+    floors -= set(allc)
     print(f"{len(cells)} path cells, {len(road)} road cells", flush=True)
     if a.png:
         from PIL import Image
@@ -163,14 +180,19 @@ def main():
     from build_live import Bridge
     br = Bridge()
     T = 256
-    tiles = {}
+    tiles, ftiles = {}, {}
     for x, z in allc:
         tiles.setdefault((x // T, z // T), []).append([x, z])
+    for x, z in floors:
+        ftiles.setdefault((x // T, z // T), []).append([x, z])
+    for key in ftiles:
+        tiles.setdefault(key, [])
     for (tx, tz), cols in sorted(tiles.items()):
         area = br.call("area.prepare", {"from": [tx * T, tz * T], "to": [tx * T + T - 1, tz * T + T - 1], "wait": 50})
         try:
             for attempt in range(3):
-                res = br.call("script", {"code": SCRIPT, "args": {"cols": cols}, "timeout_ms": 10000})
+                res = br.call("script", {"code": SCRIPT, "args": {"cols": cols, "floors": ftiles.get((tx, tz), [])},
+                                           "timeout_ms": 10000})
                 if not res.get("ok"):
                     raise RuntimeError(f"script: {res}")
                 print(f"tile {tx * T},{tz * T}: {res.get('value')}", flush=True)

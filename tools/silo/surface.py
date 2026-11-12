@@ -176,7 +176,9 @@ class Site:
             col = ids[i, :, k]
             lo = max(0, min(t, n, int(self.bed[i, k])) - 3 - oy)
             col[lo:max(0, t - oy)] = dirt
-            col[t - oy] = coarse if floor_zone[i, k] and noise[i, k] < 0.55 else grass
+            # 2052 (the opening day, S3E09): the aerial frame shows every floor grassed like the plain; the model's
+            # bleached floor is the later wasteland
+            col[t - oy] = grass
             a0, a1 = t + 1 - oy, min(H, max(int(self.top[i, k]), n, clear_top) + 1 - oy)
             if a1 > a0:
                 col[a0:a1] = air
