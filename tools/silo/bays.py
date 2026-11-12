@@ -149,9 +149,10 @@ FACADES: dict[str, dict] = {
 ROW_H = 2.5                                   # model metres per Minecraft row (10 m level -> 4 rows)
 
 
-def rows_of(y0: float, y1: float) -> list[int]:
-    rows = {k for k in range(4) if y0 <= ROW_H * k + ROW_H / 2 <= y1}
-    rows.add(min(3, max(0, int(((y0 + y1) / 2) // ROW_H))))
+def rows_of(y0: float, y1: float, n: int = 4, row_h: float = ROW_H) -> list[int]:
+    """Rows of an n-row face (row_h model metres each) that an opening from model height y0 to y1 covers."""
+    rows = {k for k in range(n) if y0 <= row_h * k + row_h / 2 <= y1}
+    rows.add(min(n - 1, max(0, int(((y0 + y1) / 2) // row_h))))
     return sorted(rows)
 
 

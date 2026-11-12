@@ -8,7 +8,9 @@ Rooms stand behind the special bay (bays.ROOM_BAY, bearing 0, so a room's depth 
 along world +z) at 1 m = 1 block in plan; heights fall into the level's four clear rows (1 m each). Room-local x, s
 (depth from the room's front wall) map to cells by cell(): d = 18 + floor(s) from the axis, c = floor(x + W/2) - W//2.
 Where the model's rooms chain deeper than the 26 blocks between the shaft wall (r 17) and the shell (r 43), the chain
-is folded sideways and the fold is named at the room. Model colours are matched to the nearest vanilla block.
+is folded sideways and the fold is named at the room. The 1:1 silo's facade stands at r 24 (silo.Spec.r_facade), so
+every d here is moved out by SHIFT; rooms keep the model's four clear rows, and the level's fifth row over them is
+closed as their ceiling. Model colours are matched to the nearest vanilla block.
 """
 from __future__ import annotations
 
@@ -46,6 +48,8 @@ class Furnisher:
     def __init__(self, silo):
         self.silo, self.s, self.v = silo, silo.s, silo.v
         self.R = silo.R
+        self.D = int(silo.s.r_facade) - 17                 # the model's front wall (r 17) to ours
+        self.top = silo.s.pitch - 2                        # the level's highest clear row
         self.n = 1
         self.y = silo.level_y(1)
 
@@ -59,23 +63,23 @@ class Furnisher:
         return d0 + math.floor(s), math.floor(x + W / 2) - W // 2 + cshift
 
     def blk(self, d: int, c: int, dy: int, state: str) -> None:
-        self.v.set(self.R + d, self.y + dy, self.R + c, state)
+        self.v.set(self.R + self.D + d, self.y + dy, self.R + c, state)
 
     def get(self, d: int, c: int, dy: int) -> str:
-        return self.v.get(self.R + d, self.y + dy, self.R + c)
+        return self.v.get(self.R + self.D + d, self.y + dy, self.R + c)
 
     def box(self, d0, d1, c0, c1, dy0, dy1, state) -> None:
         d0, d1 = sorted((d0, d1))
         c0, c1 = sorted((c0, c1))
-        self.v.box(self.R + d0, self.y + dy0, self.R + c0, self.R + d1, self.y + dy1, self.R + c1, state)
+        self.v.box(self.R + self.D + d0, self.y + dy0, self.R + c0, self.R + self.D + d1, self.y + dy1, self.R + c1, state)
 
     def room(self, d0, d1, c0, c1, wall: str, floor: str, rows: int = 4, ceiling: str | None = None) -> None:
         """A walled room with interior cells d0..d1 x c0..c1: walls one block thick on all sides, floor under it,
         `rows` clear rows and a ceiling filling the rest of the level's four rows."""
-        far = max(math.hypot(d, c) for d in (d0 - 1, d1 + 1) for c in (c0 - 1, c1 + 1))
-        if far >= self.s.r_outer - 1:
+        far = max(math.hypot(d + self.D, c) for d in (d0 - 1, d1 + 1) for c in (c0 - 1, c1 + 1))
+        if far >= self.s.r_inner_wall:
             raise ValueError(f"room reaches r {far:.1f} on level {self.n}")
-        self.box(d0 - 1, d1 + 1, c0 - 1, c1 + 1, 0, 3, wall)
+        self.box(d0 - 1, d1 + 1, c0 - 1, c1 + 1, 0, self.top, wall)
         self.box(d0, d1, c0, c1, 0, rows - 1, AIR)
         if rows < 4:
             self.box(d0, d1, c0, c1, rows, 3, ceiling or wall)
@@ -110,7 +114,8 @@ class Furnisher:
             self.medical(n)
         self.market(100)
         self.deputy_station(105)
-        self.farm(122)
+        for n in (80, 122):
+            self.farm(n)
         self.barricade(130)
         self.workshop(144)
 
@@ -192,19 +197,10 @@ class Furnisher:
                 self.blk(d, c0, 1, "minecraft:smooth_sandstone_slab[type=bottom,waterlogged=false]")
                 self.blk(d, c0 + 1, 1, LANTERN)
                 self.blk(d - 1, c0, 0, stairs("west"))
-        # server room: SW 10 x SD 12 x SH 3.6, door 2.4 wide in the offices' back wall; racks in four rows
-        self.room(33, 42, -4, 5, con, "minecraft:polished_deepslate", rows=3, ceiling=con)
-        self.box(32, 32, 0, 1, 0, 1, AIR)
-        self.door(32, 0, "west", width=2, hinge="right")
-        for c in (-3, -1, 2, 4):
-            for d in range(34, 42):
-                self.blk(d, c, 0, "minecraft:observer[facing=up,powered=false]")
-                self.blk(d, c, 1, "minecraft:observer[facing=down,powered=false]")
-        for c in (-2, 3):                                   # cable trays at 2.75 m
-            self.box(34, 41, c, c, 2, 2, "minecraft:iron_trapdoor[facing=north,half=top,open=false,powered=false,waterlogged=false]")
-        for d in (35, 37, 40):                              # light panels on the axis every 2.4 m
-            self.blk(d, 0, 3, SEA)
-            self.blk(d, 1, 3, SEA)
+        # server room (S2 ew t1126s): round, tiered racks stepping up round the wall, a ring light in the ceiling, a
+        # raised dais on the far side with the console Bernard uses to talk to the "Algorithm" (the line to Silo 1's
+        # operator room, silo1.Silo1.operator_room). Ø11 here, through a double door in the offices' back wall.
+        self.server_room()
         # the Vault, D 13.4 x 13 x H 4.4: a round stepped bowl round a lit pedestal, behind a heavy door
         self.room(29, 39, -19, -9, con, "minecraft:polished_andesite")
         vd, vc = 34, -14
@@ -254,6 +250,39 @@ class Furnisher:
         for d, c in ((25, 16), (26, 15), (26, 17)):
             self.blk(d, c, 0, "minecraft:red_carpet")
         self.blk(24, 17, 2, HANG)
+
+    def server_room(self) -> None:
+        con = "minecraft:light_gray_concrete"
+        dc, cc, R = 37.5, 0.5, 5.5
+        self.box(31, 44, -6, 7, 0, self.top, con)
+        cells = [(d, c) for d in range(32, 44) for c in range(-5, 7) if math.hypot(d + 0.5 - dc, c + 0.5 - cc) < R]
+        for d, c in cells:
+            self.box(d, d, c, c, 0, 3, AIR)
+            self.blk(d, c, -1, "minecraft:polished_deepslate")
+        for d, c in cells:
+            r = math.hypot(d + 0.5 - dc, c + 0.5 - cc)
+            a = math.degrees(math.atan2(c + 0.5 - cc, d + 0.5 - dc))
+            if abs(a) < 40:                                  # the dais and the console, far side
+                if r >= 2.5:
+                    self.blk(d, c, 0, "minecraft:smooth_stone_slab[type=bottom,waterlogged=false]")
+                continue
+            if r >= 4.6:                                     # racks, two tiers stepping up toward the wall
+                self.box(d, d, c, c, 0, 2, "minecraft:observer[facing=up,powered=false]")
+            elif r >= 3.7 and abs(a) > 140:
+                continue                                     # the way in
+            elif r >= 3.7:
+                self.blk(d, c, 0, "minecraft:observer[facing=up,powered=false]")
+            if 2.0 <= r < 3.0:
+                self.blk(d, c, 3, SEA)                       # the ring light
+        self.blk(41, 0, 1, "minecraft:polished_blackstone_slab[type=top,waterlogged=false]")   # the console
+        self.blk(41, 1, 1, "minecraft:polished_blackstone_slab[type=top,waterlogged=false]")
+        self.blk(42, 0, 2, "minecraft:daylight_detector[inverted=false,power=0]")
+        self.blk(42, 0, 1, "minecraft:black_concrete")
+        self.blk(42, 1, 1, "minecraft:black_concrete")
+        self.blk(42, 1, 2, "minecraft:waxed_copper_grate")
+        self.blk(40, 0, 1, stairs("east"))
+        self.box(32, 32, 0, 1, 0, 1, AIR)
+        self.door(32, 0, "west", width=2, hinge="right")
 
     def watcher(self, n: int) -> None:
         """Recycling's janitorial closet and, through its back door, the Watcher Room (model watcher()): two tiers of
@@ -468,14 +497,15 @@ class Furnisher:
         self.blk(25, 4, 3, "minecraft:shroomlight")                              # the wall lamp over the drawers
 
     def checkpoint(self, n: int) -> None:
-        """Level 30: Judicial's checkpoint on the stair (canon). A barred gate across the bridge with a door."""
+        """Level 30: Judicial's checkpoint on the stair (canon). A barred gate across the first bridge where it reaches
+        the gallery, with a door."""
         self.on(n)
         silo, v, y = self.silo, self.v, self.y
-        a = (n * GOLDEN) % TAU
+        a = silo.bridge_angles(n)[0]
         d = np.abs(((silo.theta - a + math.pi) % TAU) - math.pi)
-        gate = (np.abs(d * silo.r) < 2.6) & (d < math.pi / 2) & silo.ring(self.s.r_walk_in - 2, self.s.r_walk_in - 1)
+        gate = (np.abs(d * silo.r) < 2.6) & (d < math.pi / 2) & silo.ring(self.s.r_atrium - 2, self.s.r_atrium - 1)
         v.mask(y, y + 2, gate, "minecraft:iron_bars")
-        x, z = silo.polar(self.s.r_walk_in - 1.5, a)
+        x, z = silo.polar(self.s.r_atrium - 1.5, a)
         f = silo.facing_radial(a)
         for dy, half in ((0, "lower"), (1, "upper")):
             v.set(x, y + dy, z, f"minecraft:iron_door[facing={f},half={half},hinge=left,open=false,powered=false]")
@@ -485,14 +515,14 @@ class Furnisher:
                 v.set(x + k * dx, y, z + k * dz, PLATE)
 
     def medical(self, n: int) -> None:
-        """Mids Medical: the bays are clinics (model BAY.medical); their front rooms hold two beds each."""
+        """Mids Medical: the front flats are clinics (model BAY.medical); each holds two beds."""
         self.on(n)
         silo, s = self.silo, self.s
         for b in range(s.bays):
             a = silo.bay_center(b)
             for k in (-0.22, 0.22):
                 ang = a + k * math.radians(360 / s.bays)
-                x, z = silo.polar(s.r_corridor_in - 3, ang)
+                x, z = silo.polar(s.r_facade + 4, ang)
                 f = silo.facing_radial(ang)
                 dx, dz = DIRS[f]
                 if self.v.get(x, self.y, z) == AIR and self.v.get(x - dx, self.y, z - dz) == AIR:
@@ -500,28 +530,40 @@ class Furnisher:
                     self.v.set(x - dx, self.y, z - dz, f"minecraft:white_bed[facing={f},occupied=false,part=foot]")
 
     def farm(self, n: int) -> None:
-        """Lower Mids Farm: the bays are glazed grow rooms (model BAY.farm); behind the glass, crops in rows on
-        watered soil under grow lights."""
+        """A farm level (Gold Derby 8:25, Valette 1x3gyL/01, 05): one tall open storey the full width of the silo behind a
+        ring of columns, the stair and gallery passing through it. The sources give ≈7-8 m; ours is this level and
+        the one above opened into one storey (11 clear, two of our 6-block levels), the upper level keeping its
+        gallery as a balcony. Crops in rows on watered soil under grow lights, water towers among the fields."""
         self.on(n)
         silo, s, v, y = self.silo, self.s, self.v, self.y
-        front = silo.ring(s.r_atrium + 1, s.r_corridor_in - 1) & (v.ids[:, y, :] == v.id(AIR))
+        top = y + 2 * s.pitch - 2
+        hall = silo.ring(s.r_facade, s.r_inner_wall)
+        v.mask(y, top, hall, AIR)
+        v.mask(y - 1, y - 1, hall, "minecraft:coarse_dirt")
+        posts = silo.ring(s.r_facade, s.r_facade + 1.0) & (np.mod(silo.theta, TAU / 48) < 0.04)
+        v.mask(y, top, posts, "minecraft:light_gray_concrete")
         X, Z = silo.X, silo.Z
-        water = front & ((X % 4) == 0) & ((Z % 9) != 0)
-        land = front & ~water
+        field = silo.ring(s.r_facade + 2, s.r_inner_wall - 1)
+        water = field & ((X % 5) == 0) & ((Z % 11) != 0)
+        land = field & ~water
         v.mask(y - 1, y - 1, water, "minecraft:water")
         v.mask(y - 1, y - 1, land, "minecraft:farmland[moisture=7]")
         crops = ["minecraft:wheat[age=7]", "minecraft:carrots[age=7]", "minecraft:potatoes[age=7]", "minecraft:beetroots[age=3]"]
         for i, c in enumerate(crops):
-            v.mask(y, y, land & ((Z // 5) % 4 == i), c)
-        v.mask(y + 3, y + 3, front & ((X % 4) == 2) & ((Z % 3) == 0), "minecraft:verdant_froglight")
+            v.mask(y, y, land & ((Z // 7) % 4 == i), c)
+        v.mask(top, top, hall & ((X % 4) == 2) & ((Z % 4) == 0), "minecraft:verdant_froglight")
+        for k in range(6):                                   # water towers: a tank on legs
+            cx, cz = silo.polar(48, k * TAU / 6 + 0.3)
+            v.box(cx - 1, y - 1, cz - 1, cx + 1, y + 4, cz + 1, "minecraft:polished_andesite")
+            v.box(cx - 2, y + 5, cz - 2, cx + 2, y + 8, cz + 2, "minecraft:waxed_weathered_copper")
 
     def barricade(self, n: int) -> None:
-        """Level 130, the barricade (canon): junk piled across the landing where the bridge reaches the walkway."""
+        """Level 130, the barricade (canon): junk piled across the gallery where the first bridge reaches it."""
         self.on(n)
         silo, v, y = self.silo, self.v, self.y
-        a = (n * GOLDEN) % TAU
+        a = silo.bridge_angles(n)[0]
         d = np.abs(((silo.theta - a + math.pi) % TAU) - math.pi)
-        m = (d * silo.r < 4) & (d < math.pi / 2) & silo.ring(self.s.r_walk_in - 1, self.s.r_walk_in + 2)
+        m = (d * silo.r < 4) & (d < math.pi / 2) & silo.ring(self.s.r_atrium - 1, self.s.r_atrium + 2) & ~silo.columns
         junk = ["minecraft:barrel[facing=up,open=false]", "minecraft:cobblestone_wall", "minecraft:oak_planks",
                 "minecraft:scaffolding[bottom=false,distance=0,waterlogged=false]", "minecraft:anvil[facing=north]",
                 "minecraft:chipped_anvil[facing=east]", "minecraft:iron_bars"]

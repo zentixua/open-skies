@@ -1,16 +1,29 @@
-"""One silo of the Silo series, generated block by block.
+"""One silo of the Silo series at 1:1, generated block by block (SPEC-1to1.md, Artem's decision 12.11.2026).
 
-Sources: the show and novels as collected by the fan reference explorethesilo.com (canon level list) and the
-dimensions of its three.js model (atrium, stair, bridges rotating by 137.5 degrees per level, 18 bays, cafeteria
-screen and airlock angles, ramp, generator, digger void). Minecraft scale: 1 block = 1 m horizontally; a level is 5
-blocks (4 clear + 1 slab) instead of the model's cinematic 10 m, so 144 levels fit in about 780 blocks of depth.
+Sizes and their sources are in SPEC-1to1.md and canon/official-layout.md (the production's own plan, BFDG t2014s;
+the built set, t2163s; the dome, t2240s; levels of 6, BFDG 28:10). 1 block = 1 m.
+
+Plan of a level, radii from the shaft axis:
+  r 0-1.5    solid concrete core (the plan's stair core, about 1/5 of the open shaft)
+  r 1.5-3.5  the spiral flight, 2 wide, wound round the core; its solid parapet at r 3.5-4.5
+  r 4.5-8.5  the landing ring round the stair, a parapet on each edge
+  r 8.5-19.5 the open atrium, crossed by two radial bridges about 135 degrees apart (plan t2014s)
+  r 19.5-24  the gallery street, 4 wide: a 1.1 m parapet on its edge between big round columns with light collars
+  r 24-25    the two-storey facades (bays.FACADES), broken by alleys
+  r 25-60    flat modules: front flats on the gallery, back flats on an inner ring alley, an outer ring of flats
+             between two ring alleys; radial alleys 4 wide join the gallery to both ring alleys (BFDG t3452s, S2 ew)
+  r 60-62    the shaft's concrete wall (Ø≈120 from the bowl, SPEC section 2)
+A level is 6 blocks: the gallery floor, a 3-row lower storey (doors 2) and a 2-row upper storey (BFDG 28:10: two
+levels in a 12.2 m stage). 144 levels; the open atrium ends at the top in a coffered dome (BFDG t2240s).
 
 Local frame: x, z centred on the silo axis (index R), y index 0 at the bottom of the digger void. World y of an
-index is origin_y + index. Level n (1..144) has its walking surface at Y1 - 5 * (n - 1).
+index is origin_y + index. Level n (1..144) has its walking surface at Y1 - 6 * (n - 1). Level 1's specials (the
+cafeteria, the sheriff's office, the holding cells, the airlock and the ramp) are laid out with the way in due west;
+build_live turns the finished volume to the silo's own side.
 
-Interiors from the model: bay facades and walkway dressing (bays.py), the canon rooms (levels.py), the generator
-hall, digger void and tunnel (machines.py); after them connect.py gives panes, bars, fences and walls their
-connections and drops halves a room cut off, and lighting.py puts invisible light wherever a monster could spawn.
+Interiors from the explorethesilo.com model: bay facades (bays.py), the canon rooms (levels.py), the generator hall,
+digger void and tunnel (machines.py); after them connect.py gives panes, bars, fences and walls their connections and
+drops halves a room cut off, and lighting.py puts invisible light wherever a monster could spawn.
 """
 from __future__ import annotations
 
@@ -31,34 +44,34 @@ LEVELS = 144
 @dataclass
 class Spec:
     number: int = 18
-    pitch: int = 5                    # blocks per level
-    r_newel: float = 1.5              # solid stair core
-    r_stair_in: float = 1.5
-    r_stair_out: float = 5.5
-    r_landing: float = 7.5            # landing pad outer radius
-    r_column_orbit: float = 11.0      # six core columns (explorethesilo CORE_COLUMNS, angles below)
-    r_walk_in: float = 14.0           # walkway ring projecting into the atrium
-    r_atrium: float = 17.0            # front wall of the rooms
-    r_corridor_in: float = 28.0
-    r_corridor_out: float = 30.0
-    r_inner_wall: float = 43.0        # back wall of the rooms
-    r_outer: float = 46.0             # outside of the concrete shell
+    pitch: int = 6                    # blocks per level: floor 1 + lower storey 3 + upper storey 2 (BFDG 28:10)
+    r_newel: float = 1.5              # solid stair core (plan t2014s: core ≈ 1/5 of the open shaft)
+    r_flight: float = 3.5             # flight 2 wide (≈ 1.8-2 m by a person)
+    r_stair_wall: float = 4.5         # the flight's solid parapet
+    r_landing: float = 8.5            # landing ring round the stair core, outer edge
+    r_atrium: float = 19.5            # gallery edge: the open atrium is Ø≈40 (SPEC 2)
+    r_column: float = 1.5             # big round columns on the gallery edge (Ø3, t2163s)
+    columns: int = 15                 # 24 degrees apart: an 8 m scallop between them
+    r_facade: float = 24.0            # gallery street 4 wide (t2163s)
+    r_ring1: tuple = (39.0, 44.0)     # inner ring alley (wall, alley, wall): 4 wide
+    r_ring2: tuple = (50.0, 55.0)     # outer ring alley
+    r_split: float = 32.0             # wall between the front flats (on the gallery) and the back flats
+    r_inner_wall: float = 60.0        # inside face of the shaft wall: Ø≈120 (SPEC 2)
+    r_outer: float = 62.0
     bays: int = 18
-    cafe_height: int = 10             # level 1 cafeteria clear height
-    cap: int = 3                      # concrete cap above level 1
-    cover: int = 4                    # earth over the cap up to grade (the bowl floor); the exit ramp climbs cover+cap+cafe
+    alley_every: int = 3              # one radial alley every third bay, six per level
+    alley_half: float = 2.0           # alleys 4 wide (S2 ew t0660s: 3-5)
+    flats_out: int = 36               # outer flats: one per 10 degrees
+    level1_depth: int = 15            # level 1 under the bowl floor (SPEC 5: 13-17)
+    dome_rise: int = 7                # the coffered dome over the atrium
     gen_height: int = 16              # generator hall below level 144
     slab: int = 9                     # "thirty feet" of concrete above the digger void
     void_height: int = 44
-    void_radius: float = 44.0
-    margin: int = 6
+    void_radius: float = 52.0
+    margin: int = 3
 
 
-COLUMN_ANGLES = [64, 110, 158, 202, 250, 296]
-SCREEN_ANGLE, SCREEN_ARC = math.radians(140), math.radians(54)
-# The model has the airlock at 210 degrees with the screen just to its left (170); here both turn by 30 so the way in
-# runs due west and the tunnel, portal and sensor block are block-aligned (surface.py).
-AIRLOCK_ANGLE = math.radians(180)
+SCREEN_ARC = math.radians(70)
 
 # palette -------------------------------------------------------------------------------------------------------------
 CONCRETE = "minecraft:light_gray_concrete"
@@ -68,8 +81,7 @@ FLOOR = "minecraft:polished_andesite"
 FLOOR_DEEP = "minecraft:polished_deepslate"
 SLAB_FLOOR = "minecraft:smooth_stone"
 STEEL = "minecraft:polished_deepslate"
-STEEL_SLAB_B = "minecraft:polished_deepslate_slab[type=bottom]"
-STEEL_SLAB_T = "minecraft:polished_deepslate_slab[type=top]"
+STEEL_SLAB_B = "minecraft:polished_deepslate_slab[type=bottom,waterlogged=false]"
 RUST = "minecraft:waxed_weathered_cut_copper"
 RAIL = "minecraft:iron_bars"
 GRATE = "minecraft:waxed_weathered_copper_grate"
@@ -78,7 +90,6 @@ STONE = "minecraft:stone"
 AIR = "minecraft:air"
 LAMP_WARM = "minecraft:ochre_froglight"
 LAMP_COOL = "minecraft:pearlescent_froglight"
-LAMP_DEEP = "minecraft:verdant_froglight"
 WATER = "minecraft:water"
 PARAPET = "minecraft:andesite_wall"
 PANE = "minecraft:glass_pane"
@@ -92,6 +103,27 @@ LEAVES = "minecraft:azalea_leaves[distance=7,persistent=true,waterlogged=false]"
 CRATE = "minecraft:barrel[facing=up,open=false]"
 SACK = "minecraft:brown_wool"
 DRUM = "minecraft:cauldron"
+HANG = "minecraft:lantern[hanging=true,waterlogged=false]"
+CHAIN = "minecraft:chain[axis=y,waterlogged=false]"
+DIRS = {"east": (1, 0), "west": (-1, 0), "south": (0, 1), "north": (0, -1)}
+OPP = {"east": "west", "west": "east", "south": "north", "north": "south"}
+
+# Level 1 and the way in, silo frame with the way in due west (x east, z south). Positions are ours: no frame or
+# plan shows how the cafeteria, the sheriff's office and the airlock sit on level 1 (SPEC 8); the sizes are the
+# show's: the hall Ø≈28 with a 5 m ceiling (BFDG t2375s), the airlock door ≈2.4 (t2756s), the ramp 30-50 long
+# climbing toward the centre to a slot at 0-1/2 of the bowl's radius (SPEC 5).
+HALL = (-40, 0, 14)                   # cafeteria centre x, z and radius (inside of its wall)
+HALL_DOOR = (-30, -10)                # its second entrance (north-east), toward the sheriff's office
+OFFICE = (-28, -32, 6)                # the sheriff's office, round: centre x, z, radius
+CELLS_X = (-41, -39)                  # holding cells, interior x range, west of the office's vestibule
+CELLS_Z = ((-38, -36), (-34, -32), (-30, -28))
+LOCK = (-47, -43)                     # airlock chamber x range on cell 3's lane
+TURN_X = (-50, -49)                   # the ramp's U-turn
+RAMP_Z = (-23, -21)                   # ramp interior z (3 wide)
+RAMP_X = (-48, -23)                   # ribbed ramp: x where it leaves the U-turn (level 1) and where the steps begin
+STEPS = 6                             # the slot's steps, one block each
+EXIT_X = RAMP_X[1] + STEPS            # last step, on the bowl floor: r ≈ 28, half the bowl's radius
+CAMERA = (-22, -19, -26, -25)         # the camera block beside the slot: x0, x1, z0, z1 (≈4.4 x 2.4 m, S3E09 07)
 
 
 class Silo:
@@ -99,10 +131,10 @@ class Silo:
         self.s = s = spec
         self.R = R = int(math.ceil(s.r_outer)) + s.margin
         self.depth_levels = (LEVELS - 1) * s.pitch
-        # vertical layout from the top: grade (bowl floor) -> cover -> cap -> cafeteria -> levels -> generator -> slab -> void
+        # vertical layout from the top: grade (bowl floor) -> earth and cap over the dome -> level 1 -> levels ->
+        # generator -> slab -> void
         self.grade_rel = 0
-        top_of_cap = -s.cover
-        self.Y1_rel = top_of_cap - s.cap - s.cafe_height    # level 1 walking surface relative to grade
+        self.Y1_rel = -s.level1_depth
         self.y144_rel = self.Y1_rel - self.depth_levels
         self.gen_floor_rel = self.y144_rel - s.pitch - s.gen_height
         self.void_top_rel = self.gen_floor_rel - 1 - s.slab
@@ -116,9 +148,10 @@ class Silo:
         n = 2 * R + 1
         ax = np.arange(n) - R
         self.X, self.Z = np.meshgrid(ax, ax, indexing="ij")
-        self.r = np.hypot(self.X + 0.5 - 0.5, self.Z)   # block centres measured from the axis column
+        self.r = np.hypot(self.X, self.Z)
         self.theta = np.mod(np.arctan2(self.Z, self.X), TAU)
-        self._bays()
+        self.col_step = TAU / s.columns
+        self._plan()
 
     # coordinates -------------------------------------------------------------------------------------------------
     def yi(self, rel: int) -> int:
@@ -137,21 +170,168 @@ class Silo:
             return (self.theta >= a0) & (self.theta < a1)
         return (self.theta >= a0) | (self.theta < a1)
 
+    def off(self, a: float) -> np.ndarray:
+        """Angle of every column from bearing a, 0..pi."""
+        return np.abs(((self.theta - a + math.pi) % TAU) - math.pi)
+
+    def lane(self, a: float, half: float) -> np.ndarray:
+        """Columns within `half` of the ray from the axis along bearing a."""
+        d = self.off(a)
+        return (d < math.pi / 2) & (self.r * np.sin(d) < half)
+
     def polar(self, r: float, a: float) -> tuple[int, int]:
         return self.R + int(round(r * math.cos(a))), self.R + int(round(r * math.sin(a)))
+
+    def at(self, x: int, z: int) -> tuple[int, int]:
+        """Volume column of silo-frame offsets (x east, z south)."""
+        return self.R + x, self.R + z
+
+    @staticmethod
+    def facing_radial(a: float) -> str:
+        """Horizontal facing pointing outward along angle a (x east, z south)."""
+        c, s = math.cos(a), math.sin(a)
+        if abs(c) >= abs(s):
+            return "east" if c > 0 else "west"
+        return "south" if s > 0 else "north"
+
+    # plan: the 2D masks every level shares ---------------------------------------------------------------------
+    def bay_center(self, b: int) -> float:
+        """Bearing (radians, silo frame) of bay b's centre: the model's (b + 0.5) * 20 degrees turned by FRAME_DEG."""
+        return math.radians((b + 0.5) * BAY_ARC_DEG + FRAME_DEG)
+
+    def bridge_angles(self, n: int) -> tuple[float, float]:
+        """The two bridges of level n, about 135 degrees apart (plan t2014s), turning by the model's 137.5 degrees a
+        level, each landing in the scallop between two gallery columns."""
+        st = self.col_step
+        snap = lambda a: ((math.floor((a % TAU) / st) + 0.5) * st) % TAU
+        a = snap(n * GOLDEN)
+        return a, snap(a + math.radians(135))
+
+    def alley_bays(self, n: int) -> list[int]:
+        """Bays opening into a radial alley on level n: every third, shifted level by level, never the special bay of
+        a room level or the cafeteria's side of level 1."""
+        k = n % self.s.alley_every
+        out = [b for b in range(self.s.bays) if b % self.s.alley_every == k]
+        if n in ROOM_LEVELS:
+            out = [b for b in out if b != ROOM_BAY]
+        if n == 1:                                       # the cafeteria and the way in face west
+            out = [b for b in out if abs(((self.bay_center(b) - math.pi + math.pi) % TAU) - math.pi) > math.radians(70)]
+        return out
+
+    def _plan(self) -> None:
+        s = self.s
+        r = self.r
+        self.core = r < s.r_newel
+        self.flight = self.ring(s.r_newel, s.r_flight)
+        self.stair_wall = self.ring(s.r_flight, s.r_stair_wall)
+        self.landing = self.ring(s.r_stair_wall, s.r_landing)
+        self.gallery = self.ring(s.r_atrium, s.r_facade)
+        cols = np.zeros_like(self.core)
+        self.column_centres = []
+        for k in range(s.columns):
+            a = k * self.col_step
+            px, pz = (s.r_atrium + 0.5) * math.cos(a), (s.r_atrium + 0.5) * math.sin(a)
+            cols |= np.hypot(self.X - px, self.Z - pz) < s.r_column
+            self.column_centres.append((px, pz))
+        self.columns = cols
+        self.facade_ring = self.ring(s.r_facade, s.r_facade + 1.0)
+        # front-wall cells of each bay with their position across the model's bay (u, metres)
+        self.bay_cells: list[list[tuple[int, int, float, float]]] = [[] for _ in range(s.bays)]
+        for x, z in zip(*np.nonzero(self.facade_ring)):
+            th = float(self.theta[x, z])
+            m = (math.degrees(th) - FRAME_DEG) % 360.0
+            b = int(m // BAY_ARC_DEG) % s.bays
+            u = (m - (b + 0.5) * BAY_ARC_DEG) / BAY_ARC_DEG * BAY_W
+            self.bay_cells[b].append((int(x), int(z), u, th))
+        for c in self.bay_cells:
+            c.sort(key=lambda t: t[2])
+        self._templates = {}
+
+    def template(self, n: int) -> dict:
+        """Walls, open space, flats and doors behind the gallery for level n's alley pattern (shared by every level
+        with the same alleys)."""
+        alleys = tuple(self.alley_bays(n))
+        if alleys in self._templates:
+            return self._templates[alleys]
+        s, r = self.s, self.r
+        zone = self.ring(s.r_facade + 1.0, s.r_inner_wall)
+        lanes = np.zeros_like(zone)
+        for b in alleys:
+            lanes |= self.lane(self.bay_center(b), s.alley_half)
+        r1a, r1b = s.r_ring1[0] + 1, s.r_ring1[1] - 1
+        r2a, r2b = s.r_ring2[0] + 1, s.r_ring2[1] - 1
+        ring1 = self.ring(r1a, r1b)
+        ring2 = self.ring(r2a, r2b)
+        open_ = (lanes & self.ring(s.r_facade, r2b)) | ring1 | ring2
+        walls = zone & ~open_
+        # flats: cut the solid zone into cells by rings and radial walls
+        thin = lambda r0: self.ring(r0, r0 + 1.0)
+        cut = thin(s.r_split) | thin(s.r_ring1[0]) | thin(s.r_ring1[1] - 1) | thin(s.r_ring2[0]) | thin(s.r_ring2[1] - 1)
+        for b in range(s.bays):
+            edge = self.bay_center(b) - math.radians(BAY_ARC_DEG / 2)
+            cut |= (np.abs(np.sin(self.theta - edge)) * r < 0.5) & (np.cos(self.theta - edge) > 0) & self.ring(s.r_facade, s.r_ring1[1])
+        for k in range(s.flats_out):
+            a = k * TAU / s.flats_out + 0.05
+            cut |= (np.abs(np.sin(self.theta - a)) * r < 0.5) & (np.cos(self.theta - a) > 0) & self.ring(s.r_ring1[1], s.r_inner_wall)
+        # a wall wherever a lane borders solid ground
+        inner = walls & ~cut
+        # label the flats (4-connected)
+        from scipy import ndimage
+        lab, nlab = ndimage.label(inner)
+        # every flat needs at least 2 x 2 cells; tiny bits become wall
+        sizes = ndimage.sum(np.ones_like(lab), lab, index=np.arange(1, nlab + 1))
+        for i, sz in enumerate(sizes, 1):
+            if sz < 6:
+                inner[lab == i] = False
+        lab, nlab = ndimage.label(inner)
+        access = open_ | self.gallery
+        flats = []
+        for i, sl in enumerate(ndimage.find_objects(lab), 1):
+            cells = np.argwhere(lab[sl] == i) + [sl[0].start, sl[1].start]
+            door = self._door_for(cells, lab, i, access)
+            flats.append({"label": i, "cells": cells, "door": door})
+        t = {"walls": zone & ~inner & ~open_, "open": open_ & zone, "flats": flats, "lab": lab, "lanes": lanes,
+             "ring1": ring1, "ring2": ring2}
+        self._templates[alleys] = t
+        return t
+
+    def _door_for(self, cells, lab, i, access):
+        """A wall cell between the flat and an access space, square to it (walls on both sides along the wall), nearest
+        the middle of the flat's frontage."""
+        best = None
+        cx, cz = cells.mean(axis=0)
+        n = lab.shape[0]
+        for x, z in cells:
+            for dx, dz, facing in ((1, 0, "east"), (-1, 0, "west"), (0, 1, "south"), (0, -1, "north")):
+                wx, wz = x + dx, z + dz
+                ox, oz = x + 2 * dx, z + 2 * dz
+                if not (0 <= ox < n and 0 <= oz < n):
+                    continue
+                if lab[wx, wz] != 0 or not access[ox, oz] or access[wx, wz]:
+                    continue
+                sx, sz = -dz, dx                                    # along the wall
+                if lab[wx + sx, wz + sz] != 0 or lab[wx - sx, wz - sz] != 0:
+                    continue
+                if access[wx + sx, wz + sz] or access[wx - sx, wz - sz]:
+                    continue
+                d = (x - cx) ** 2 + (z - cz) ** 2
+                if best is None or d < best[0]:
+                    best = (d, (int(wx), int(wz)), facing, (int(x), int(z)), (int(ox), int(oz)))
+        return best[1:] if best else None
 
     # build ----------------------------------------------------------------------------------------------------------
     def build(self) -> Volume:
         s, v = self.s, self.v
         top = self.yi(0)
-        # rock around and below everything inside the footprint; the site generator blends the outside
+        # rock around and below everything inside the footprint; earth over the cap; the site blends the outside
         v.mask(0, top - 1, self.r < self.R, ROCK)
-        v.mask(self.yi(-s.cover // 2), top - 1, self.r < self.R, "minecraft:dirt")
+        v.mask(self.level_y(1) + s.pitch + 1, top - 1, self.r < self.R, "minecraft:dirt")
         self.shell()
         for n in range(LEVELS, 0, -1):
             self.level(n)
         self.stair()
-        self.cafeteria()
+        self.dome()
+        self.level_one()
         self.generator_hall()
         self.digger_void()
         from levels import Furnisher
@@ -166,72 +346,67 @@ class Silo:
 
     def shell(self) -> None:
         s, v = self.s, self.v
-        y_top = self.level_y(1) + s.cafe_height + s.cap - 1
+        y_top = self.level_y(1) + s.pitch                  # the cap over level 1
         y_bot = self.yi(self.gen_floor_rel) - 1
         v.mask(y_bot, y_top, self.ring(s.r_inner_wall, s.r_outer), SHELL)
-        # open atrium through all levels (floors and walkways are added per level)
-        v.mask(y_bot + 1, self.level_y(1) + s.cafe_height - 1, self.r < s.r_inner_wall, AIR)
-        # cap
-        v.mask(self.level_y(1) + s.cafe_height, y_top, self.r < s.r_outer, CONCRETE)
+        v.mask(y_bot + 1, self.level_y(1) + s.pitch - 2, self.r < s.r_inner_wall, AIR)
+        v.mask(self.level_y(1) + s.pitch - 1, y_top, self.r < s.r_outer, CONCRETE)
+        # the gallery columns run from the bottom level up to the dome's springing
+        v.mask(self.level_y(LEVELS) - 1, self.level_y(1) + s.pitch - 2, self.columns, CONCRETE)
 
     # levels ---------------------------------------------------------------------------------------------------------
-    def bay_center(self, b: int) -> float:
-        """Bearing (radians, silo frame) of bay b's centre: the model's (b + 0.5) * 20 degrees turned by FRAME_DEG."""
-        return math.radians((b + 0.5) * BAY_ARC_DEG + FRAME_DEG)
-
-    def _bays(self) -> None:
-        """Front-wall cells of each bay with their position across the model's bay (u, metres), and the walls."""
-        s = self.s
-        front = self.ring(s.r_atrium, s.r_atrium + 1.0)
-        self.bay_cells: list[list[tuple[int, int, float, float]]] = [[] for _ in range(s.bays)]
-        for x, z in zip(*np.nonzero(front)):
-            th = float(self.theta[x, z])
-            m = (math.degrees(th) - FRAME_DEG) % 360.0
-            b = int(m // BAY_ARC_DEG) % s.bays
-            u = (m - (b + 0.5) * BAY_ARC_DEG) / BAY_ARC_DEG * BAY_W
-            self.bay_cells[b].append((int(x), int(z), u, th))
-        for c in self.bay_cells:
-            c.sort(key=lambda t: t[2])
-        walls = front | self.ring(s.r_corridor_in - 1.0, s.r_corridor_in) | self.ring(s.r_corridor_out, s.r_corridor_out + 1.0)
-        for b in range(s.bays):
-            edge = self.bay_center(b) - math.radians(BAY_ARC_DEG / 2)
-            d = np.abs(((self.theta - edge + math.pi) % TAU) - math.pi) * self.r
-            walls |= (d < 0.5) & self.ring(s.r_atrium, s.r_inner_wall)
-            dm = np.abs(((self.theta - self.bay_center(b) + math.pi) % TAU) - math.pi) * self.r
-            walls |= (dm < 0.5) & self.ring(s.r_corridor_out, s.r_inner_wall)
-        self.wall_mask = walls
-
     def level(self, n: int) -> None:
         s, v = self.s, self.v
         y = self.level_y(n)
         deep = n > 120
-        v.mask(y - 1, y - 1, self.ring(s.r_walk_in, s.r_inner_wall), FLOOR_DEEP if deep else FLOOR)
-        # walkway parapet: the model's solid 1.1 m concrete parapet (WALK_PARAPET) as one wall block
-        v.mask(y, y, self.ring(s.r_walk_in, s.r_walk_in + 1.0), PARAPET)
+        t = self.template(n)
+        floor = FLOOR_DEEP if deep else FLOOR
         wall_state = CONCRETE_DARK if deep else (MEDICAL_WALL if dressing_for(n) == "medical" else CONCRETE)
-        v.mask(y, y + s.pitch - 2, self.wall_mask, wall_state)
+        lamp = lamp_for(n)
+        # floors: landing, gallery and everything behind it; the next level's floor is this level's ceiling
+        v.mask(y - 1, y - 1, (self.ring(s.r_stair_wall, s.r_landing) | self.ring(s.r_atrium, s.r_inner_wall)) & ~self.columns,
+               floor)
+        v.mask(y, y + s.pitch - 2, t["walls"], wall_state)
+        v.mask(y, y + s.pitch - 2, self.facade_ring, wall_state)
+        # gallery: parapet on the edge between the columns, a light collar round each column at the top row
+        v.mask(y, y, self.ring(s.r_atrium, s.r_atrium + 1.0) & ~self.columns, PARAPET)
+        v.mask(y + s.pitch - 2, y + s.pitch - 2, self.columns, lamp)
+        # landing ring: parapets on both edges, open toward the flight where it lands and at the bridges
+        v.mask(y, y, self.ring(s.r_stair_wall, s.r_stair_wall + 1.0) & (self.off(self.stair_angle(n)) > math.radians(28)), PARAPET)
+        v.mask(y, y, self.ring(s.r_landing - 1.0, s.r_landing), PARAPET)
+        for a in self.bridge_angles(n):
+            self.bridge(y, a)
+        self.facades(n, y, t, wall_state, lamp)
+        self.flats(n, y, t, lamp, wall_state)
+        self.alley_lights(n, y, t, lamp)
+        # the gallery's own light: hanging fittings under the soffit, one per bay, clear of the parapet
         for b in range(s.bays):
-            a = self.bay_center(b)
-            self.steel_door(y, [self.polar(s.r_corridor_in - 0.5, a)], a, s.r_corridor_in - 0.5)
-            for k in (-0.25, 0.25):
-                ak = a + k * math.radians(BAY_ARC_DEG)
-                self.steel_door(y, [self.polar(s.r_corridor_out + 0.5, ak)], ak, s.r_corridor_out + 0.5)
-            self.facade(n, y, b, variant_for(n, b), wall_state)
-            self.room_contents(n, y, b)
+            x, z = self.polar(s.r_facade - 1.2, self.bay_center(b))
+            if v.get(x, y + 3, z) == AIR:
+                v.set(x, y + 3, z, HANG)
+                v.set(x, y + 4, z, CHAIN)
             self.walkway_props(n, y, b, wall_state)
-            # the walkway's own light: one hanging fitting per bay, clear of the parapet
-            x, z = self.polar(s.r_atrium - 1.2, a)
-            if v.get(x, y + 2, z) == AIR:
-                v.set(x, y + 2, z, "minecraft:lantern[hanging=true,waterlogged=false]")
-                v.set(x, y + 3, z, "minecraft:chain[axis=y,waterlogged=false]")
-        self.bridge(n, y)
 
-    def steel_door(self, y: int, cells: list[tuple[int, int]], a: float, r: float) -> None:
-        """Iron door (one or a pair) in a ring wall at radius r, opened by heavy pressure plates on both sides."""
+    def stair_angle(self, n: int) -> float:
+        return (n * GOLDEN) % TAU
+
+    def bridge(self, y: int, a: float) -> None:
+        s, v = self.s, self.v
+        d = self.off(a)
+        lateral = d * self.r
+        front = d < math.pi / 2
+        span = (lateral < 1.6) & front & self.ring(s.r_landing - 1.0, s.r_atrium + 1.0)
+        v.mask(y - 1, y - 1, span, GRATE)
+        rails = (np.abs(lateral - 2.0) < 0.5) & front & self.ring(s.r_landing, s.r_atrium)
+        v.mask(y, y, rails, PARAPET)
+        gap = (lateral < 1.6) & front & (self.ring(s.r_atrium, s.r_atrium + 1.0) | self.ring(s.r_landing - 1.0, s.r_landing))
+        v.mask(y, y, gap & ~self.columns, AIR)
+
+    def steel_door(self, y: int, cells: list[tuple[int, int]], facing: str, plates: bool = True) -> None:
+        """Iron door (one or a pair) facing `facing`, opened by heavy pressure plates on both sides."""
         v = self.v
-        facing = self.facing_radial(a + math.pi)            # faces the axis
-        fx, fz = {"east": (1, 0), "west": (-1, 0), "south": (0, 1), "north": (0, -1)}[facing]
-        rx, rz = -fz, fx                                     # right hand when looking along facing
+        fx, fz = DIRS[facing]
+        rx, rz = -fz, fx
         if len(cells) == 2:
             (x0, z0), (x1, z1) = cells
             if (x1 - x0) * rx + (z1 - z0) * rz < 0:
@@ -240,14 +415,34 @@ class Silo:
             hinge = "left" if (len(cells) == 1 or i == 0) else "right"
             for half, dy in (("lower", 0), ("upper", 1)):
                 v.set(x, y + dy, z, f"minecraft:iron_door[facing={facing},half={half},hinge={hinge},open=false,powered=false]")
-            ang = math.atan2(z - self.R, x - self.R)
-            for rr in (r - 1.0, r + 1.0):
-                px, pz = self.polar(rr, ang)
-                if v.get(px, y, pz) == AIR and (px, pz) not in cells:
-                    v.set(px, y, pz, PLATE)
+            if plates:
+                for k in (1, -1):
+                    px, pz = x + k * fx, z + k * fz
+                    if v.get(px, y, pz) == AIR and (px, pz) not in cells:
+                        v.set(px, y, pz, PLATE)
 
-    def facade(self, n: int, y: int, b: int, variant: str, wall_state: str) -> None:
-        """One bay's face on the walkway, rasterised from the model's BAY builder (bays.FACADES)."""
+    def facades(self, n: int, y: int, t: dict, wall_state: str, lamp: str) -> None:
+        s, v = self.s, self.v
+        alleys = set(self.alley_bays(n))
+        for b in range(s.bays):
+            if b in alleys:
+                self.alley_portal(y, b)
+            else:
+                self.facade(n, y, b, variant_for(n, b), wall_state, lamp)
+
+    def alley_portal(self, y: int, b: int) -> None:
+        """The alley's opening in the facade: 4 wide, 4 high, the top corners rounded (everything is round, Tyldum)."""
+        v = self.v
+        for x, z, u, th in self.bay_cells[b]:
+            lat = abs(self.r[x, z] * math.sin(th - self.bay_center(b)))
+            if lat < self.s.alley_half:
+                top = 3 if lat < self.s.alley_half - 1 else 2
+                for dy in range(top + 1):
+                    v.set(x, y + dy, z, AIR)
+
+    def facade(self, n: int, y: int, b: int, variant: str, wall_state: str, lamp: str) -> None:
+        """One bay's face on the gallery, rasterised from the model's BAY builder (bays.FACADES) over the facade's five
+        rows: the lower storey (rows 0-2) and the upper storey (rows 3-4)."""
         v = self.v
         cells = self.bay_cells[b]
         if not cells:
@@ -267,18 +462,20 @@ class Silo:
                     grid[(ci, 0)] = grid[(ci, 1)] = "DOOR"
             else:
                 later.append((kind, x0, x1, y0, y1))
+        if not doors:                                   # every front flat opens on the gallery
+            ci = min(range(len(us)), key=lambda i: abs(us[i] - (HW * 0.55)))
+            doors.append([ci])
+            grid[(ci, 0)] = grid[(ci, 1)] = "DOOR"
         for kind, x0, x1, y0, y1 in later:
             cols = cols_of(us, x0, x1)
             if kind == "shop":
                 mids = [i for i in cols if abs(us[i]) <= 1.1] or [min(cols, key=lambda i: abs(us[i]))]
             for ci in cols:
-                for row in rows_of(y0, y1):
-                    while grid.get((ci, row)) == "DOOR" and row < 3:
-                        row += 1
+                for row in rows_of(y0, y1, 5, 2.0):
+                    if grid.get((ci, row)) == "DOOR":
+                        continue
                     if kind == "pilaster":
                         grid.setdefault((ci, row), PILASTER)
-                        continue
-                    if grid.get((ci, row)) == "DOOR":
                         continue
                     if kind in ("window", "slit", "glazed"):
                         st = PANE
@@ -288,373 +485,443 @@ class Silo:
                         st = "minecraft:hopper[enabled=true,facing=down]"
                     elif kind == "leaf":
                         st = "minecraft:iron_block"
-                    else:                                    # shop front: open between the mullions, glazed beside
+                    else:
                         st = AIR if ci in mids else PANE
                     grid[(ci, row)] = st
+        # upper storey: small windows over the lower storey's openings (oby0Dk/52-54)
+        for ci in range(1, len(cells) - 1, 3):
+            grid.setdefault((ci, 3), PANE)
         for (ci, row), st in grid.items():
             if st != "DOOR":
-                x, z = cells[ci][0], cells[ci][1]
-                v.set(x, y + row, z, st)
+                v.set(cells[ci][0], y + row, cells[ci][1], st)
         for cols in doors:
             a = sum(cells[ci][3] for ci in cols) / len(cols)
-            self.steel_door(y, [(cells[ci][0], cells[ci][1]) for ci in cols], a, self.s.r_atrium + 0.5)
-        lamp = lamp_for(n)
+            self.steel_door(y, [(cells[ci][0], cells[ci][1]) for ci in cols], self.facing_radial(a + math.pi))
         for u in spec.get("lamps", ()):
             ci = min(range(len(us)), key=lambda i: abs(us[i] - u))
-            for row in (1, 2, 3):
+            for row in (2, 3, 1):
                 if (ci, row) not in grid:
                     v.set(cells[ci][0], y + row, cells[ci][1], lamp)
                     grid[(ci, row)] = lamp
                     break
-        if "stoop" in spec:                                   # a raised step along the face (windowsB, balcony)
+        if "stoop" in spec:
             door_cols = {ci for cols in doors for ci in cols}
             for ci, (x, z, u, th) in enumerate(cells):
                 if ci in door_cols:
                     continue
-                fx, fz = self.polar(self.s.r_atrium - 0.5, th)
+                fx, fz = self.polar(self.s.r_facade - 0.5, th)
                 if v.get(fx, y, fz) == AIR:
                     v.set(fx, y, fz, STOOP)
 
-    def walk_cell(self, b: int, px: float, pz: float) -> tuple[int, int, float]:
-        """Walkway cell in front of bay b at the model's (across px, out from the wall pz) position."""
-        th = self.bay_center(b) + math.radians(px / BAY_W * BAY_ARC_DEG)
-        rr = self.s.r_atrium - (0.5 if pz < 1.4 else 1.5)
-        x, z = self.polar(rr, th)
-        return x, z, th
+    def flats(self, n: int, y: int, t: dict, lamp: str, wall_state: str) -> None:
+        """Every flat: its door onto the gallery or an alley, a lamp, and on residential levels a home to live in
+        (rug, table and chairs, a kitchen counter, a bed, a chest; poorer in the Down Deep). The front flats' doors
+        are in the facade (facade())."""
+        v = self.v
+        dress = dressing_for(n)
+        poor = region(n) == "deep"
+        for f in t["flats"]:
+            cells = f["cells"]
+            cx, cz = cells.mean(axis=0)
+            k = int(np.argmin(((cells - [cx, cz]) ** 2).sum(axis=1)))
+            lx, lz = cells[k]
+            v.set(int(lx), y + self.s.pitch - 2, int(lz), lamp)
+            if f["door"]:
+                (wx, wz), facing, inside, outside = f["door"]
+                if self.r[wx, wz] >= self.s.r_facade + 1.0:     # facade doors come from the facade itself
+                    self.steel_door(y, [(wx, wz)], facing)
+                    if v.get(wx, y + 2, wz) == AIR:
+                        v.set(wx, y + 2, wz, wall_state)
+            if dress in ("residential", "admin") and not (n in ROOM_LEVELS):
+                self.home(n, y, f, poor)
+            elif n > 1 and dress not in ("residential", "admin"):
+                self.store(n, y, f)
+
+    def home(self, n: int, y: int, f: dict, poor: bool) -> None:
+        v = self.v
+        L = n - 1
+        rnd = lambda k: seeded(L, f["label"], 500 + k)
+        cells = [tuple(map(int, c)) for c in f["cells"]]
+        if len(cells) < 9:
+            return
+        cellset = set(cells)
+        door = f["door"]
+        near_door = set()
+        if door:
+            ix, iz = door[2]
+            near_door = {(ix + a, iz + b) for a in (-1, 0, 1) for b in (-1, 0, 1)}
+        def wall_n(c):
+            return sum((c[0] + dx, c[1] + dz) not in cellset for dx, dz in ((1, 0), (-1, 0), (0, 1), (0, -1)))
+        free = [c for c in cells if c not in near_door and v.get(c[0], y, c[1]) == AIR]
+        if not free:
+            return
+        wood = ("spruce", "oak", "dark_oak", "birch")[int(rnd(0) * 4)] if not poor else "spruce"
+        rug = ("red", "brown", "green", "blue", "orange", "cyan", "light_gray")[int(rnd(1) * 7)]
+        bed = ("light_gray", "white", "gray", "brown", "blue")[int(rnd(2) * 5)]
+        dpos = np.array(door[2]) if door else np.array(cells[0])
+        far = sorted(free, key=lambda c: -((c[0] - dpos[0]) ** 2 + (c[1] - dpos[1]) ** 2))
+        used = set()
+        # bed in the far corner along a wall
+        for c in far[:12]:
+            for facing, (dx, dz) in DIRS.items():
+                foot = (c[0] - dx, c[1] - dz)
+                head_wall = (c[0] + dx, c[1] + dz) not in cellset
+                if head_wall and foot in cellset and foot not in near_door and v.get(foot[0], y, foot[1]) == AIR:
+                    v.set(c[0], y, c[1], f"minecraft:{bed}_bed[facing={facing},occupied=false,part=head]")
+                    v.set(foot[0], y, foot[1], f"minecraft:{bed}_bed[facing={facing},occupied=false,part=foot]")
+                    used |= {c, foot}
+                    side = (c[0] + dz, c[1] + dx)
+                    if side in cellset and v.get(side[0], y, side[1]) == AIR:
+                        v.set(side[0], y, side[1], CRATE if poor else f"minecraft:{wood}_planks")
+                        v.set(side[0], y + 1, side[1], "minecraft:lantern[hanging=false,waterlogged=false]")
+                        used.add(side)
+                    break
+            else:
+                continue
+            break
+        # kitchen counter along a wall: two to four blocks
+        kitchen = [f"minecraft:smoker[facing=north,lit=false]", "minecraft:cauldron", CRATE, f"minecraft:{wood}_planks"]
+        if poor:
+            kitchen = ["minecraft:furnace[facing=north,lit=false]", CRATE]
+        wall_cells = [c for c in far[len(far) // 3:] if wall_n(c) >= 1 and c not in used]
+        for j, c in enumerate(wall_cells[: len(kitchen)]):
+            v.set(c[0], y, c[1], kitchen[j])
+            used.add(c)
+        # table with chairs in the middle
+        mid = [c for c in free if wall_n(c) == 0 and c not in used]
+        if mid:
+            c = mid[len(mid) // 2]
+            if not poor:
+                for a in (-1, 0, 1):
+                    for b in (-1, 0, 1):
+                        cc = (c[0] + a, c[1] + b)
+                        if cc in cellset and cc not in used and cc not in near_door and v.get(cc[0], y, cc[1]) == AIR:
+                            v.set(cc[0], y, cc[1], f"minecraft:{rug}_carpet")
+            v.set(c[0], y, c[1], f"minecraft:{wood}_fence[east=false,north=false,south=false,waterlogged=false,west=false]")
+            v.set(c[0], y + 1, c[1], f"minecraft:{wood}_pressure_plate[powered=false]")
+            for facing, (dx, dz) in DIRS.items():
+                cc = (c[0] + dx, c[1] + dz)
+                if cc in cellset and cc not in near_door and rnd(10 + dx * 3 + dz) < (0.45 if poor else 0.8):
+                    st = v.get(cc[0], y, cc[1])
+                    if st == AIR or (st or "").endswith("_carpet"):
+                        v.set(cc[0], y, cc[1], f"minecraft:{wood}_stairs[facing={facing},half=bottom,shape=straight,waterlogged=false]")
+        if rnd(20) < 0.6:
+            for c in far[5:]:
+                if c not in used and wall_n(c) >= 1 and v.get(c[0], y, c[1]) == AIR:
+                    v.set(c[0], y, c[1], "minecraft:chest[facing=north,type=single,waterlogged=false]")
+                    break
+
+    def store(self, n: int, y: int, f: dict) -> None:
+        """Department levels: the flats are store rooms and workshops: crates along the walls."""
+        v = self.v
+        cells = [tuple(map(int, c)) for c in f["cells"]]
+        cellset = set(cells)
+        door = f["door"]
+        near = set()
+        if door:
+            ix, iz = door[2]
+            near = {(ix + a, iz + b) for a in (-1, 0, 1) for b in (-1, 0, 1)}
+        for i, c in enumerate(cells):
+            if c in near or i % 3:
+                continue
+            if any((c[0] + dx, c[1] + dz) not in cellset for dx, dz in ((1, 0), (-1, 0), (0, 1), (0, -1))):
+                if v.get(c[0], y, c[1]) == AIR:
+                    v.set(c[0], y, c[1], CRATE)
+
+    def alley_lights(self, n: int, y: int, t: dict, lamp: str) -> None:
+        """Lamps in the alleys' ceilings every few blocks (S2 alleys: lanterns and a lit lattice overhead)."""
+        v = self.v
+        m = t["open"] & ((self.X + self.Z * 3) % 7 == 0)
+        v.mask(y + self.s.pitch - 2, y + self.s.pitch - 2, m, lamp)
 
     def walkway_props(self, n: int, y: int, b: int, wall_state: str) -> None:
-        """The model's per-bay dressing on the walkway (buildWindow), placed only where it leaves a way past."""
+        """The model's per-bay dressing on the gallery (buildWindow), placed only where it leaves a way past."""
         v, s = self.v, self.s
-        if n == 1 or (n in ROOM_LEVELS and b == ROOM_BAY):
+        if n == 1 or (n in ROOM_LEVELS and b == ROOM_BAY) or b in self.alley_bays(n):
             return
         L, dress, reg = n - 1, dressing_for(n), region(n)
         r = seeded(L, b, 400)
-        px = -HW + 1.2 + (2 * HW - 2.4) * seeded(L, b, 401)
-        pz = 1.0 + 1.2 * seeded(L, b, 402)
-        rot = seeded(L, b, 403) * 0.6 - 0.3
-
-        def free(x, z, th) -> bool:
-            if v.get(x, y, z) != AIR or v.get(x, y - 1, z) not in (FLOOR, FLOOR_DEEP):
-                return False
-            for rr in (s.r_atrium - 0.5, s.r_atrium - 1.5):  # keep the other walkway row open at this bearing
-                ox, oz = self.polar(rr, th)
-                if (ox, oz) != (x, z) and v.get(ox, y, oz) != AIR:
-                    return False
-            return True
-
-        def put(px_, pz_, state, floor=None, above=None):
-            x, z, th = self.walk_cell(b, px_, pz_)
-            if not free(x, z, th):
-                return
-            v.set(x, y, z, state)
-            if floor:
-                v.set(x, y - 1, z, floor)
-            if above:
-                v.set(x, y + 3, z, above)
-
-        inward = lambda th, turn=0.0: self.facing_radial(th + math.pi + turn)
-        _, _, th0 = self.walk_cell(b, px, pz)
+        u = (seeded(L, b, 401) - 0.5) * BAY_ARC_DEG * 0.6
+        th = self.bay_center(b) + math.radians(u)
+        x, z = self.polar(s.r_facade - 0.5, th)
+        if v.get(x, y, z) != AIR or v.get(x, y - 1, z) not in (FLOOR, FLOOR_DEEP):
+            return
+        if any(v.get(x + dx, y, z + dz) == PLATE for dx, dz in DIRS.values()):
+            return
         if dress == "farming":
-            for bx in (-2.7, 2.7):
-                put(bx, 1.75, LEAVES, floor=MOSS, above=lamp_for(n))
-            if seeded(L, b, 10) < 0.8:
-                put(px * 0.55, 2.45, "minecraft:flowering_azalea", floor=MOSS)
-            put(px, 2.65, "minecraft:fern", floor=MOSS)
-            put(-px * 0.8, 2.55, "minecraft:fern", floor=MOSS)
+            v.set(x, y, z, "minecraft:flowering_azalea")
+            v.set(x, y - 1, z, MOSS)
         elif dress == "bazaar":
-            for sx in (-2.8, 2.8):
-                h = seeded(L, b, 15 if sx > 0 else 16)
-                colour = "red" if h < 0.33 else "orange" if h < 0.66 else "yellow"
-                x, z, th = self.walk_cell(b, sx, 1.0)
-                if free(x, z, th):
-                    v.set(x, y, z, "minecraft:spruce_slab[type=top,waterlogged=false]")
-                    v.set(x, y + 2, z, f"minecraft:{colour}_wool")
-            put(px, 2.55, CRATE)
-            if seeded(L, b, 17) < 0.6:
-                put(-px * 0.7, 2.5, SACK)
+            v.set(x, y, z, CRATE if r < 0.5 else SACK)
         elif dress == "mechanical":
-            if r < 0.5:
-                put(px, pz, DRUM)
-            elif r < 0.75:
-                put(px, 0.5, "minecraft:smithing_table")
-            else:
-                put(px, pz, f"minecraft:blast_furnace[facing={inward(th0)},lit=false]")
-            if b % 3 == 0:
-                x, z, _ = self.walk_cell(b, px, 0.7)
-                if v.get(x, y + 3, z) == AIR:
-                    v.set(x, y + 3, z, "minecraft:chain[axis=y,waterlogged=false]")
+            v.set(x, y, z, DRUM if r < 0.5 else "minecraft:smithing_table")
         elif dress == "recycling":
-            put(px, pz, "minecraft:dried_kelp_block" if r < 0.5 else SACK)
-        elif dress in ("residential",):
-            if seeded(L, b, 33) < 0.3:                        # notice board on the wall, 2.4 m up
-                x, z, th = self.walk_cell(b, px * 0.5, 0.1)
-                wx, wz = self.polar(s.r_atrium + 0.5, th)
-                if v.get(x, y + 1, z) == AIR and v.get(wx, y + 1, wz) == wall_state:
-                    v.set(x, y + 1, z, f"minecraft:spruce_wall_sign[facing={inward(th)},waterlogged=false]")
-            if seeded(L, b, 34) < (0.12 if reg == "deep" else 0.3):
-                put(px, 1.5 + 0.6 * seeded(L, b, 35), f"minecraft:spruce_stairs[facing={inward(th0, rot * 3)},half=bottom,shape=straight,waterlogged=false]")
-            if r < 0.45:
-                if reg == "deep":
-                    put(px, pz, DRUM if r < 0.28 else f"minecraft:blast_furnace[facing={inward(th0)},lit=false]")
-                else:
-                    put(px, pz, "minecraft:potted_azalea_bush" if r < 0.25 else CRATE)
+            v.set(x, y, z, "minecraft:dried_kelp_block" if r < 0.5 else SACK)
+        elif dress == "residential" and r < (0.15 if reg == "deep" else 0.35):
+            v.set(x, y, z, "minecraft:potted_azalea_bush" if r < 0.2 else CRATE)
 
-    @staticmethod
-    def facing_radial(a: float) -> str:
-        """Horizontal facing pointing outward along angle a (x east, z south)."""
-        c, s = math.cos(a), math.sin(a)
-        if abs(c) >= abs(s):
-            return "east" if c > 0 else "west"
-        return "south" if s > 0 else "north"
-
-    def bridge(self, n: int, y: int) -> None:
-        s, v = self.s, self.v
-        a = (n * GOLDEN) % TAU
-        d = np.abs(((self.theta - a + math.pi) % TAU) - math.pi)
-        lateral = d * self.r
-        span = (lateral < 1.6) & (d < math.pi / 2) & self.ring(s.r_stair_out, s.r_walk_in + 1.0)
-        v.mask(y - 1, y - 1, span, GRATE)
-        # solid parapets each side (model PARAPET_HEIGHT 1.05), as on the walkway
-        rails = (np.abs(lateral - 2.0) < 0.5) & (d < math.pi / 2) & self.ring(s.r_landing, s.r_walk_in)
-        v.mask(y, y, rails, PARAPET)
-        # gap in the walkway parapet where the bridge lands
-        gap = (lateral < 1.6) & (d < math.pi / 2) & self.ring(s.r_walk_in, s.r_walk_in + 1.0)
-        v.mask(y, y, gap, AIR)
-        pad = (d < math.radians(26)) & self.ring(s.r_stair_out, s.r_landing)
-        v.mask(y - 1, y - 1, pad, GRATE)
-
+    # the stair ------------------------------------------------------------------------------------------------------
     def stair(self) -> None:
-        """One uniform helix from level 1 down to the generator hall floor (the model's stair reaches the generator
-        room); level n is reached at angle n * 137.5 degrees."""
+        """One uniform helix round the solid core from level 1 down to the generator hall floor; level n is reached
+        at its stair angle n * 137.5 degrees. Solid parapet on the flight's outer edge (plan t2014s)."""
         s, v = self.s, self.v
         per_turn = s.pitch / (1 + GOLDEN / TAU)        # drop per full turn
         y1 = self.level_y(1)
         y_bottom = self.yi(self.gen_floor_rel)
-        annulus = self.ring(s.r_stair_in, s.r_stair_out)
-        newel = self.r < s.r_newel
-        top_idx = self.level_y(1) + s.cafe_height - 1
-        v.mask(self.yi(self.gen_floor_rel), top_idx, newel, STEEL)
-        xs, zs = np.nonzero(annulus)
-        a1 = GOLDEN % TAU                               # angle of level 1
-        for x, z in zip(xs, zs):
-            th = self.theta[x, z]
-            t = ((th - a1) % TAU) / TAU
-            while True:
-                surf = y1 - t * per_turn
-                if surf < y_bottom - 0.01:
-                    break
-                q = round(surf * 2) / 2
-                if q == int(q):
-                    v.set(x, int(q) - 1, z, STEEL)
-                else:
-                    v.set(x, int(math.floor(q)), z, STEEL_SLAB_B)
-                t += 1
-        rail = self.ring(s.r_stair_out, s.r_stair_out + 1.0)
-        xs, zs = np.nonzero(rail)
-        for x, z in zip(xs, zs):
-            th = self.theta[x, z]
-            t = ((th - a1) % TAU) / TAU
-            while True:
-                surf = y1 - t * per_turn
-                if surf < y_bottom - 0.01:
-                    break
-                yb = int(math.floor(surf))
-                if v.get(x, yb - 1, z) != GRATE:
-                    v.set(x, yb, z, RAIL)
-                t += 1
-        # six core columns between stair and walkway, from level 144's floor up (the hall below is open)
-        for deg in COLUMN_ANGLES:
-            cx, cz = self.polar(s.r_column_orbit, math.radians(deg))
-            v.box(cx - 1, self.level_y(LEVELS) - 1, cz - 1, cx + 1, top_idx, cz + 1, CONCRETE)
-
-    def room_contents(self, n: int, y: int, b: int) -> None:
-        """A bay behind the face: lamps in the front room, corridor and back rooms, and a home to live in.
-        The model has no rooms behind its facades (a lit plane 2 m in). Homes follow the show's lived-in silo
-        apartments: a front room with a rug, a table and chairs and a kitchen counter against the corridor wall
-        (stove, sink, shelves); two back bedrooms with a bed, a nightstand with a light and a chest. Deeper down
-        (the Down Deep) the homes are poorer: no rug, fewer things. Department levels keep only their lamps."""
-        s, v = self.s, self.v
-        arc = math.radians(BAY_ARC_DEG)
-        a = self.bay_center(b)
-        lamp = lamp_for(n)
-        x, z = self.polar(s.r_atrium + 5, a)
-        v.set(x, y + s.pitch - 2, z, lamp)
-        x, z = self.polar((s.r_corridor_in + s.r_corridor_out) / 2, a)
-        v.set(x, y + s.pitch - 2, z, lamp)
-        for k in (-0.25, 0.25):
-            x, z = self.polar(s.r_corridor_out + 6, a + k * arc)
-            v.set(x, y + s.pitch - 2, z, lamp)
-        if dressing_for(n) not in ("residential", "admin") or (n in ROOM_LEVELS and b == ROOM_BAY):
-            return
-        L, reg = n - 1, region(n)
-        rnd = lambda k: seeded(L, b, 500 + k)
-        poor = reg == "deep"
-        wood = ("spruce", "oak", "dark_oak", "birch")[int(rnd(0) * 4)] if not poor else "spruce"
-        rug = ("red", "brown", "green", "blue", "orange", "cyan", "light_gray")[int(rnd(1) * 7)]
-        bed = ("light_gray", "white", "gray", "brown", "blue")[int(rnd(2) * 5)]
-        floor_ok = (FLOOR, FLOOR_DEEP)
-        doors = [self.polar(s.r_corridor_in - 0.5, a)] + [self.polar(s.r_corridor_out + 0.5, a + k * arc)
-                                                           for k in (-0.25, 0.25)]
-
-        def cell(r: float, t: float) -> tuple[int, int]:
-            """r out from the axis, t blocks across the bay (positive clockwise)."""
-            return self.polar(r, a + t / r)
-
-        def clear(x: int, z: int, h: int = 1) -> bool:
-            if any(abs(x - dx) + abs(z - dz) <= 1 for dx, dz in doors):
-                return False
-            return all(v.get(x, y + k, z) == AIR for k in range(h)) and v.get(x, y - 1, z) in floor_ok
-
-        def put(r, t, state, dy=0, h=1) -> tuple[int, int] | None:
-            x, z = cell(r, t)
-            if not clear(x, z, max(h, dy + 1)):
-                return None
-            v.set(x, y + dy, z, state)
-            return x, z
-
-        def facing_to(x0, z0, x1, z1) -> str:
-            dx, dz = x1 - x0, z1 - z0
-            if abs(dx) >= abs(dz):
-                return "east" if dx > 0 else "west"
-            return "south" if dz > 0 else "north"
-
-        # front room: rug, table, chairs round it
-        rt, tt = s.r_atrium + 5.5, (rnd(3) - 0.5) * 2.0
-        tx, tz = cell(rt, tt)
-        if not poor:
-            for dx in (-1, 0, 1):
-                for dz in (-1, 0, 1):
-                    if clear(tx + dx, tz + dz):
-                        v.set(tx + dx, y, tz + dz, f"minecraft:{rug}_carpet")
-        if clear(tx, tz) or v.get(tx, y, tz) == f"minecraft:{rug}_carpet":
-            v.set(tx, y, tz, f"minecraft:{wood}_fence[east=false,north=false,south=false,waterlogged=false,west=false]")
-            v.set(tx, y + 1, tz, f"minecraft:{wood}_pressure_plate[powered=false]")
-            for dx, dz in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-                if rnd(10 + dx * 3 + dz) < (0.45 if poor else 0.8):
-                    cx, cz = tx + dx, tz + dz
-                    st = v.get(cx, y, cz)
-                    if st == AIR or (st or "").endswith("_carpet"):
-                        if v.get(cx, y - 1, cz) in floor_ok:
-                            f = facing_to(cx, cz, tx, tz)
-                            back = {"east": "west", "west": "east", "south": "north", "north": "south"}[f]
-                            v.set(cx, y, cz, f"minecraft:{wood}_stairs[facing={back},half=bottom,shape=straight,"
-                                             "waterlogged=false]")
-        # kitchen counter along the corridor wall, either side of its door
-        rk = s.r_corridor_in - 1.5
-        side = 1 if rnd(4) < 0.5 else -1
-        kx, kz = cell(rk, 0)
-        inward = facing_to(kx, kz, *self.polar(s.r_atrium, a))
-        kitchen = [f"minecraft:smoker[facing={inward},lit=false]", "minecraft:cauldron",
-                   f"minecraft:barrel[facing=up,open=false]", f"minecraft:{wood}_planks"]
-        if poor:
-            kitchen = [f"minecraft:furnace[facing={inward},lit=false]", "minecraft:barrel[facing=up,open=false]"]
-        for j, st in enumerate(kitchen):
-            got = put(rk, side * (2 + j), st)
-            if got and j == len(kitchen) - 1 and not poor:
-                v.set(got[0], y + 1, got[1], "minecraft:potted_red_tulip" if rnd(5) < 0.5 else "minecraft:lantern[hanging=false,waterlogged=false]")
-        if not poor and rnd(6) < 0.7:                         # shelves on the other side of the door
-            put(rk, -side * 2, "minecraft:bookshelf")
-            put(rk, -side * 3, "minecraft:bookshelf")
-        # back bedrooms
-        for k in (-0.25, 0.25):
-            ang = a + k * arc
-            hx, hz = self.polar(s.r_inner_wall - 2.5, ang)
-            facing = self.facing_radial(ang)
-            dx, dz = {"east": (-1, 0), "west": (1, 0), "south": (0, -1), "north": (0, 1)}[facing]
-            if clear(hx, hz) and clear(hx + dx, hz + dz):
-                v.set(hx, y, hz, f"minecraft:{bed}_bed[facing={facing},occupied=false,part=head]")
-                v.set(hx + dx, y, hz + dz, f"minecraft:{bed}_bed[facing={facing},occupied=false,part=foot]")
-                # nightstand beside the head, with a lamp on it; a chest at the foot
-                for nx, nz in ((hx + dz, hz + dx), (hx - dz, hz - dx)):
-                    if clear(nx, nz, 2):
-                        v.set(nx, y, nz, "minecraft:barrel[facing=up,open=false]" if poor else f"minecraft:{wood}_planks")
-                        v.set(nx, y + 1, nz, "minecraft:lantern[hanging=false,waterlogged=false]")
+        top_idx = self.level_y(1) + s.pitch - 2
+        v.mask(y_bottom, top_idx, self.core, CONCRETE)
+        a1 = GOLDEN % TAU
+        for m, solid in ((self.flight, True), (self.stair_wall, False)):
+            xs, zs = np.nonzero(m)
+            for x, z in zip(xs, zs):
+                t = ((self.theta[x, z] - a1) % TAU) / TAU
+                while True:
+                    surf = y1 - t * per_turn
+                    if surf < y_bottom - 0.01:
                         break
-                fx, fz = hx + 2 * dx, hz + 2 * dz
-                if rnd(20 + int(k * 4)) < 0.6 and clear(fx, fz):
-                    v.set(fx, y, fz, f"minecraft:chest[facing={self.facing_radial(ang + math.pi)},type=single,waterlogged=false]")
-                if not poor:
-                    for cx, cz in ((hx + 3 * dx, hz + 3 * dz), (hx + 3 * dx + dz, hz + 3 * dz + dx)):
-                        if clear(cx, cz):
-                            v.set(cx, y, cz, f"minecraft:{rug}_carpet")
+                    q = round(surf * 2) / 2
+                    if solid:
+                        if q == int(q):
+                            v.set(x, int(q) - 1, z, STEEL)
+                        else:
+                            v.set(x, int(math.floor(q)), z, STEEL_SLAB_B)
+                    else:
+                        yb = int(math.floor(surf))
+                        # the parapet stands on the helix, open where the flight meets a level's landing
+                        lvl = (y1 - yb) / s.pitch
+                        if abs(lvl - round(lvl)) * s.pitch > 0.6 or self.off((round(lvl) + 1) * GOLDEN % TAU)[x, z] > math.radians(28):
+                            v.set(x, yb - 1, z, CONCRETE)
+                            v.set(x, yb, z, PARAPET)
+                    t += 1
+
+    def dome(self) -> None:
+        """The dome over the atrium (BFDG t2240s, "dome at top of SHAFT for Main Lighting"): a shallow spherical cap
+        springing from the gallery edge, its inside cut into oval coffers by ribs, a lit rig hanging from the crown."""
+        s, v = self.s, self.v
+        base = self.level_y(1) + s.pitch - 1            # level 1's ceiling row
+        rs = s.r_atrium + 0.5
+        h = s.dome_rise
+        Rs = (rs * rs + h * h) / (2 * h)                # sphere radius through the springing and the crown
+        cy = base + h - Rs                              # sphere centre (index units)
+        inside = self.r < rs
+        v.mask(base, base + h + 1, inside, CONCRETE)
+        lat_step, n_mer = 1.6, 24
+        for y in range(base, base + h + 1):
+            yy = y + 0.5 - cy
+            if yy >= Rs:
+                continue
+            rr = math.sqrt(max(0.0, Rs * Rs - yy * yy))
+            hollow = self.r < rr - 0.5
+            v.mask(y, y, hollow & inside, AIR)
+            shell = (self.r >= rr - 0.5) & (self.r < rr + 0.7) & inside
+            # coffers: between meridian ribs every 15 degrees and parallels every ~1.6 m of height
+            mer = (np.mod(self.theta, TAU / n_mer) > 0.06 * TAU / n_mer * 6)
+            par = (y - base) % 2 == 1
+            v.mask(y, y, shell & mer & par, "minecraft:white_concrete")
+            v.mask(y, y, shell & mer & par & (np.mod(self.theta + TAU / (2 * n_mer), TAU / n_mer) < TAU / n_mer * 0.35), LAMP_COOL)
+        # crown: an oculus of light, and the rig: a ring of lamps hanging on chains
+        v.mask(base + h, base + h + 1, self.r < 2.5, LAMP_COOL)
+        rig_y = base + h - 3
+        for k in range(12):
+            x, z = self.polar(4.0, k * TAU / 12)
+            for yy in range(rig_y + 1, base + h + 1):
+                if v.get(x, yy, z) == AIR:
+                    v.set(x, yy, z, CHAIN)
+            v.set(x, rig_y, z, "minecraft:sea_lantern")
+
+    # level 1 --------------------------------------------------------------------------------------------------------
+    def level_one(self) -> None:
+        self.cafeteria()
+        self.sheriff()
+        self.way_out()
+
+    def disc(self, cx: float, cz: float, r: float) -> np.ndarray:
+        return np.hypot(self.X - cx, self.Z - cz) < r
+
+    def rect(self, x0: int, x1: int, z0: int, z1: int) -> np.ndarray:
+        return (self.X >= x0) & (self.X <= x1) & (self.Z >= z0) & (self.Z <= z1)
 
     def cafeteria(self) -> None:
-        """Level 1, the cafeteria (model: CAFE_FRONT, the wallscreen SCREEN_*, the ceiling flower, the panelling):
-        tables 0.8 x 1.6 m set tangentially, 3 m apart along rows, four chairs each, dark panelling with sconces
-        every 18 degrees off the screen, the wallscreen 54 degrees wide from 2.6 m up, and lit petals in the ceiling
-        between ribs about 15 degrees apart round a lit boss. The model lays tables only on the camera's side
-        (128-232 degrees, a render economy); here they fill the floor, clear of the aisles to the bridge and the
-        airlock and of the screen's foot."""
+        """Level 1's cafeteria, its own round hall behind the gallery (BFDG t2338s option 03, t2375s model, 39:19:
+        no columns): Ø28, a few steps down from an oval portal, a 5 m ceiling of concentric rings and radial beams
+        round a flower-shaped light, the curved screen with oval ends on the far wall opposite the portal (40:34),
+        the serving counter along the wall between the two entrances."""
         s, v = self.s, self.v
         y = self.level_y(1)
-        h = s.cafe_height
-        hall = self.ring(s.r_walk_in, s.r_inner_wall)
-        v.mask(y, y + h - 1, hall, AIR)
-        v.mask(y - 1, y - 1, hall, "minecraft:polished_andesite")
-        v.mask(y, y, self.ring(s.r_walk_in, s.r_walk_in + 1.0), PARAPET)
-        self.bridge(1, y)
-        th = self.theta
-        off = lambda a: np.abs(((th - a + math.pi) % TAU) - math.pi)
-        screen = off(SCREEN_ANGLE) < SCREEN_ARC / 2
-        # panelling on the wall's inner face, the screen in its sector, sconces every 18 degrees
-        face = self.ring(s.r_inner_wall - 1, s.r_inner_wall)
-        v.mask(y, y + h - 1, face & ~screen, "minecraft:dark_oak_planks")
-        for row in range(2, h):
-            v.mask(y + row, y + row, face & screen, "minecraft:black_concrete" if row == 2 else "minecraft:gray_stained_glass")
-        posts = (off(SCREEN_ANGLE) >= SCREEN_ARC / 2) & (off(SCREEN_ANGLE) < SCREEN_ARC / 2 + math.radians(2.5))
-        v.mask(y + 1, y + h - 1, self.ring(s.r_inner_wall - 2, s.r_inner_wall) & posts, "minecraft:black_concrete")
-        v.mask(y, y + 1, face & screen, "minecraft:dark_oak_planks")
-        for k in range(0, 60, 3):
-            a = (k + 0.5) * TAU / 60
-            if abs(((a - SCREEN_ANGLE + math.pi) % TAU) - math.pi) < SCREEN_ARC / 2 + math.radians(4):
-                continue
-            x, z = self.polar(s.r_inner_wall - 0.5, a)
-            v.set(x, y + 4, z, "minecraft:shroomlight")
-        # tables: the model's rows are 3 m apart with chairs 0.62 m off the table; a block chair needs a whole block
-        # beside the table, so rows here are 4 apart to leave a block to walk between the chair rows
-        aisle = lambda a, r: min(abs(((a - g + math.pi) % TAU) - math.pi) * r for g in ((GOLDEN % TAU), AIRLOCK_ANGLE)) < 3.5
-        r = s.r_walk_in + 2.6
-        while r < s.r_inner_wall - 2.5:
-            n = int(TAU * r / 3.0)
-            for k in range(n):
-                a = (k + 0.5) * TAU / n
-                if aisle(a, r) or (r > s.r_inner_wall - 6 and abs(((a - SCREEN_ANGLE + math.pi) % TAU) - math.pi) < SCREEN_ARC / 2 + 0.05):
+        hx, hz, hr = HALL
+        hall = self.disc(hx, hz, hr)
+        wall = self.disc(hx, hz, hr + 1.2) & ~hall
+        fl = y - 1                                       # walking row inside: one step down from the gallery
+        v.mask(fl - 1, y + 4, wall, CONCRETE)
+        v.mask(fl, y + 3, hall, AIR)
+        v.mask(fl - 1, fl - 1, hall, "minecraft:polished_andesite")
+        v.mask(y + 4, y + 4, hall, "minecraft:white_concrete")
+        dx, dz = self.X - hx, self.Z - hz
+        d = np.hypot(dx, dz)
+        ang = np.mod(np.arctan2(dz, dx), TAU)            # hall-local bearing: 0 east (the portal), pi west (screen)
+        offa = lambda a: np.abs(((ang - a + math.pi) % TAU) - math.pi)
+        # ceiling: concentric rings and radial beams, the flower over the middle
+        beams = (np.mod(ang, TAU / 12) < 0.09) & (d > 3.2)
+        rings = (np.abs(d - 6.5) < 0.5) | (np.abs(d - 10.5) < 0.5)
+        v.mask(y + 4, y + 4, hall & (beams | rings), "minecraft:smooth_stone")
+        petal_a = np.mod(ang, TAU / 8) - TAU / 16
+        petal = (d >= 1.0) & (d < 3.6) & (np.abs(petal_a) * np.maximum(d, 1) < 1.1 - 0.25 * np.abs(d - 2.3))
+        v.mask(y + 4, y + 4, hall & petal, LAMP_COOL)
+        v.mask(y + 4, y + 4, hall & (d < 1.0), "minecraft:sea_lantern")
+        v.mask(y + 3, y + 3, hall & (d < 0.8), "minecraft:end_rod[facing=down]")
+        # wall panelling and sconces
+        face = hall & (d >= hr - 1.0)
+        v.mask(fl, y + 3, face, "minecraft:dark_oak_planks")
+        v.mask(y + 1, y + 1, face & (np.mod(ang, TAU / 20) < 0.12), "minecraft:shroomlight")
+        # the screen on the far wall: 70 degrees of arc, rows 1-3 over the floor, oval ends in black
+        screen = face & (offa(math.pi) < SCREEN_ARC / 2)
+        ends = face & (offa(math.pi) >= SCREEN_ARC / 2) & (offa(math.pi) < SCREEN_ARC / 2 + 0.08)
+        v.mask(fl + 1, y + 2, screen, "minecraft:gray_stained_glass")
+        v.mask(fl + 1, y + 2, ends, "minecraft:black_concrete")
+        v.mask(fl, fl, screen, "minecraft:black_concrete")
+        v.mask(y + 3, y + 3, screen, "minecraft:black_concrete")
+        # the oval portal from the gallery and the half steps down
+        portal = (np.abs(self.Z - hz) <= 2) & (self.X <= -int(s.r_facade) + 1) & (self.X >= hx + hr - 1)
+        v.mask(y, y + 2, portal, AIR)
+        v.mask(y + 3, y + 3, portal & (np.abs(self.Z - hz) <= 1), AIR)
+        v.mask(y - 1, y - 1, portal, "minecraft:polished_andesite")
+        v.mask(fl, fl, portal & (self.X == hx + hr - 1), STOOP)
+        # the second entrance, north-east, and its passage to the sheriff's office (passing under the ramp)
+        ex, ez = HALL_DOOR
+        ox, oz, orr = OFFICE
+        pas = (np.abs(self.X - ex) <= 1) & (self.Z <= ez) & (self.Z >= oz + orr - 1) & (d >= hr - 1.0)
+        sides = (np.abs(self.X - ex) == 2) & (self.Z <= ez) & (self.Z >= oz + orr) & (d >= hr + 1.0)
+        v.mask(y - 1, y + 3, sides | (pas & (d >= hr + 1.2)), CONCRETE)
+        v.mask(y, y + 2, pas, AIR)
+        v.mask(y - 1, y - 1, pas & (d >= hr), "minecraft:polished_andesite")
+        v.mask(fl, fl, pas & (d < hr), STOOP)
+        v.mask(y + 3, y + 3, pas & (self.X == ex) & (self.Z % 4 == 0) & (d >= hr + 1.2), "minecraft:sea_lantern")
+        # the serving counter on the arc between the two entrances
+        door_a = math.atan2(ez - hz, ex - hx) % TAU
+        counter = hall & (np.abs(d - (hr - 2.5)) < 0.5) & (ang > door_a + 0.2) & (ang < TAU - 0.2)
+        v.mask(fl, fl, counter, "minecraft:spruce_slab[type=top,waterlogged=false]")
+        xs, zs = np.nonzero(counter)
+        for i, (x, z) in enumerate(zip(xs, zs)):
+            if i % 3 == 0:
+                v.set(x, fl + 1, z, "minecraft:lantern[hanging=false,waterlogged=false]")
+        # tables 0.8 x 1.6 set tangentially in rings with chairs both sides (60-70 tables, t2375s), clear of the
+        # aisles from the two entrances, the counter and the screen's foot
+        aisle = lambda a, r: min(abs(((a - g + math.pi) % TAU) - math.pi) * r for g in (0.0, door_a)) < 2.5
+        rr = 4.5
+        while rr < hr - 3.5:
+            count = int(TAU * rr / 3.4)
+            for k in range(count):
+                a = (k + 0.5) * TAU / count
+                if aisle(a, rr) or (rr > hr - 6 and abs(((a - math.pi + math.pi) % TAU) - math.pi) < SCREEN_ARC / 2):
                     continue
-                cells = {self.polar(r, a - 0.4 / r), self.polar(r, a + 0.4 / r)}
-                for x, z in cells:
-                    v.set(x, y, z, "minecraft:spruce_slab[type=top,waterlogged=false]")
+                for sg in (-0.4, 0.4):
+                    X_, Z_ = self.at(int(round(hx + rr * math.cos(a + sg / rr))), int(round(hz + rr * math.sin(a + sg / rr))))
+                    v.set(X_, fl, Z_, "minecraft:spruce_slab[type=top,waterlogged=false]")
                 for sd in (-1, 1):
-                    back = self.facing_radial(a if sd > 0 else a + math.pi)
-                    for dz in (-0.4, 0.4):
-                        x, z = self.polar(r + sd * 1.0, a + dz / r)
-                        if v.get(x, y, z) == AIR:
-                            v.set(x, y, z, f"minecraft:oak_stairs[facing={back},half=bottom,shape=straight,waterlogged=false]")
-            r += 4.0
-        # the ceiling flower: petals between ribs about 15 degrees apart (between the core columns), round a boss
-        cols = sorted(math.radians(c) for c in COLUMN_ANGLES)
-        ribs = []
-        for c in range(len(cols)):
-            a0, a1 = cols[c], cols[(c + 1) % len(cols)] + (TAU if c == len(cols) - 1 else 0)
-            nn = max(1, round((a1 - a0) / math.radians(15)) - 1)
-            ribs += [a0 + (a1 - a0) * k / (nn + 1) for k in range(1, nn + 1)]
-        ribs.sort()
-        ceil = y + h
-        r_in, r_out = 7.2, s.r_inner_wall - 2.2
-        for i, a in enumerate(ribs):
-            b = ribs[(i + 1) % len(ribs)] + (TAU if i == len(ribs) - 1 else 0)
-            mid, gap, ln = (a + b) / 2, b - a, r_out - r_in
-            hw = min(1.6, max(0.4, (r_in + ln * 0.6) * gap * 0.5 - 0.9))
-            along = self.r * np.cos(th - mid) - (r_in + ln / 2)
-            across = self.r * np.sin(th - mid)
-            petal = (along / (ln / 2)) ** 2 + (across / hw) ** 2 <= 1.0
-            v.mask(ceil, ceil, petal, "minecraft:pearlescent_froglight")
-        v.mask(ceil, ceil, (self.r < 4.4) & (self.r >= s.r_newel), "minecraft:pearlescent_froglight")
-        # airlock passage through the shell toward the ramp
-        a = AIRLOCK_ANGLE
-        corridor = (np.abs(((self.theta - a + math.pi) % TAU) - math.pi) * self.r < 2.6) & self.ring(s.r_inner_wall - 1, self.R + 1)
-        v.mask(y, y + 3, corridor, AIR)
-        v.mask(y - 1, y - 1, corridor, "minecraft:polished_andesite")
-        # the doorway through the shell is open; the station and the two thick doors are in the tunnel (surface.py)
+                    X_, Z_ = self.at(int(round(hx + (rr + sd) * math.cos(a))), int(round(hz + (rr + sd) * math.sin(a))))
+                    if v.get(X_, fl, Z_) == AIR:
+                        back = self.facing_radial(a if sd > 0 else a + math.pi)
+                        v.set(X_, fl, Z_, f"minecraft:oak_stairs[facing={back},half=bottom,shape=straight,waterlogged=false]")
+            rr += 3.6
+
+    def sheriff(self) -> None:
+        """The sheriff's office (BFDG 44:08, EN wiki): round, concentric circles in the floor, desks round the middle,
+        entered through the cafeteria; the holding cells on the same floor along one wall, behind barred fronts."""
+        v = self.v
+        y = self.level_y(1)
+        ox, oz, orr = OFFICE
+        room = self.disc(ox, oz, orr + 0.5)
+        wall = self.disc(ox, oz, orr + 1.7) & ~room
+        vest = self.rect(CELLS_X[1] + 2, ox - orr + 1, CELLS_Z[0][0], CELLS_Z[-1][1])     # in front of the cells
+        cells = np.zeros_like(room)
+        for z0, z1 in CELLS_Z:
+            cells |= self.rect(CELLS_X[0], CELLS_X[1], z0, z1)
+        block = self.rect(CELLS_X[0] - 1, ox, CELLS_Z[0][0] - 1, CELLS_Z[-1][1] + 1) | wall
+        v.mask(y - 1, y + 4, block, CONCRETE)
+        v.mask(y, y + 3, room | vest | cells, AIR)
+        v.mask(y - 1, y - 1, room | vest, "minecraft:polished_andesite")
+        v.mask(y - 1, y - 1, cells, "minecraft:white_glazed_terracotta[facing=north]")
+        dd = np.hypot(self.X - ox, self.Z - oz)
+        v.mask(y - 1, y - 1, room & ((np.abs(dd - 2.5) < 0.5) | (np.abs(dd - 4.5) < 0.5)), "minecraft:polished_blackstone")
+        v.mask(y + 3, y + 3, room & (np.abs(dd - 3) < 0.6), LAMP_COOL)
+        # desks round the middle, a chair behind each, facing out
+        for k in range(6):
+            a = k * TAU / 6 + 0.3
+            X_, Z_ = self.at(int(round(ox + 2.0 * math.cos(a))), int(round(oz + 2.0 * math.sin(a))))
+            v.set(X_, y, Z_, "minecraft:dark_oak_slab[type=top,waterlogged=false]")
+            if k % 2 == 0:
+                v.set(X_, y + 1, Z_, "minecraft:lantern[hanging=false,waterlogged=false]")
+            X_, Z_ = self.at(int(round(ox + 1.0 * math.cos(a))), int(round(oz + 1.0 * math.sin(a))))
+            if v.get(X_, y, Z_) == AIR:
+                v.set(X_, y, Z_, f"minecraft:spruce_stairs[facing={OPP[self.facing_radial(a)]},half=bottom,shape=straight,waterlogged=false]")
+        # barred fronts with a cell door; a bunk in each
+        fx = CELLS_X[1] + 1
+        for z0, z1 in CELLS_Z:
+            for z in range(z0, z1 + 1):
+                X_, Z_ = self.at(fx, z)
+                for dy in range(3):
+                    v.set(X_, y + dy, Z_, RAIL)
+            X_, Z_ = self.at(fx, (z0 + z1) // 2)
+            for half, dy in (("lower", 0), ("upper", 1)):
+                v.set(X_, y + dy, Z_, f"minecraft:iron_door[facing=west,half={half},hinge=left,open=false,powered=false]")
+            v.set(X_ + 1, y, Z_, PLATE)
+            v.set(X_ - 1, y, Z_, PLATE)
+            bx, bz = self.at(CELLS_X[0], z0)
+            v.set(bx, y, bz, "minecraft:gray_bed[facing=west,occupied=false,part=head]")
+            v.set(bx + 1, y, bz, "minecraft:gray_bed[facing=west,occupied=false,part=foot]")
+            X_, Z_ = self.at(CELLS_X[0] + 1, z1)
+            v.set(X_, y + 3, Z_, "minecraft:sea_lantern")
+
+    def way_out(self) -> None:
+        """Holding cell 3 -> the airlock (a thick door ≈2.4 m at each end, BFDG 46:23) -> a U-turn -> the ribbed ramp
+        climbing toward the centre over the level-1 rooms -> a slot with steps opening on the bowl floor at about
+        half its radius (SPEC 5, S1E02 #25/#27, S3E09 #77). The slot's curb and the camera block are surface.py's."""
+        v = self.v
+        y = self.level_y(1)
+        grade = self.yi(0)                               # the bowl floor's top block; its walking surface is grade + 1
+        z0, z1 = CELLS_Z[-1]
+        lock = self.rect(LOCK[0], LOCK[1], z0, z1)
+        turn = self.rect(TURN_X[0], TURN_X[1], z0, RAMP_Z[1])
+        v.mask(y - 1, y + 4, self.rect(TURN_X[0] - 1, LOCK[1] + 1, z0 - 1, RAMP_Z[1] + 1), CONCRETE)
+        v.mask(y, y + 2, lock | turn, AIR)
+        v.mask(y - 1, y - 1, lock | turn, "minecraft:polished_andesite")
+        v.mask(y + 3, y + 3, lock & ((self.X % 2) == 0) & (self.Z == (z0 + z1) // 2), "minecraft:sea_lantern")
+        # the thick doors: steel frames round a 2 x 2 opening, the leaves a pair of iron doors
+        for dx in (LOCK[1] + 1, LOCK[0] - 1):
+            v.mask(y - 1, y + 3, self.rect(dx, dx, z0 - 1, z1 + 1), "minecraft:iron_block")
+            v.mask(y, y + 1, self.rect(dx, dx, z0 + 1, z1), AIR)
+            self.steel_door(y, [self.at(dx, z0 + 1), self.at(dx, z0 + 2)], "west")
+        # the ramp, ribbed (a copper rib every other block across the floor), then the steps up the open slot
+        rx0, rx1 = RAMP_X
+        rise = (grade + 1 - y) - STEPS
+        for x in range(rx0, EXIT_X + 1):
+            if x <= rx1:
+                surf = y + (x - rx0) * rise / (rx1 - rx0)
+            else:
+                surf = y + rise + (x - rx1)
+            q = round(surf * 2) / 2
+            k = int(math.floor(q))
+            half = q - k >= 0.5
+            roof = min(k + (1 if half else 0) + 3, grade - 1)
+            for z in range(RAMP_Z[0] - 1, RAMP_Z[1] + 2):
+                X_, Z_ = self.at(x, z)
+                edge = z in (RAMP_Z[0] - 1, RAMP_Z[1] + 1)
+                lo = max(y - 1, k - 3)
+                hi = grade if x > rx1 else roof
+                for yy in range(lo, hi + 1):
+                    v.set(X_, yy, Z_, CONCRETE if (edge or yy < k or (yy == roof and x <= rx1)) else AIR)
+                if edge:
+                    if x <= rx1 and (x - rx0) % 3 == 1 and roof - k >= 3:
+                        v.set(X_, k + 1, Z_, "minecraft:end_rod[facing=up]")
+                    continue
+                if x > rx1:
+                    v.set(X_, k - 1, Z_, "minecraft:smooth_stone_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]")
+                    continue
+                rib = (x % 2) == 0
+                v.set(X_, k - 1, Z_, "minecraft:waxed_cut_copper" if rib else "minecraft:smooth_stone")
+                if half:
+                    v.set(X_, k, Z_, "minecraft:waxed_cut_copper_slab[type=bottom,waterlogged=false]" if rib else STOOP)
+        self.exit_cells = [(x, z) for x in range(rx1 + 1, EXIT_X + 1) for z in range(RAMP_Z[0] - 1, RAMP_Z[1] + 2)]
 
     def generator_hall(self) -> None:
         """The generator hall below level 144 (machines.Builder, from the model)."""
@@ -684,10 +951,7 @@ class Silo:
         ox, oy, oz = self.origin
         vol = Volume((ox + self.R + x0, oy + floor - 1, oz + self.R + z0), (x1 - x0 + 1, H + 4, z1 - z0 + 1))
         self.machines().tunnel_into(vol, -x0, 1, -z0)
-        # leave the part inside this silo's own volume to it
-        inside = np.zeros((x1 - x0 + 1, z1 - z0 + 1), dtype=bool)
         X, Z = np.meshgrid(np.arange(x0, x1 + 1), np.arange(z0, z1 + 1), indexing="ij")
         inside = (np.abs(X) <= self.R) & (np.abs(Z) <= self.R)
         vol.ids.transpose(0, 2, 1)[inside] = 0
         return vol
-
