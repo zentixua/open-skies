@@ -41,7 +41,7 @@ FLOOR = "minecraft:smooth_stone"
 STEP = "minecraft:smooth_stone_slab[type=bottom]"
 DARK = "minecraft:polished_blackstone"
 PALE = "minecraft:calcite"
-LAMP = "minecraft:pearlescent_froglight"
+SLOT = "minecraft:end_rod[facing=up]"       # S3E09 09: a narrow vertical white light slot between the wall panels
 
 
 def smooth(e0: float, e1: float, x):
@@ -204,6 +204,7 @@ class Site:
             ws = int(self.water[i, k])
             if ws > t:
                 col[a0:min(H, ws + 1 - oy)] = water
+        self.fringe(v, T, zone)
         if self.old_cut_deg is not None:
             a = math.radians(self.old_cut_deg)
             along = self.X * math.cos(a) + self.Z * math.sin(a)
@@ -220,13 +221,40 @@ class Site:
         self.block(v, T)
         return v
 
+    def fringe(self, v: Volume, T, zone) -> None:
+        """Grass along the foot of every one-block step of the crater banks and berms. S3E09 05 and 10 show them as
+        smooth grassed banks; in blocks a 4 m bank over 12 m is a flight of steps, and each step's riser is the dirt
+        side of a grass block, which reads as a brown terraced wall from the bowl (shader frames 12.11, 04 and 07).
+        Short grass on the tread in front of each riser hides it (tall grass before a two-block riser).
+        presentation: the show's bank is mown; the tufts stand only where a smooth bank would have no riser."""
+        oy, R = v.origin[1], self.radius
+        n = 2 * R + 1
+        bank = zone & (self.d_portal >= self.floor_r - 1) & (self.d_portal <= self.out_r + 2)
+        for d_, _ in self.neighbour_portals:
+            bank |= zone & (d_ >= self.floor_r - 1) & (d_ <= self.out_r + 2)
+        rise = np.zeros(T.shape, int)
+        for di, dk in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            sh = np.full(T.shape, -10**6)
+            sh[max(0, -di):n - max(0, di), max(0, -dk):n - max(0, dk)] = \
+                T[max(0, di):n - max(0, -di), max(0, dk):n - max(0, -dk)]
+            rise = np.maximum(rise, sh - T)
+        for i, k in zip(*np.nonzero(bank & (rise >= 1))):
+            t = int(T[i, k])
+            if t + 2 - oy >= v.size[1] or self.water[i, k] > t:
+                continue
+            if rise[i, k] >= 2:
+                v.set(i, t + 1 - oy, k, "minecraft:tall_grass[half=lower]")
+                v.set(i, t + 2 - oy, k, "minecraft:tall_grass[half=upper]")
+            else:
+                v.set(i, t + 1 - oy, k, "minecraft:short_grass")
+
     def tunnel(self, v: Volume, T, f, fi, mask) -> None:
         oy = v.origin[1]
         ids = v.ids
         conc = [v.id(CONCRETE), v.id(CONCRETE_B), v.id(CONCRETE_C)]
         air, dirt, floor, step = v.id(AIR), v.id(DIRT), v.id(FLOOR), v.id(STEP)
         stone = v.id("minecraft:stone")
-        door, lamp = v.id(DOOR), v.id(LAMP)
+        door = v.id(DOOR)
         for i, k in zip(*np.nonzero(mask)):
             s, l = int(self.s[i, k]), int(self.l[i, k])
             col = ids[i, :, k]
@@ -244,8 +272,6 @@ class Site:
                     col[fl + 2 - oy:roof - oy] = air
                 else:
                     col[fl + 1 - oy:roof - oy] = air
-                if s % 7 == 3 and l == 0 and roof - 1 > fl + 2:
-                    col[roof - oy] = lamp
                 if s in (self.inner_door, self.outer_door):
                     # the thick door stands open: its leaf drawn back into a steel frame round the opening
                     if abs(l) == self.half:
@@ -259,7 +285,24 @@ class Site:
             # levelled) left its air there
             if s >= 0:
                 col[max(0, self.walk - 45 - oy):fl - 1 - oy] = stone
+        self.slots(v, fi, T)
         self.station_room(v, fi)
+
+    def slots(self, v: Volume, fi, T) -> None:
+        """S3E09 09, the roofed ramp: fluted concrete panels with a narrow vertical white light slot between each
+        two, one per panel, on both walls. Here a slot every 3 blocks from the outer door to the open stair head:
+        end rods standing in the wall from the floor's second block to the roof's, the concrete behind them."""
+        oy, R = v.origin[1], self.radius
+        s1 = self.ramp_end - self.open_l
+        for s in range(self.outer_door + 2, s1, 3):
+            i = R - (self.s_shell + s)
+            fl = int(fi[i, R])
+            roof = min(fl + self.room + 1, int(T[i, R]))
+            for side in (-1, 1):
+                k = R + side * (self.half + 1)
+                for y in range(fl + 2, roof):
+                    v.set(i, y - oy, k, SLOT)
+                    v.set(i, y - oy, k + side, CONCRETE)
 
     def station_room(self, v: Volume, fi) -> None:
         """Sheriff's Station in the first ten blocks: a desk, a holding cell on the south side."""

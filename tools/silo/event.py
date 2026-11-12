@@ -60,11 +60,14 @@ SLAT = "minecraft:bamboo_planks"
 CURTAIN = "minecraft:orange_terracotta"
 GOLD = "minecraft:gold_block"
 FABRIC = "minecraft:white_wool"
+TENT_FABRIC = "minecraft:smooth_quartz"
+TENT_SLOPE = "minecraft:smooth_quartz_stairs"
+TENT_EAVE = "minecraft:smooth_quartz_slab[type=bottom]"
 TRUSS = "minecraft:iron_bars"
 LAMP = "minecraft:lantern[hanging=true]"
 BANNER = "minecraft:white_concrete"
 POLE = "minecraft:spruce_fence"
-CHAIR = "minecraft:polished_andesite_stairs[facing=south,half=bottom]"   # back to the south: seated facing the stage
+CHAIR = "minecraft:polished_diorite_stairs[facing=south,half=bottom]"   # back to the south: seated facing the stage
 SOIL = "minecraft:moss_block"
 FLOWERS = ["minecraft:pink_tulip", "minecraft:allium", "minecraft:oxeye_daisy", "minecraft:white_tulip",
            "lilac", "peony"]                                              # pink spikes and white heads (11, 13)
@@ -178,16 +181,28 @@ class Event:
 
     # the tents -------------------------------------------------------------------------------------------------
     def stretch_tent(self, x: int, z: int) -> None:
-        """Cream-white fabric pulled up on a tall centre pole, eaves on corner poles (14, 15): 7 x 7."""
+        """Cream-white fabric pulled up on a tall centre pole, eaves on corner poles (14, 15): 7 x 7. The fabric slopes
+        (stairs rising to the pole) rather than stepping in whole blocks: the shader frames of 12.11 read the stepped
+        wool as flat white plates. Eaves ~2.5 m (a bottom slab in the third block), peak ~4.5 m."""
         for dx in range(-3, 4):
             for dz in range(-3, 4):
                 d = max(abs(dx), abs(dz))
-                h = 5 if d == 0 else 4 if d == 1 else 3     # peak ~4.5 m, eaves ~2.5 m over the floor
-                self.put(x + dx, h, z + dz, FABRIC)
+                if d == 3:
+                    self.put(x + dx, 3, z + dz, TENT_EAVE)
+                elif d == 0:
+                    self.put(x + dx, 4, z + dz, TENT_FABRIC)
+                    self.put(x + dx, 5, z + dz, TENT_EAVE)
+                else:
+                    # the high side toward the pole; corners take their shape from the neighbours as they are placed
+                    if abs(dx) >= abs(dz):
+                        facing = "west" if dx > 0 else "east"
+                    else:
+                        facing = "north" if dz > 0 else "south"
+                    self.put(x + dx, 5 - d, z + dz, f"{TENT_SLOPE}[facing={facing},half=bottom]")
         for dx, dz in ((-3, -3), (-3, 3), (3, -3), (3, 3)):
             for h in (1, 2):
                 self.put(x + dx, h, z + dz, POLE)
-        for h in range(1, 5):
+        for h in range(1, 4):
             self.put(x, h, z, POLE)
 
     def gazebo(self, x: int, z: int) -> None:
