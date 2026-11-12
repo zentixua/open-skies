@@ -10,7 +10,7 @@
   },
   {
    "file": "02-silo1-aerial.png",
-   "pos": "3716.5 150 1978.5 -180.0 31.4",
+   "pos": "3716.5 128 1978.5 -180.0 24.4",
    "time_of_day": 3000,
    "subject": "aerial zoom on Silo 1: the bowl with the tents, the path south across the berm"
   },
@@ -64,9 +64,9 @@
   },
   {
    "file": "11-silo18-berm.png",
-   "pos": "3825.5 70 1543.5 180 3",
+   "pos": "3825.5 70 1543.0 180 3",
    "time_of_day": 3000,
-   "subject": "Silo 18 berm crest looking outward over the plain"
+   "subject": "on Silo 18's berm crest, r 42 from its ring (crest top y 69, 2 over the plain), eye height, looking outward over the plain"
   },
   {
    "file": "12-plain.png",
