@@ -11,6 +11,12 @@ did not hide it and added stripes of their own. Here every grass or dirt block w
 neighbour (1-3 blocks down; deeper is a wall, not a bank) becomes a moss block, green on every face and close to the
 plains grass in tone, and the tufts go. Moss does not spread by itself (only by bone meal).
 
+The steps still ran in perfect concentric rings, an amphitheatre (shader frames 03, 07c and 11 of 1112d). A bank shaped
+by earth-moving and grass has no exact circles: with --wobble AMP every lawn or path column of the inner bank and
+crest first takes the ground found up to AMP blocks further in or out along its own radius (two slow waves round the
+ring whose phase drifts with the radius, so neighbouring contours wave differently; different for each silo; moss from an earlier pass goes back to lawn first), so each contour waves and the
+treads vary in width; then the moss is laid on the new risers. Trunks and anything else standing on a column keep it.
+
 With --hero, Silo 18's tree is replaced by hero_tree.py's: the blocks listed in --hero-clear (the previous tree's
 offsets about the same base column) that are still logs or leaves go first, and a foot log under the base becomes
 grass again.
@@ -30,6 +36,12 @@ import time
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 BANK = (28, 67)                  # surface.Site: floor_r - 2 .. out_r + 3 about each portal
+WOBBLE = (28, 46)                # the inner bank and the crest (floor_r .. rim_r + 4): rings of neighbours never meet here
+
+
+def hero_seed(n: int, k: int) -> float:
+    from hero_tree import seeded
+    return seeded(n, k, 977)
 
 SCRIPT = r"""
 import net.minecraft.core.BlockPos
@@ -64,23 +76,86 @@ if (args.hero) {
     }
   }
 }
-def ground = [:]
 int unloaded = 0
-for (int x = cx - r1 - 1; x <= cx + r1 + 1; x++) {
-  for (int z = cz - r1 - 1; z <= cz + r1 + 1; z++) {
-    if (lvl.getChunkSource().getChunkNow(x >> 4, z >> 4) == null) { unloaded++; continue }
-    int y = lvl.getHeight(Heightmap.Types.WORLD_SURFACE, x, z) - 1
-    int n = 0
-    while (n++ < 24 && plant(lvl.getBlockState(new BlockPos(x, y, z)))) y--
-    ground[x * 65536L + z] = y
+def scan = {
+  def m = [:]
+  for (int x = cx - r1 - 1; x <= cx + r1 + 1; x++) {
+    for (int z = cz - r1 - 1; z <= cz + r1 + 1; z++) {
+      if (lvl.getChunkSource().getChunkNow(x >> 4, z >> 4) == null) { unloaded++; continue }
+      int y = lvl.getHeight(Heightmap.Types.WORLD_SURFACE, x, z) - 1
+      int n = 0
+      while (n++ < 24 && plant(lvl.getBlockState(new BlockPos(x, y, z)))) y--
+      m[x * 65536L + z] = y
+    }
   }
+  m
 }
+def ground = scan()
 if (unloaded) return [unloaded: unloaded, hero: hero, cleared: cleared]
+double rx = args.rx as double, rz = args.rz as double
+int moved = 0, unmossed = 0
+if (args.wobble) {
+  def w = args.wobble
+  def grassS = Blocks.GRASS_BLOCK.defaultBlockState(), dirtS = Blocks.DIRT.defaultBlockState()
+  // the previous pass's moss back to lawn first: the risers move, so it is laid again below
+  for (int x = cx - r1; x <= cx + r1; x++) {
+    for (int z = cz - r1; z <= cz + r1; z++) {
+      double d = Math.hypot(x + 0.5 - rx, z + 0.5 - rz)
+      if (d < r0 || d > r1) continue
+      int g = ground[x * 65536L + z]
+      for (int y = g - 3; y <= g; y++) {
+        def p = new BlockPos(x, y, z)
+        if (lvl.getBlockState(p).is(Blocks.MOSS_BLOCK)) { lvl.setBlock(p, y == g ? grassS : dirtS, 18); unmossed++ }
+      }
+    }
+  }
+  // each column takes the original ground found a little further in or out along its own radius: the contours wave
+  def target = [:]
+  for (int x = cx - r1; x <= cx + r1; x++) {
+    for (int z = cz - r1; z <= cz + r1; z++) {
+      double d = Math.hypot(x + 0.5 - rx, z + 0.5 - rz)
+      if (d < (w.r0 as double) || d > (w.r1 as double)) continue
+      int g = ground[x * 65536L + z]
+      def top = lvl.getBlockState(new BlockPos(x, g, z))
+      if (!(top.is(Blocks.GRASS_BLOCK) || top.is(Blocks.DIRT) || top.is(Blocks.SMOOTH_SANDSTONE))) continue
+      if (!lvl.getBlockState(new BlockPos(x, g + 1, z)).isAir()) continue      // a trunk or anything standing here
+      boolean nearTrunk = false                      // a tree keeps its footing: no pillar, no buried foot
+      for (int ax = -2; ax <= 2 && !nearTrunk; ax++)
+        for (int az = -2; az <= 2 && !nearTrunk; az++)
+          for (int ay = 0; ay <= 2; ay++)
+            if (lvl.getBlockState(new BlockPos(x + ax, g + ay, z + az)).is(BlockTags.LOGS)) { nearTrunk = true; break }
+      if (nearTrunk) continue
+      double th = Math.atan2(z + 0.5 - rz, x + 0.5 - rx)
+      double dl = (w.amp as double) * (0.5 * Math.sin(3 * th + (w.p1 as double) + d / 3.0) + 0.5 * Math.sin(5 * th + (w.p2 as double) - d / 4.0))
+      double d2 = d + dl
+      int sx = (int) Math.floor(rx + d2 * Math.cos(th)), sz = (int) Math.floor(rz + d2 * Math.sin(th))
+      def g2 = ground[sx * 65536L + sz]
+      if (g2 == null) continue
+      int t = Math.max(g - 2, Math.min(g + 2, g2 as int))
+      if (t != g) target[x * 65536L + z] = [x, z, g, t]
+    }
+  }
+  for (e in target.values()) {
+    int x = e[0], z = e[1], g = e[2], t = e[3]
+    def top = lvl.getBlockState(new BlockPos(x, g, z))
+    if (t > g) {
+      boolean free = true
+      for (int y = g + 1; y <= t; y++) free &= lvl.getBlockState(new BlockPos(x, y, z)).isAir()
+      if (!free) continue
+      for (int y = g; y < t; y++) lvl.setBlock(new BlockPos(x, y, z), dirtS, 18)
+    } else {
+      for (int y = t + 1; y <= g; y++) lvl.setBlock(new BlockPos(x, y, z), air, 18)
+    }
+    lvl.setBlock(new BlockPos(x, t, z), top, 18)
+    moved++
+  }
+  ground = scan()
+}
 def moss = Blocks.MOSS_BLOCK.defaultBlockState()
 int mossed = 0, tufts = 0
 for (int x = cx - r1; x <= cx + r1; x++) {
   for (int z = cz - r1; z <= cz + r1; z++) {
-    double d = Math.hypot(x + 0.5 - (args.rx as double), z + 0.5 - (args.rz as double))
+    double d = Math.hypot(x + 0.5 - rx, z + 0.5 - rz)
     if (d < r0 || d > r1) continue
     int g = ground[x * 65536L + z]
     for (int dy = 1; dy <= 2; dy++) {                 // the tufts at the riser feet
@@ -99,7 +174,7 @@ for (int x = cx - r1; x <= cx + r1; x++) {
     }
   }
 }
-return [mossed: mossed, tufts: tufts, hero: hero, cleared: cleared]
+return [mossed: mossed, tufts: tufts, hero: hero, cleared: cleared, moved: moved, unmossed: unmossed]
 """
 
 
@@ -109,6 +184,8 @@ def main():
     ap.add_argument("--number", type=int, nargs="*", help="silos (default: all)")
     ap.add_argument("--hero", action="store_true", help="also replace Silo 18's tree with hero_tree.py's")
     ap.add_argument("--hero-clear", help="json [[dx, dy, dz], ...]: the previous tree's blocks about its base")
+    ap.add_argument("--wobble", type=float, default=0.0, metavar="AMP",
+                    help="wave the inner bank's contours by up to AMP blocks before laying the moss")
     ap.add_argument("--dry", action="store_true")
     a = ap.parse_args()
     layout = json.load(open(a.layout))
@@ -136,7 +213,10 @@ def main():
         area = br.call("area.prepare", {"from": [cx - r1 - 2, cz - r1 - 2], "to": [cx + r1 + 2, cz + r1 + 2], "wait": 50})
         try:
             args = {"x": cx, "z": cz, "rx": rx, "rz": rz, "r0": BANK[0], "r1": r1,
-                    "hero": h18 if s["number"] == 18 else None}
+                    "hero": h18 if s["number"] == 18 else None,
+                    "wobble": {"r0": WOBBLE[0], "r1": WOBBLE[1], "amp": a.wobble,
+                               "p1": 6.283 * hero_seed(s["number"], 1), "p2": 6.283 * hero_seed(s["number"], 2)}
+                    if a.wobble and s["number"] != 1 else None}   # Silo 1: the opening-day set stands to r 34
             for attempt in range(3):                # leased chunks finish loading a little after area.prepare
                 res = br.call("script", {"code": SCRIPT, "args": args, "timeout_ms": 10000})
                 if not res.get("ok"):

@@ -67,7 +67,8 @@ LAMP = "minecraft:lantern[hanging=true]"
 BANNER = "minecraft:white_concrete"
 POLE = "minecraft:spruce_fence"
 SEAT = "minecraft:smooth_stone_slab[type=bottom]"
-CHAIR_BACK = "minecraft:iron_trapdoor[facing=south,half=bottom,open=true]"   # a thin grey plate on the seat's south
+CHAIR_BACK = "minecraft:birch_trapdoor[facing=south,half=bottom,open=true]"  # a thin pale back on the seat's south
+# (iron trapdoors in a row read as one grated wall, shader frame 08 of 1112d)
 BANNER_CLOTH = ('minecraft:white_wall_banner[facing=south]{patterns:[{color:"yellow",pattern:"minecraft:flower"},'
                 '{color:"yellow",pattern:"minecraft:border"}]}')         # the gold emblem on white cloth (11)
 SOIL = "minecraft:moss_block"
@@ -204,7 +205,9 @@ class Event:
             for cx, cz in poles:
                 d = math.hypot(px + 0.5 - (cx + 0.5), pz + 0.5 - (cz + 0.5))
                 if d <= TENT_REACH:
-                    h = TENT_PEAK - (TENT_PEAK - TENT_EAVE) * d / TENT_REACH
+                    # pulled up at the pole, nearly flat towards the edge: a stretch tent's sheet is concave (14, 15);
+                    # a straight cone read as a white step pyramid (shader frames 08, 09 of 1112d)
+                    h = TENT_EAVE + (TENT_PEAK - TENT_EAVE) * (1 - d / TENT_REACH) ** 1.6
                     best = h if best is None else max(best, h)
             return None if best is None else math.floor(best * 2) / 2
         xs = [int(math.floor(c[0])) for c in poles]; zs = [int(math.floor(c[1])) for c in poles]
@@ -218,7 +221,7 @@ class Event:
                     self.put(x, layer, z, f"{TENT_FABRIC}[type={'top' if top else 'bottom'}]")
         for cx, cz in poles:
             x, z = int(math.floor(cx)), int(math.floor(cz))
-            for h in range(1, int(TENT_PEAK)):                 # the centre pole up to the peak
+            for h in list(range(1, int(TENT_PEAK))) + [int(TENT_PEAK) + 1]:   # the pole, its tip through the peak
                 if self.v.get(x + self.R, h, z + self.R) is None:
                     self.put(x, h, z, POLE)
             for k in range(8):                                  # short poles round the edge, where no other tent is over
@@ -244,10 +247,10 @@ class Event:
     def chairs(self) -> None:
         """Grey folding chairs in long rows facing the stage, an aisle down the middle (11, 14): a half-height seat,
         and its back a thin open trapdoor standing on the seat's south edge (solid stairs read as stone blocks from
-        behind, shader frame 08 of 12.11)."""
+        behind, shader frame 08 of 12.11); every third seat is left out, so the rows read as chairs, not walls."""
         for z in (-22, -20, -18, -16, -14):
             for x in range(C[0] - 6, C[0] + 7):
-                if x != C[0]:
+                if x != C[0] and (x - C[0]) % 3 != 0:
                     self.put(x, 1, z, SEAT)
                     self.put(x, 1, z + 1, CHAIR_BACK)
 
