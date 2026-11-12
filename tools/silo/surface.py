@@ -117,6 +117,9 @@ class Site:
         floor = int(round(self.p_portal - self.floor_drop))
         self.rise = min(26, max(6, floor - base))
         self.p_portal = float(base + self.rise + self.floor_drop)
+        # the stair is open to the sky until the floor is 3.5 under the lawn (2.5 clear over a half step under the
+        # ground's own slab): 13 at Silo 1's rise of 15, longer on a gentler ramp (Silo 18, rise 10: 20)
+        self.open_l = max(self.portal_l, math.ceil(3.5 * self.slope_run / self.rise))
         self.old_cut_deg = old_cut_deg      # an earlier draft's open cut along this bearing, to be filled
         self.keep = (weight <= 0.05) if weight is not None else np.zeros(ground.shape, bool)   # towns: never touched
         reach = self.s_shell + self.portal_s
@@ -267,9 +270,9 @@ class Site:
         at(9, 3, 0, "minecraft:gray_bed[facing=west,part=foot]")
 
     def portal(self, v: Volume, T) -> None:
-        """The open stair head over the last portal_l blocks of the ramp, a pale concrete curb round it."""
+        """The open stair head over the last open_l blocks of the ramp, a pale concrete curb round it."""
         oy, R = v.origin[1], self.radius
-        s0 = self.ramp_end - self.portal_l
+        s0 = self.ramp_end - self.open_l
         for s in range(s0 - 1, self.ramp_end + 2):
             for l in range(-self.portal_half - 1, self.portal_half + 2):
                 i, k = R - (self.s_shell + s), R + l
@@ -292,7 +295,7 @@ class Site:
         back wall, a thin flat roof slab cantilevered over them; in front, on a stepped plinth, a truncated concrete
         cone carrying the sensor, looking out over the stair."""
         oy, R = v.origin[1], self.radius
-        face = self.ramp_end - self.portal_l - self.block_gap        # s of the open face
+        face = self.ramp_end - self.open_l - self.block_gap          # s of the open face
         back = face - self.block_depth + 1
         i_of = lambda s: R - (self.s_shell + s)
         t = int(T[i_of(face), R])

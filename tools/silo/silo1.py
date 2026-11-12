@@ -123,6 +123,11 @@ class Silo1(Silo):
         connect.connect(v)
         self.no_spawn_lights()
         self.service_ladder()
+        # the ring grid above lights only the room rings at stand height; on 25567 every level still had a few
+        # hundred dark spawnable cells (5 zombies in the shaft), so the same pass as the other silos lights the rest
+        import lighting
+        void_top = self.yi(self.void_top_rel)
+        self.lights = lighting.light_up(v, lambda y: 3 if y < void_top else 12)
         return v
 
     # helpers -----------------------------------------------------------------------------------------------------
