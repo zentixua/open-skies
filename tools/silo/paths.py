@@ -12,6 +12,7 @@ What the frame shows, and what is laid here (dirt path on the finished ground, s
 - between neighbouring rings of a flower, a short link where their circles nearly touch;
 - from each circle a stub in to the crater floor, along the way out of the ramp (each ring's own bearing);
 - seven rosette discs, each in the triangle of three rings where the frame shows one (concentric path rings).
+With --trees, also the berm and plain trees, and the one tree before Silo 18's camera (hero_tree.py).
 The rings in the frame stand within 20-40 m of the fitted layout, so the paths are laid relative to the built rings
 (topology from the frame) rather than traced pixel by pixel.
 
@@ -80,7 +81,24 @@ for (t in (args.trees ?: [])) {       // S3E09 05, 10, 28: a few round-crowned t
   gm.command("place feature ${t[2]} ${x} ${y + 1} ${z}")
   trees++
 }
-return [placed: n, greened: greened, trees: trees, unloaded: skipped]
+int hero = 0
+if (args.hero) {                      // the tree before Silo 18's camera (hero_tree.py): logs replace, leaves fill air
+  int x = args.hero.x as int, z = args.hero.z as int
+  if (lvl.getChunkSource().getChunkNow(x >> 4, z >> 4) == null) { skipped++ }
+  else {
+    // the ground under the tree's own blocks (a rerun finds its trunk): the first block that is not air, log or leaves;
+    // when the foot log (dy -1) took the grass's place, the first block above the ground is one higher
+    int y = lvl.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z) - 1
+    def tree = { s -> s.isAir() || s.is(net.minecraft.tags.BlockTags.LOGS) || s.is(net.minecraft.tags.BlockTags.LEAVES) }
+    while (tree(lvl.getBlockState(new BlockPos(x, y, z)))) y--
+    y += lvl.getBlockState(new BlockPos(x, y + 1, z)).is(net.minecraft.tags.BlockTags.LOGS) ? 2 : 1
+    for (b in args.hero.blocks) {
+      gm.command("setblock ${x + (b[0] as int)} ${y + (b[1] as int)} ${z + (b[2] as int)} ${b[3]}" + (b[3].contains('_log') ? '' : ' keep'))
+      hero++
+    }
+  }
+}
+return [placed: n, greened: greened, trees: trees, hero: hero, unloaded: skipped]
 """
 
 
@@ -171,11 +189,22 @@ def h01(*v) -> float:
     return (h & 0xFFFF) / 65535.0
 
 
-def trees(layout: dict, avoid: set) -> list:
+def hero(layout: dict):
+    """Silo 18's tree (hero_tree.py): its trunk column and blocks [[dx, dy, dz, state]], or None without Silo 18."""
+    import hero_tree
+    s18 = next((s_ for s_ in layout["silos"] if s_.get("number") == 18 and "ring" in s_), None)
+    if s18 is None:
+        return None
+    out = BEARING[s18.get("dir", "W")]
+    x, z = hero_tree.place(s18["ring"], out)
+    return {"x": x, "z": z, "blocks": [[*c, st] for c, st in sorted(hero_tree.blocks(out).items())]}
+
+
+def trees(layout: dict, avoid: set, keep_clear=()) -> list:
     """Tree spots: 0-2 on each berm crest (S3E09 10: a round-crowned tree on the crest, another nearby) and young
     trees scattered over the plain (05, 28), never on a path, a bowl floor or an earlier tree's crown."""
     rings = [s_["ring"] for s_ in layout["silos"] if "ring" in s_]
-    out, taken = [], []
+    out, taken = [], list(keep_clear)
     def free(x, z, r):
         if any(math.hypot(x - a, z - b) < r for a, b in taken):
             return False
@@ -229,8 +258,12 @@ def main():
                     if math.hypot(dx, dz) <= FLOOR_R + 4:
                         floors.add((int(math.floor(rx + dx)), int(math.floor(rz + dz))))
     floors -= set(allc)
-    spots = trees(layout, set(allc)) if a.trees else []
-    print(f"{len(cells)} path cells, {len(road)} road cells, {len(spots)} trees", flush=True)
+    h18 = hero(layout) if a.trees else None
+    spots = trees(layout, set(allc), [(h18["x"], h18["z"])] if h18 else []) if a.trees else []
+    if h18 and any((h18["x"] + dx, h18["z"] + dz) in cells | road for dx in range(-3, 4) for dz in range(-3, 4)):
+        raise SystemExit(f"Silo 18's tree at {h18['x']},{h18['z']} stands on a path")
+    print(f"{len(cells)} path cells, {len(road)} road cells, {len(spots)} trees"
+          + (f", Silo 18's tree at {h18['x']},{h18['z']} ({len(h18['blocks'])} blocks)" if h18 else ""), flush=True)
     if a.png:
         from PIL import Image
         xs = [c[0] for c in allc]; zs = [c[1] for c in allc]
@@ -252,14 +285,16 @@ def main():
     ttiles = {}
     for t in spots:
         ttiles.setdefault((t[0] // T, t[1] // T), []).append(t)
-    for key in list(ftiles) + list(ttiles):
+    htile = (h18["x"] // T, h18["z"] // T) if h18 else None
+    for key in list(ftiles) + list(ttiles) + ([htile] if htile else []):
         tiles.setdefault(key, [])
     for (tx, tz), cols in sorted(tiles.items()):
         area = br.call("area.prepare", {"from": [tx * T, tz * T], "to": [tx * T + T - 1, tz * T + T - 1], "wait": 50})
         try:
             for attempt in range(3):
                 res = br.call("script", {"code": SCRIPT, "args": {"cols": cols, "floors": ftiles.get((tx, tz), []),
-                                                                      "trees": ttiles.get((tx, tz), [])},
+                                                                      "trees": ttiles.get((tx, tz), []),
+                                                                      "hero": h18 if (tx, tz) == htile else None},
                                            "timeout_ms": 10000})
                 if not res.get("ok"):
                     raise RuntimeError(f"script: {res}")
