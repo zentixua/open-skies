@@ -187,9 +187,9 @@ def main():
         Image.fromarray(img).save(a.png)
     if a.dry:
         return
-    from build_live import Bridge
+    from build_live import Bridge, settle
     br = Bridge()
-    T = 256
+    T = 128                                  # 8x8 chunks a tile (deep world: see build_live.settle)
     tiles, ftiles = {}, {}
     for x, z in allc:
         tiles.setdefault((x // T, z // T), []).append([x, z])
@@ -211,6 +211,7 @@ def main():
                 time.sleep(10)
         finally:
             br.call("area.release", {"id": area["id"]})
+        settle(br, log=lambda m: print(m, flush=True))
     if a.event:
         import event
         from build_live import build

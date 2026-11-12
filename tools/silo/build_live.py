@@ -46,6 +46,23 @@ class Bridge:
         return d["result"]
 
 
+LOADED = "return server.overworld().getChunkSource().getLoadedChunksCount()"
+
+
+def settle(bridge: "Bridge", limit: int = 2500, log=print) -> None:
+    """Wait until the overworld holds at most `limit` loaded chunks. A deep world (1088 tall, 68 sections) keeps
+    ~3.4x the memory per chunk; released leases unload only as fast as the game saves them, and on 25567 a pass of
+    50 site builds plus path tiles filled a 6 GB heap (12.11 01:06)."""
+    t0 = time.time()
+    while True:
+        n = bridge.call("script", {"code": LOADED})["value"]
+        if n <= limit or time.time() - t0 > 300:
+            if n > limit:
+                log(f"still {n} chunks loaded after 5 min; going on")
+            return
+        time.sleep(3)
+
+
 def slab_ops(v: Volume, y0: int, y1: int, max_ops: int = 10_000) -> tuple[list[dict], int]:
     """Layers ops for local rows y0..y1-1, cropped to the bounding box of non-keep blocks."""
     sub = v.ids[:, y0:y1, :]
@@ -97,6 +114,7 @@ def build(v: Volume, name: str, state_dir: str, bridge: Bridge, max_positions: i
             if res["state"] != "done":
                 raise RuntimeError(f"slab {y}..{y1} job {jid}: {res}")
             st["jobs"].append(jid)
+            settle(bridge, log=log)
         st["done_rows"] = H - y
         json.dump(st, open(path, "w"))
         log(f"{name}: down to y {v.origin[1] + y} ({100 * st['done_rows'] / H:.0f}%), {n} positions, "
