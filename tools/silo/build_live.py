@@ -49,10 +49,11 @@ class Bridge:
 LOADED = "return server.overworld().getChunkSource().getLoadedChunksCount()"
 
 
-def settle(bridge: "Bridge", limit: int = 2500, log=print) -> None:
+def settle(bridge: "Bridge", limit: int = 1100, log=print) -> None:
     """Wait until the overworld holds at most `limit` loaded chunks. A deep world (1088 tall, 68 sections) keeps
-    ~3.4x the memory per chunk; released leases unload only as fast as the game saves them, and on 25567 a pass of
-    50 site builds plus path tiles filled a 6 GB heap (12.11 01:06)."""
+    ~3.4x the memory per chunk (~2.9 MB live each on 25567: idle 841 loaded, one 128 m lease adds ~1000 through ticket
+    propagation); released leases unload only as fast as the game saves them, and a pass of 50 site builds plus
+    256 m path tiles filled a 6 GB heap (12.11 01:06). 1100 leaves room for one lease."""
     t0 = time.time()
     while True:
         n = bridge.call("script", {"code": LOADED})["value"]
