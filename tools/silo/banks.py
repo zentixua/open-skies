@@ -18,12 +18,17 @@ ring whose phase drifts with the radius, so neighbouring contours wave different
 treads vary in width; a contour running diagonally leaves lone one-column pillars and pits, which go to their
 neighbours' level; then the moss is laid on the new risers. --smooth-only does that evening alone, for banks waved before it. Trunks and anything else standing on a column keep it.
 
+Moss risers still read as dark hedge bands against the lawn (1112e). Artem's choice (12.11): 25567 sends the Fast
+Better Grass resource pack (MIT, Modrinth; grass draws its top on every side), so a grass riser is lawn on all faces.
+--grass turns the moss back to grass and keeps moss only below the top block of a riser 2-3 deep, where the block
+under grass would be dirt.
+
 With --hero, Silo 18's tree is replaced by hero_tree.py's: the blocks listed in --hero-clear (the previous tree's
 offsets about the same base column) that are still logs or leaves go first, and a foot log under the base becomes
 grass again.
 
   ALMIGHTY_URL=... ALMIGHTY_TOKEN_FILE=... uv run tools/silo/banks.py <layout.json> [--number N ...] [--hero]
-      [--hero-clear old.json] [--wobble AMP [--smooth-only]] [--dry]
+      [--hero-clear old.json] [--wobble AMP [--smooth-only]] [--grass] [--dry]
 """
 from __future__ import annotations
 
@@ -95,10 +100,9 @@ def ground = scan()
 if (unloaded) return [unloaded: unloaded, hero: hero, cleared: cleared]
 double rx = args.rx as double, rz = args.rz as double
 int moved = 0, unmossed = 0, smoothed = 0
-if (args.wobble) {
-  def w = args.wobble
-  def grassS = Blocks.GRASS_BLOCK.defaultBlockState(), dirtS = Blocks.DIRT.defaultBlockState()
-  // the previous pass's moss back to lawn first: the risers move, so it is laid again below
+def grassS = Blocks.GRASS_BLOCK.defaultBlockState(), dirtS = Blocks.DIRT.defaultBlockState()
+if (args.wobble || args.grass) {
+  // the previous pass's moss back to lawn first: the risers may move, and it is laid again below
   for (int x = cx - r1; x <= cx + r1; x++) {
     for (int z = cz - r1; z <= cz + r1; z++) {
       double d = Math.hypot(x + 0.5 - rx, z + 0.5 - rz)
@@ -110,6 +114,9 @@ if (args.wobble) {
       }
     }
   }
+}
+if (args.wobble) {
+  def w = args.wobble
   // each column takes the original ground found a little further in or out along its own radius: the contours wave
   def target = [:]
   if (w.move) for (int x = cx - r1; x <= cx + r1; x++) {
@@ -198,7 +205,7 @@ for (int x = cx - r1; x <= cx + r1; x++) {
     for (o in [[1, 0], [-1, 0], [0, 1], [0, -1]]) low = Math.min(low, ground[(x + o[0]) * 65536L + z + o[1]] as int)
     int drop = g - low
     if (drop < 1 || drop > 3) continue
-    for (int y = low + 1; y <= g; y++) {
+    for (int y = low + 1; y <= (args.grass ? g - 1 : g); y++) {     // --grass: the top stays lawn
       def p = new BlockPos(x, y, z)
       def s = lvl.getBlockState(p)
       if (s.is(Blocks.GRASS_BLOCK) || s.is(Blocks.DIRT)) { lvl.setBlock(p, moss, 18); mossed++ }
@@ -219,6 +226,9 @@ def main():
                     help="wave the inner bank's contours by up to AMP blocks before laying the moss")
     ap.add_argument("--smooth-only", action="store_true",
                     help="with --wobble: only even out lone pillars and pits left by an earlier wobble, move nothing")
+    ap.add_argument("--grass", action="store_true",
+                    help="the top block of every riser stays grass (green sides from the 25567 resource pack); "
+                         "moss only below it, on the lower blocks of a deeper riser")
     ap.add_argument("--dry", action="store_true")
     a = ap.parse_args()
     layout = json.load(open(a.layout))
@@ -246,7 +256,7 @@ def main():
         area = br.call("area.prepare", {"from": [cx - r1 - 2, cz - r1 - 2], "to": [cx + r1 + 2, cz + r1 + 2], "wait": 50})
         try:
             args = {"x": cx, "z": cz, "rx": rx, "rz": rz, "r0": BANK[0], "r1": r1,
-                    "hero": h18 if s["number"] == 18 else None,
+                    "hero": h18 if s["number"] == 18 else None, "grass": a.grass,
                     "wobble": {"r0": WOBBLE[0], "r1": WOBBLE[1], "amp": a.wobble,
                                "p1": 6.283 * hero_seed(s["number"], 1), "p2": 6.283 * hero_seed(s["number"], 2),
                                "move": not a.smooth_only}
