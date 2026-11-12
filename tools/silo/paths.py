@@ -155,9 +155,17 @@ def main():
     ap.add_argument("layout")
     ap.add_argument("--dry", action="store_true")
     ap.add_argument("--png")
+    ap.add_argument("--event", action="store_true", help="also Silo 1's opening-day set (event.py), with its path and apron")
+    ap.add_argument("--state", help="build_live state directory (for --event)")
     a = ap.parse_args()
     layout = json.load(open(a.layout))
     cells, road = plan(layout)
+    one = next(s_ for s_ in layout["silos"] if s_["number"] == 1)
+    rx1, rz1 = int(math.floor(one["ring"][0])), int(math.floor(one["ring"][1]))
+    if a.event:
+        import event
+        p_, apron = event.ground_paths(rx1, rz1)
+        cells |= set(p_) | set(apron)
     allc = sorted(cells | road)
     floors = set()
     for s_ in layout["silos"]:
@@ -201,6 +209,18 @@ def main():
                 if not res["value"].get("unloaded"):
                     break
                 time.sleep(10)
+        finally:
+            br.call("area.release", {"id": area["id"]})
+    if a.event:
+        import event
+        from build_live import build
+        area = br.call("area.prepare", {"from": [rx1 - 48, rz1 - 48], "to": [rx1 + 48, rz1 + 48], "wait": 50})
+        try:
+            code = ("import net.minecraft.world.level.levelgen.Heightmap\n"
+                    "return server.overworld().getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, args.x, args.z) - 1")
+            fy = br.call("script", {"code": code, "args": {"x": rx1 - 3, "z": rz1 - 21}})["value"]
+            print(f"opening-day set on floor y {fy}", flush=True)
+            build(event.build(rx1, rz1, int(fy)), "event1", a.state, br, log=lambda m: print(m, flush=True))
         finally:
             br.call("area.release", {"id": area["id"]})
 
