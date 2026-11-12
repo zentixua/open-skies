@@ -177,7 +177,7 @@ class Site:
         # its own shaft-to-portal line covers it, and the whole crater
         zone = ((self.own_line <= 150) | (self.d_axis <= self.shaft_zone)) & self.cell & ~self.keep
         tunnel = (self.s >= -3) & (self.s <= self.ramp_end) & (np.abs(self.l) <= self.half + 1)
-        y_lo = min(self.walk - 3, int(self.bed[zone].min()) - 4)
+        y_lo = min(self.walk - 46, int(self.bed[zone].min()) - 4)
         y_hi = int(max(self.top[zone].max(), T[zone].max(), self.grade + 12)) + 2
         v = Volume((self.cx - R, y_lo, self.cz - R), (2 * R + 1, y_hi - y_lo + 1, 2 * R + 1))
         ids, oy, H = v.ids, y_lo, v.size[1]
@@ -225,6 +225,7 @@ class Site:
         ids = v.ids
         conc = [v.id(CONCRETE), v.id(CONCRETE_B), v.id(CONCRETE_C)]
         air, dirt, floor, step = v.id(AIR), v.id(DIRT), v.id(FLOOR), v.id(STEP)
+        stone = v.id("minecraft:stone")
         door, lamp = v.id(DOOR), v.id(LAMP)
         for i, k in zip(*np.nonzero(mask)):
             s, l = int(self.s[i, k]), int(self.l[i, k])
@@ -254,9 +255,10 @@ class Site:
             # backfill above the roof up to the ground (an earlier open cut here is closed again)
             if roof < t:
                 col[roof + 1 - oy:t - oy] = dirt
-            # and below the floor: an earlier ramp at a lower rise left its air there
-            if s >= 0 and fl - 1 > self.walk - 2:
-                col[self.walk - 2 - oy:fl - 1 - oy] = dirt
+            # and below the floor: an earlier ramp (a lower rise, or a shaft at another grade before the field was
+            # levelled) left its air there
+            if s >= 0:
+                col[max(0, self.walk - 45 - oy):fl - 1 - oy] = stone
         self.station_room(v, fi)
 
     def station_room(self, v: Volume, fi) -> None:

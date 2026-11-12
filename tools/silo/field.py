@@ -1,9 +1,8 @@
 """The plain the complex stands on: one open grassland across the whole field, easing into the natural land.
 
-In the show's 2052 scenes the silos lie in open, rolling grassland. Here the natural ground under the field is
-low-passed (a Gaussian over land only, so river beds do not pull it down), changes are capped, and the plain
-weight falls from 1 within --core of the nearest silo to 0 at --edge, with a ragged edge so the forest boundary
-reads as natural. Inside the plain trees are cleared; water stays, and land next to water is never lowered (so no
+In the show's 2052 scenes the silos lie in one levelled field of mown grass. Here the field is a single height
+(the median of the natural ground under it, or the layout's "level"), and the plain weight falls from 1 within
+CORE of the nearest silo to 0 at EDGE, with a ragged edge so the forest boundary reads as natural. Inside the plain trees are cleared; water stays, and land next to water is never lowered (so no
 water spills). Each silo's own site (site.py) blends into this plain.
 """
 from __future__ import annotations
@@ -97,7 +96,20 @@ class Field:
         # land eases toward the low-passed ground; water inside the plain is filled to it
         # far from any land (open water) the fill comes up to a block above the water
         smooth_g = np.where(np.isnan(smooth_g), np.where(wet, self.water + 1.0, g), smooth_g)
-        plain = np.where(land, g + w * np.clip(smooth_g - g, -MAX_CHANGE, MAX_CHANGE), smooth_g)
+        # the first draft: rolling ground, the natural relief low-passed and moved at most MAX_CHANGE. Kept only to
+        # know what that draft built, so a rebuild can take it away again
+        old = np.where(land, g + w * np.clip(smooth_g - g, -MAX_CHANGE, MAX_CHANGE), smooth_g)
+        old_filled = wet & (w > FILL)
+        wl = dilate_max(np.where(wet & ~old_filled, self.water, MISSING), SHORE)
+        old = np.where(wl > MISSING, np.maximum(old, wl + 1), old)
+        self.old_height = np.where(known & (w > 0.02) & (land | old_filled), np.round(old), self.ground).astype(np.int32)
+        # the show's complex is levelled: one flat field at a single height (S3E09 02, 05, 10, 28: flat mown ground
+        # to the treeline), easing into Zearth's own relief only beyond CORE. The rolling draft kept up to 50 blocks
+        # of Zearth's hills between the shafts (63-85 on the plain, sites at 58-109)
+        core = known & land & (w >= 0.99)
+        self.level = int(self.layout.get("level") or round(float(np.median(g[core]))))
+        base = np.where(land, g, np.where(wet, self.water + 1.0, g))
+        plain = base + w * (self.level - base)
         self.filled = wet & (w > FILL)
         # banks hold the water that stays: shaped ground near it stays a block above its surface
         wl = dilate_max(np.where(wet & ~self.filled, self.water, MISSING), SHORE)
@@ -114,6 +126,8 @@ class Field:
         sl = (slice(i, i + n), slice(k, k + n))
         water = np.where(self.filled[sl], MISSING, self.water[sl])
         top = np.maximum(self.top[sl], np.where(self.filled[sl], self.water[sl], MISSING))
+        # what the rolling draft built above its ground (berms 2, camera block 5, the opening-day set 16) goes too
+        top = np.maximum(top, self.old_height[sl] + 20)
         return self.height[sl], water, top, self.ground[sl], self.weight[sl]
 
     def tiles(self, size: int = 128, skip_site: float = 100, gaps: int | None = None):
@@ -164,6 +178,7 @@ class Field:
         sl = (slice(i, i + size), slice(k, k + size))
         w, h, n, top = self.weight[sl], self.height[sl], self.ground[sl], self.top[sl]
         dist, filled, ws = self.dist[sl], self.filled[sl], self.water[sl]
+        old_h = self.old_height[sl]
         if gaps is None:
             work = self.shaped[sl] & (dist > skip_site)
         else:
@@ -172,7 +187,7 @@ class Field:
             return None
         clear = work & (w > TREES_OUT)
         lo = int(np.minimum(h, n)[work].min()) - 3
-        hi = int(np.maximum(np.maximum(np.where(clear, top, h), np.maximum(h, n)), ws)[work].max()) + 1
+        hi = int(np.maximum(np.maximum(np.maximum(np.where(clear, top, h), np.maximum(h, n)), ws), old_h + 3)[work].max()) + 1
         nx, nz = h.shape
         v = Volume((self.x0 + i, lo, self.z0 + k), (nx, hi - lo + 1, nz))
         ids = v.ids
@@ -187,6 +202,7 @@ class Field:
                 col[min(t, nat) - 2 - lo:t - lo] = dirt
                 col[t - lo] = grass
             up = int(top[a, b]) if clear[a, b] else nat
+            up = max(up, int(old_h[a, b]) + 3)     # the rolling draft's raised ground and its paths go
             if filled[a, b]:
                 up = max(up, int(ws[a, b]))        # the water above the new ground goes
             if up > t:

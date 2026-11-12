@@ -148,6 +148,7 @@ def main():
     from surface import Site
     log = lambda m: print(time.strftime("%H:%M:%S "), m, flush=True)
     field = Field(a.layout, a.world, a.state)
+    log(f"field level y {field.level} (top block of the levelled ground)")
     bridge = None if a.dry else Bridge()
     go = lambda v, name: build(v, name, a.state, bridge, a.max_positions, a.dry, log)
     if a.what in ("plain", "all"):
