@@ -68,8 +68,10 @@ class Site:
     portal_l = 13                # leaves along the ramp, ending at its head
     portal_half = 4              # leaves across: |l| <= 4 (laps onto the walls)
     # the sensor block (s measured back from the portal)
-    block_gap, block_depth, alcove_depth = 3, 7, 4
-    block_half, alcove_half = 6, 5
+    # the camera block at the frames' size (S3E09 07: >= 3.4 m wide, roof top 2.4-3 m against a 1.65 m guide;
+    # 05: ~3 m wide, ~2 m tall from behind), not the explorethesilo model's 12.8 m
+    block_gap, block_depth, alcove_depth = 3, 4, 2
+    block_half, alcove_half = 2, 1
     # the crater, about the portal centre
     floor_r, rim_r, out_r = 30, 42, 64
     floor_drop, berm = 2, 2
@@ -271,47 +273,38 @@ class Site:
                         v.set(i, y - oy, k, AIR)
 
     def block(self, v: Volume, T) -> None:
-        """The sensor block: a dolmen behind the portal, its alcove looking out over the leaves."""
+        """The camera block (S3E09 07, 08): two thick light concrete piers with sloped outer faces, a dark recessed
+        back wall, a thin flat roof slab cantilevered over them; in front, on a stepped plinth, a truncated concrete
+        cone carrying the sensor, looking out over the stair."""
         oy, R = v.origin[1], self.radius
-        face = self.ramp_end - self.portal_l - self.block_gap        # s of the alcove's open face
-        back = face - self.block_depth
+        face = self.ramp_end - self.portal_l - self.block_gap        # s of the open face
+        back = face - self.block_depth + 1
         i_of = lambda s: R - (self.s_shell + s)
         t = int(T[i_of(face), R])
         put = lambda s, l, y, st: v.set(i_of(s), y - oy, R + l, st)
         for s in range(back, face + 1):
-            for l in range(-self.block_half - 1, self.block_half + 2):
-                for dy in range(1, 5):
-                    lean = self.block_half - (1 if dy >= 3 else 0)    # the sides lean in over the height
-                    if abs(l) > lean + (1 if dy >= 3 else 0):
-                        continue
-                    in_alcove = abs(l) < self.alcove_half and s > face - self.alcove_depth
-                    if in_alcove:
+            for l in range(-self.block_half, self.block_half + 1):
+                for dy in (1, 2):
+                    recess = abs(l) <= self.alcove_half and s > face - self.alcove_depth
+                    if recess:
                         put(s, l, t + dy, AIR)
-                    elif abs(l) == lean + 1:                           # the leaning outer face
-                        put(s, l, t + dy, f"minecraft:andesite_stairs[facing={'south' if l < 0 else 'north'},half=bottom]")
+                    elif abs(l) <= self.alcove_half:
+                        put(s, l, t + dy, DARK)                      # the recessed back wall, dark grey
                     else:
                         put(s, l, t + dy, CONCRETE)
-                    if abs(l) == self.alcove_half and s > face - self.alcove_depth or \
-                            (s == face - self.alcove_depth and abs(l) < self.alcove_half):
-                        put(s, l, t + dy, DARK)                      # the recess, nearly black
-        # the cap: one thick slab overhanging every face, a shallow step on top
-        for s in range(back - 1, face + 2):
+                # the piers' sloped outer faces
+                for sd in (-1, 1):
+                    put(s, sd * (self.block_half + 1), t + 1,
+                        f"minecraft:andesite_stairs[facing={'south' if sd < 0 else 'north'},half=bottom]")
+        # the roof: one thin slab, overhanging the front and the sides
+        for s in range(back, face + 2):
             for l in range(-self.block_half - 1, self.block_half + 2):
-                put(s, l, t + 5, CONCRETE)
-                if back <= s <= face and abs(l) <= self.block_half - 1:
-                    put(s, l, t + 6, STEP)
-        # the alcove floor and the sensor: three round steps spilling out of the front, a pale cone, the camera
-        mz = face - self.alcove_depth // 2
-        for s in range(face - self.alcove_depth + 1, face + 4):
-            for l in range(-4, 5):
-                r = math.hypot(s - mz, l)
-                if r <= 3.4:
-                    put(s, l, t + 1, STEP if r > 2.4 else "minecraft:smooth_stone")
-        for s in range(mz - 2, mz + 3):
-            for l in range(-2, 3):
-                r = math.hypot(s - mz, l)
-                if r <= 1.6:
-                    put(s, l, t + 2, PALE)
-                if r <= 0.9:
-                    put(s, l, t + 3, PALE)
-        put(mz, 0, t + 4, "minecraft:observer[facing=west]")         # the lens looks out over the portal
+                put(s, l, t + 3, STEP)
+        # the plinth (stepped), the cone, the sensor, in front of the recess under the roof's lip
+        mz = face
+        for l in range(-1, 2):
+            for s in range(mz - 1, mz + 2):
+                if (s, l) != (mz, 0):
+                    put(s, l, t + 1, STEP)
+        put(mz, 0, t + 1, "minecraft:andesite_wall")                 # the truncated cone
+        put(mz, 0, t + 2, "minecraft:observer[facing=west]")         # the sensor, looking out over the stair

@@ -34,7 +34,7 @@ RING_PATH_R = 64          # surface.Site.out_r: the crater's outer foot
 FLOOR_R = 30              # surface.Site.floor_r
 LINK_MAX = 1.08           # flower neighbours: centres within this many ring spacings
 ROSETTES = [(49, 48, 43), (31, 30, 29), (32, 33, 29), (35, 29, 34), (19, 20, 14), (12, 7, 11), (13, 7, 8)]
-ROSETTE_R = 18
+ROSETTE_R = 24          # S3E09 aerial: ~50 m across with its own path circle, 4-6 rings inside
 BEARING = {"W": (-1, 0), "N": (0, -1), "E": (1, 0), "S": (0, 1)}
 
 SCRIPT = r"""
@@ -141,8 +141,8 @@ def plan(layout: dict) -> tuple[set, set]:
     for tri in ROSETTES:
         cx = sum(ring[t][0] for t in tri) / 3
         cz = sum(ring[t][1] for t in tri) / 3
-        for r, gap in ((ROSETTE_R, 0.0), (ROSETTE_R - 5, math.pi), (ROSETTE_R - 10, 0.0)):
-            pts = [(cx + r * math.cos(a), cz + r * math.sin(a)) for a in np.linspace(gap + 0.35, gap + 2 * math.pi - 0.35, int(r * 8))]
+        for r, gap in ((ROSETTE_R, -1.0), (ROSETTE_R - 5, 0.0), (ROSETTE_R - 9, math.pi), (ROSETTE_R - 13, 0.0), (ROSETTE_R - 17, math.pi)):
+            pts = [(cx + r * math.cos(a), cz + r * math.sin(a)) for a in np.linspace(gap + 0.35 * (gap >= 0), gap + 2 * math.pi - 0.35 * (gap >= 0), int(r * 8))]
             line(cells, pts, 2)
         stamp(cells, cx, cz, 3)
     return cells - road, road
