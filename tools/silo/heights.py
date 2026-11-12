@@ -54,10 +54,17 @@ def read_area(world: str, x0: int, z0: int, nx: int, nz: int, min_y: int = -64, 
     return ground, water, np.where(known, ws, MISSING)
 
 
-def median5(a: np.ndarray) -> np.ndarray:
+def median5(a: np.ndarray, strip: int = 256) -> np.ndarray:
+    """5x5 median ignoring MISSING. Done in strips of rows: the 25-layer float stack of a whole 1:1 field
+    (~3000 x 3400) is ~2 GB per copy and nanmedian makes several, which ran the host out of memory."""
     p = np.pad(a, 2, mode="edge")
-    stack = np.stack([p[i:i + a.shape[0], j:j + a.shape[1]] for i in range(5) for j in range(5)])
-    with np.errstate(all="ignore"), warnings.catch_warnings():
-        warnings.simplefilter("ignore", RuntimeWarning)
-        m = np.nanmedian(np.where(stack == MISSING, np.nan, stack.astype(float)), axis=0)
-    return np.where(np.isnan(m), MISSING, np.round(m)).astype(np.int32)
+    out = np.empty(a.shape, np.int32)
+    for r0 in range(0, a.shape[0], strip):
+        r1 = min(r0 + strip, a.shape[0])
+        stack = np.stack([p[r0 + i:r1 + i, j:j + a.shape[1]] for i in range(5) for j in range(5)]).astype(np.float32)
+        stack[stack == MISSING] = np.nan
+        with np.errstate(all="ignore"), warnings.catch_warnings():
+            warnings.simplefilter("ignore", RuntimeWarning)
+            m = np.nanmedian(stack, axis=0)
+        out[r0:r1] = np.where(np.isnan(m), MISSING, np.round(m)).astype(np.int32)
+    return out
