@@ -215,7 +215,8 @@ def main():
     if a.event:
         import event
         from build_live import build
-        area = br.call("area.prepare", {"from": [rx1 - 48, rz1 - 48], "to": [rx1 + 48, rz1 + 48], "wait": 50})
+        area = br.call("area.prepare", {"from": [rx1 - 48, rz1 - 48], "to": [rx1 + 48, rz1 + 48], "wait": 50,
+                                               "ttl_seconds": 3600})
         try:
             code = ("import net.minecraft.world.level.levelgen.Heightmap\n"
                     "return server.overworld().getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, args.x, args.z) - 1")

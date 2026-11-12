@@ -132,7 +132,7 @@ def grade_of(field, x: int, z: int) -> int:
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("what", choices=["plain", "silo", "site", "all"])
+    ap.add_argument("what", choices=["plain", "gaps", "silo", "site", "all"])
     ap.add_argument("--layout", required=True, help="site_fit layout.json")
     ap.add_argument("--world", required=True, help="golden copy of the world (region files are only read)")
     ap.add_argument("--state", required=True)
@@ -152,7 +152,10 @@ def main():
     if a.what in ("plain", "all"):
         for name, v in field.tiles():
             go(v, name)
-    if a.what == "plain":
+    if a.what == "gaps":
+        for name, v in field.tiles(gaps=Site.radius):
+            go(v, name)
+    if a.what in ("plain", "gaps"):
         return
     from tunnels import TURNS
     from turn import turn_grid, turn_points, turn_volume

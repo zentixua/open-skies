@@ -116,8 +116,12 @@ class Field:
         top = np.maximum(self.top[sl], np.where(self.filled[sl], self.water[sl], MISSING))
         return self.height[sl], water, top, self.ground[sl], self.weight[sl]
 
-    def tiles(self, size: int = 128, skip_site: float = 100):
-        """Plain tiles, nearest to Silo 1 first: (name, Volume) without columns a silo site rebuilds anyway."""
+    def tiles(self, size: int = 128, skip_site: float = 100, gaps: int | None = None):
+        """Plain tiles, nearest to Silo 1 first: (name, Volume) without columns a silo site rebuilds anyway.
+
+        With gaps (the sites' half-size, surface.Site.radius) only the columns the first pass skipped as near a
+        shaft or ring but that no site square covers: the ring sits 115.5 m out along the tunnel, so its 100 m
+        circle reaches past the 190 m site square and left forest and water there."""
         s1 = self.silos[0]
         tiles = []
         for i in range(0, self.nx, size):
@@ -129,15 +133,23 @@ class Field:
                 tiles.append((math.hypot(cx - s1["x"], cz - s1["z"]), i, k))
         tiles.sort()
         for _, i, k in tiles:
-            v = self.tile(i, k, size, skip_site)
+            v = self.tile(i, k, size, skip_site, gaps)
             if v is not None:
-                yield f"plain_{self.x0 + i}_{self.z0 + k}", v
+                yield f"{'gap' if gaps else 'plain'}_{self.x0 + i}_{self.z0 + k}", v
 
-    def tile(self, i: int, k: int, size: int, skip_site: float) -> Volume | None:
+    def tile(self, i: int, k: int, size: int, skip_site: float, gaps: int | None = None) -> Volume | None:
         sl = (slice(i, i + size), slice(k, k + size))
         w, h, n, top = self.weight[sl], self.height[sl], self.ground[sl], self.top[sl]
         dist, filled, ws = self.dist[sl], self.filled[sl], self.water[sl]
-        work = self.shaped[sl] & (dist > skip_site)
+        if gaps is None:
+            work = self.shaped[sl] & (dist > skip_site)
+        else:
+            X = np.arange(h.shape[0])[:, None] + self.x0 + i
+            Z = np.arange(h.shape[1])[None, :] + self.z0 + k
+            site = np.zeros(h.shape, bool)
+            for s in self.silos:
+                site |= (np.abs(X - s["x"]) <= gaps) & (np.abs(Z - s["z"]) <= gaps)
+            work = self.shaped[sl] & (dist <= skip_site) & ~site
         if not work.any():
             return None
         clear = work & (w > TREES_OUT)
