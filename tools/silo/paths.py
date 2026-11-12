@@ -112,6 +112,8 @@ def plan(layout: dict) -> tuple[set, set]:
                      for a in np.linspace(0, 2 * math.pi, n)], 2)
     # stubs: out of the ramp, from the floor's edge to the circle
     for k, c in ring.items():
+        if k == 1:
+            continue                    # Silo 1: the path runs due south from the opening-day set (event.py)
         dx, dz = BEARING[bearing[k]]
         line(cells, [(c[0] + FLOOR_R * dx, c[1] + FLOOR_R * dz), (c[0] + RING_PATH_R * dx, c[1] + RING_PATH_R * dz)], 2)
     # links inside flowers
