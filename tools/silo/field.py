@@ -120,8 +120,9 @@ class Field:
         """Plain tiles, nearest to Silo 1 first: (name, Volume) without columns a silo site rebuilds anyway.
 
         With gaps (the sites' half-size, surface.Site.radius) only the columns the first pass skipped as near a
-        shaft or ring but that no site square covers: the ring sits 115.5 m out along the tunnel, so its 100 m
-        circle reaches past the 190 m site square and left forest and water there."""
+        shaft or ring but that no site lays (see laid): the ring sits 115.5 m out along the tunnel, so its 100 m
+        circle reaches past its own site's square and into other silos' squares outside their cells, which left
+        forest and water there. Beyond 64 m from a portal no crater shapes the ground, so the plain height holds."""
         s1 = self.silos[0]
         tiles = []
         for i in range(0, self.nx, size):
@@ -137,6 +138,28 @@ class Field:
             if v is not None:
                 yield f"{'gap' if gaps else 'plain'}_{self.x0 + i}_{self.z0 + k}", v
 
+    def laid(self, i: int, k: int, shape, half: int, reach: float = 150, shaft_zone: float = 120) -> np.ndarray:
+        """Columns some silo site lays (surface.Site.build): a site lays its own cell, the columns nearest its
+        shaft-to-portal line (ties go to both), within its square of the given half-size, out to reach from that
+        line or shaft_zone from its shaft."""
+        X = np.arange(shape[0])[:, None] + self.x0 + i
+        Z = np.arange(shape[1])[None, :] + self.z0 + k
+        lines = []
+        for s in self.silos:
+            ax, az = s["x"], s["z"]
+            bx, bz = s.get("ring", (ax, az))
+            dx, dz = bx - ax, bz - az
+            L2 = max(dx * dx + dz * dz, 1e-9)
+            t = np.clip(((X - ax) * dx + (Z - az) * dz) / L2, 0, 1)
+            lines.append(np.hypot(X - (ax + t * dx), Z - (az + t * dz)))
+        near = np.min(lines, axis=0)
+        laid = np.zeros(np.broadcast_shapes(X.shape, Z.shape), bool)
+        for s, d in zip(self.silos, lines):
+            square = (np.abs(X - s["x"]) <= half) & (np.abs(Z - s["z"]) <= half)
+            zone = (d <= reach) | (np.hypot(X - s["x"], Z - s["z"]) <= shaft_zone)
+            laid |= square & zone & (d <= near + 1e-6)
+        return laid
+
     def tile(self, i: int, k: int, size: int, skip_site: float, gaps: int | None = None) -> Volume | None:
         sl = (slice(i, i + size), slice(k, k + size))
         w, h, n, top = self.weight[sl], self.height[sl], self.ground[sl], self.top[sl]
@@ -144,12 +167,7 @@ class Field:
         if gaps is None:
             work = self.shaped[sl] & (dist > skip_site)
         else:
-            X = np.arange(h.shape[0])[:, None] + self.x0 + i
-            Z = np.arange(h.shape[1])[None, :] + self.z0 + k
-            site = np.zeros(h.shape, bool)
-            for s in self.silos:
-                site |= (np.abs(X - s["x"]) <= gaps) & (np.abs(Z - s["z"]) <= gaps)
-            work = self.shaped[sl] & (dist <= skip_site) & ~site
+            work = self.shaped[sl] & (dist <= skip_site) & ~self.laid(i, k, h.shape, gaps)
         if not work.any():
             return None
         clear = work & (w > TREES_OUT)

@@ -117,7 +117,8 @@ def build(v: Volume, name: str, state_dir: str, bridge: Bridge, max_positions: i
             st["jobs"].append(jid)
             settle(bridge, log=log)
         st["done_rows"] = H - y
-        json.dump(st, open(path, "w"))
+        if not dry:                     # a dry run must not mark anything done
+            json.dump(st, open(path, "w"))
         log(f"{name}: down to y {v.origin[1] + y} ({100 * st['done_rows'] / H:.0f}%), {n} positions, "
             f"{sent / 1e6:.1f} MB sent, {time.time() - t0:.0f}s")
     return st
