@@ -190,6 +190,10 @@ class Site:
             n = int(round(self.plain[i, k]))
             col = ids[i, :, k]
             lo = max(0, min(t, n, int(self.bed[i, k])) - 3 - oy)
+            if self.d_axis[i, k] <= self.silo.R:
+                # over the shaft the silo's own volume owns everything below its earth cover: an old open cut left
+                # the original ground low here, and filling down to it buried the edge of Silo 1's level-1 hall
+                lo = max(lo, self.grade - self.silo.s.cover - oy)
             col[lo:max(0, t - oy)] = dirt
             # 2052 (the opening day, S3E09): the aerial frame shows every floor grassed like the plain; the model's
             # bleached floor is the later wasteland
@@ -204,7 +208,8 @@ class Site:
             a = math.radians(self.old_cut_deg)
             along = self.X * math.cos(a) + self.Z * math.sin(a)
             across = -self.X * math.sin(a) + self.Z * math.cos(a)
-            cut = (np.abs(across) <= 6) & (along >= 44) & (along <= self.shaft_zone + 4) & ~tunnel
+            cut = (np.abs(across) <= 6) & (along >= 44) & (along <= self.shaft_zone + 4) & ~tunnel \
+                & (self.d_axis > self.silo.R)          # not into the shaft's shell
             stone = v.id("minecraft:stone")
             for i, k in zip(*np.nonzero(cut)):
                 t = int(T[i, k])

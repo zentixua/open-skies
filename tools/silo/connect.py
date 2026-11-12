@@ -107,7 +107,8 @@ def tidy(v) -> int:
     names = [base(s) for s in pal]
     bed = np.array([n.endswith("_bed") for n in names])
     door = np.array([n.endswith("_door") for n in names])
-    plate = np.array([n.endswith("pressure_plate") for n in names])
+    # door plates only (heavy weighted, silo.PLATE): a wooden plate on a fence is a table top, not a stray
+    plate = np.array([n == "minecraft:heavy_weighted_pressure_plate" for n in names])
     sx, sy, sz = v.ids.shape
     cleared = 0
     for x, y, z in np.argwhere(bed[v.ids]):

@@ -49,14 +49,16 @@ for (c in args.cols) {
   int y = lvl.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z) - 1
   def pos = new BlockPos(x, y, z)
   def st = lvl.getBlockState(pos)
-  if (st.is(Blocks.GRASS_BLOCK) || st.is(Blocks.DIRT) || st.is(Blocks.COARSE_DIRT) || st.is(Blocks.PODZOL)) {
+  if (st.is(Blocks.GRASS_BLOCK) || st.is(Blocks.DIRT) || st.is(Blocks.COARSE_DIRT) || st.is(Blocks.PODZOL)
+      || st.is(Blocks.DIRT_PATH)) {
     def up = pos.above()
     def su = lvl.getBlockState(up)
     if (!su.isAir()) {
       if (!su.canBeReplaced()) continue
       lvl.setBlock(up, Blocks.AIR.defaultBlockState(), 3)
     }
-    lvl.setBlock(pos, Blocks.DIRT_PATH.defaultBlockState(), 3)
+    // S3E09 05: the paths are pale beige compacted fine gravel, flush with the lawn
+    lvl.setBlock(pos, Blocks.SMOOTH_SANDSTONE.defaultBlockState(), 3)
     n++
   }
 }
@@ -68,7 +70,17 @@ for (c in (args.floors ?: [])) {      // crater floors laid before 2052 grass: c
   def pos = new BlockPos(x, y, z)
   if (lvl.getBlockState(pos).is(Blocks.COARSE_DIRT)) { lvl.setBlock(pos, Blocks.GRASS_BLOCK.defaultBlockState(), 3); greened++ }
 }
-return [placed: n, greened: greened, unloaded: skipped]
+int trees = 0
+for (t in (args.trees ?: [])) {       // S3E09 05, 10, 28: a few round-crowned trees on the berms, young ones on the plain
+  int x = t[0] as int, z = t[1] as int
+  if (lvl.getChunkSource().getChunkNow(x >> 4, z >> 4) == null) { skipped++; continue }
+  int y = lvl.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, x, z) - 1
+  if (!lvl.getBlockState(new BlockPos(x, y, z)).is(Blocks.GRASS_BLOCK)) continue
+  if (!lvl.getBlockState(new BlockPos(x, y + 1, z)).canBeReplaced()) continue
+  gm.command("place feature ${t[2]} ${x} ${y + 1} ${z}")
+  trees++
+}
+return [placed: n, greened: greened, trees: trees, unloaded: skipped]
 """
 
 
@@ -150,6 +162,46 @@ def plan(layout: dict) -> tuple[set, set]:
     return cells - road, road
 
 
+def h01(*v) -> float:
+    """Stable 0..1 per integer tuple."""
+    h = 0x9E3779B1
+    for x in v:
+        h = ((h ^ (int(x) & 0xFFFFFFFF)) * 0x85EBCA6B) & 0xFFFFFFFF
+        h ^= h >> 13
+    return (h & 0xFFFF) / 65535.0
+
+
+def trees(layout: dict, avoid: set) -> list:
+    """Tree spots: 0-2 on each berm crest (S3E09 10: a round-crowned tree on the crest, another nearby) and young
+    trees scattered over the plain (05, 28), never on a path, a bowl floor or an earlier tree's crown."""
+    rings = [s_["ring"] for s_ in layout["silos"] if "ring" in s_]
+    out, taken = [], []
+    def free(x, z, r):
+        if any(math.hypot(x - a, z - b) < r for a, b in taken):
+            return False
+        return not any((x + dx, z + dz) in avoid for dx in range(-4, 5) for dz in range(-4, 5))
+    for k, (rx, rz) in enumerate(rings):
+        for j in range(int(h01(k, 1) * 2.6)):
+            a = 2 * math.pi * h01(k, j, 2)
+            x, z = int(round(rx + 42 * math.cos(a))), int(round(rz + 42 * math.sin(a)))
+            if free(x, z, 12):
+                out.append([x, z, "minecraft:fancy_oak" if h01(k, j, 3) < 0.3 else "minecraft:oak"])
+                taken.append((x, z))
+    xs = [r[0] for r in rings]; zs = [r[1] for r in rings]
+    G = 40
+    for gx in range(int(min(xs)) - 200, int(max(xs)) + 200, G):
+        for gz in range(int(min(zs)) - 200, int(max(zs)) + 200, G):
+            if h01(gx, gz, 5) > 0.3:
+                continue
+            x, z = gx + int(h01(gx, gz, 6) * G), gz + int(h01(gx, gz, 7) * G)
+            d = min(math.hypot(x - a, z - b) for a, b in rings)
+            if d < 72 or d > 200 or not free(x, z, 15):
+                continue
+            out.append([x, z, "minecraft:birch" if h01(gx, gz, 8) < 0.35 else "minecraft:oak"])
+            taken.append((x, z))
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("layout")
@@ -157,6 +209,7 @@ def main():
     ap.add_argument("--png")
     ap.add_argument("--event", action="store_true", help="also Silo 1's opening-day set (event.py), with its path and apron")
     ap.add_argument("--state", help="build_live state directory (for --event)")
+    ap.add_argument("--trees", action="store_true", help="also plant the berm and plain trees")
     a = ap.parse_args()
     layout = json.load(open(a.layout))
     cells, road = plan(layout)
@@ -176,7 +229,8 @@ def main():
                     if math.hypot(dx, dz) <= FLOOR_R + 4:
                         floors.add((int(math.floor(rx + dx)), int(math.floor(rz + dz))))
     floors -= set(allc)
-    print(f"{len(cells)} path cells, {len(road)} road cells", flush=True)
+    spots = trees(layout, set(allc)) if a.trees else []
+    print(f"{len(cells)} path cells, {len(road)} road cells, {len(spots)} trees", flush=True)
     if a.png:
         from PIL import Image
         xs = [c[0] for c in allc]; zs = [c[1] for c in allc]
@@ -195,13 +249,17 @@ def main():
         tiles.setdefault((x // T, z // T), []).append([x, z])
     for x, z in floors:
         ftiles.setdefault((x // T, z // T), []).append([x, z])
-    for key in ftiles:
+    ttiles = {}
+    for t in spots:
+        ttiles.setdefault((t[0] // T, t[1] // T), []).append(t)
+    for key in list(ftiles) + list(ttiles):
         tiles.setdefault(key, [])
     for (tx, tz), cols in sorted(tiles.items()):
         area = br.call("area.prepare", {"from": [tx * T, tz * T], "to": [tx * T + T - 1, tz * T + T - 1], "wait": 50})
         try:
             for attempt in range(3):
-                res = br.call("script", {"code": SCRIPT, "args": {"cols": cols, "floors": ftiles.get((tx, tz), [])},
+                res = br.call("script", {"code": SCRIPT, "args": {"cols": cols, "floors": ftiles.get((tx, tz), []),
+                                                                      "trees": ttiles.get((tx, tz), [])},
                                            "timeout_ms": 10000})
                 if not res.get("ok"):
                     raise RuntimeError(f"script: {res}")

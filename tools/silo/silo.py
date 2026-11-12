@@ -468,8 +468,11 @@ class Silo:
             v.box(cx - 1, self.level_y(LEVELS) - 1, cz - 1, cx + 1, top_idx, cz + 1, CONCRETE)
 
     def room_contents(self, n: int, y: int, b: int) -> None:
-        """An ordinary bay behind the face: lamps in the front room, corridor and back rooms, beds and a table.
-        The model has no rooms behind its facades (a lit plane 2 m in); this is the plain minimum to live in."""
+        """A bay behind the face: lamps in the front room, corridor and back rooms, and a home to live in.
+        The model has no rooms behind its facades (a lit plane 2 m in). Homes follow the show's lived-in silo
+        apartments: a front room with a rug, a table and chairs and a kitchen counter against the corridor wall
+        (stove, sink, shelves); two back bedrooms with a bed, a nightstand with a light and a chest. Deeper down
+        (the Down Deep) the homes are poorer: no rug, fewer things. Department levels keep only their lamps."""
         s, v = self.s, self.v
         arc = math.radians(BAY_ARC_DEG)
         a = self.bay_center(b)
@@ -479,17 +482,101 @@ class Silo:
         x, z = self.polar((s.r_corridor_in + s.r_corridor_out) / 2, a)
         v.set(x, y + s.pitch - 2, z, lamp)
         for k in (-0.25, 0.25):
-            ang = a + k * arc
-            x, z = self.polar(s.r_corridor_out + 6, ang)
+            x, z = self.polar(s.r_corridor_out + 6, a + k * arc)
             v.set(x, y + s.pitch - 2, z, lamp)
-            x, z = self.polar(s.r_inner_wall - 2.5, ang)
+        if dressing_for(n) not in ("residential", "admin") or (n in ROOM_LEVELS and b == ROOM_BAY):
+            return
+        L, reg = n - 1, region(n)
+        rnd = lambda k: seeded(L, b, 500 + k)
+        poor = reg == "deep"
+        wood = ("spruce", "oak", "dark_oak", "birch")[int(rnd(0) * 4)] if not poor else "spruce"
+        rug = ("red", "brown", "green", "blue", "orange", "cyan", "light_gray")[int(rnd(1) * 7)]
+        bed = ("light_gray", "white", "gray", "brown", "blue")[int(rnd(2) * 5)]
+        floor_ok = (FLOOR, FLOOR_DEEP)
+        doors = [self.polar(s.r_corridor_in - 0.5, a)] + [self.polar(s.r_corridor_out + 0.5, a + k * arc)
+                                                           for k in (-0.25, 0.25)]
+
+        def cell(r: float, t: float) -> tuple[int, int]:
+            """r out from the axis, t blocks across the bay (positive clockwise)."""
+            return self.polar(r, a + t / r)
+
+        def clear(x: int, z: int, h: int = 1) -> bool:
+            if any(abs(x - dx) + abs(z - dz) <= 1 for dx, dz in doors):
+                return False
+            return all(v.get(x, y + k, z) == AIR for k in range(h)) and v.get(x, y - 1, z) in floor_ok
+
+        def put(r, t, state, dy=0, h=1) -> tuple[int, int] | None:
+            x, z = cell(r, t)
+            if not clear(x, z, max(h, dy + 1)):
+                return None
+            v.set(x, y + dy, z, state)
+            return x, z
+
+        def facing_to(x0, z0, x1, z1) -> str:
+            dx, dz = x1 - x0, z1 - z0
+            if abs(dx) >= abs(dz):
+                return "east" if dx > 0 else "west"
+            return "south" if dz > 0 else "north"
+
+        # front room: rug, table, chairs round it
+        rt, tt = s.r_atrium + 5.5, (rnd(3) - 0.5) * 2.0
+        tx, tz = cell(rt, tt)
+        if not poor:
+            for dx in (-1, 0, 1):
+                for dz in (-1, 0, 1):
+                    if clear(tx + dx, tz + dz):
+                        v.set(tx + dx, y, tz + dz, f"minecraft:{rug}_carpet")
+        if clear(tx, tz) or v.get(tx, y, tz) == f"minecraft:{rug}_carpet":
+            v.set(tx, y, tz, f"minecraft:{wood}_fence[east=false,north=false,south=false,waterlogged=false,west=false]")
+            v.set(tx, y + 1, tz, f"minecraft:{wood}_pressure_plate[powered=false]")
+            for dx, dz in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                if rnd(10 + dx * 3 + dz) < (0.45 if poor else 0.8):
+                    cx, cz = tx + dx, tz + dz
+                    st = v.get(cx, y, cz)
+                    if st == AIR or (st or "").endswith("_carpet"):
+                        if v.get(cx, y - 1, cz) in floor_ok:
+                            f = facing_to(cx, cz, tx, tz)
+                            back = {"east": "west", "west": "east", "south": "north", "north": "south"}[f]
+                            v.set(cx, y, cz, f"minecraft:{wood}_stairs[facing={back},half=bottom,shape=straight,"
+                                             "waterlogged=false]")
+        # kitchen counter along the corridor wall, either side of its door
+        rk = s.r_corridor_in - 1.5
+        side = 1 if rnd(4) < 0.5 else -1
+        kx, kz = cell(rk, 0)
+        inward = facing_to(kx, kz, *self.polar(s.r_atrium, a))
+        kitchen = [f"minecraft:smoker[facing={inward},lit=false]", "minecraft:cauldron",
+                   f"minecraft:barrel[facing=up,open=false]", f"minecraft:{wood}_planks"]
+        if poor:
+            kitchen = [f"minecraft:furnace[facing={inward},lit=false]", "minecraft:barrel[facing=up,open=false]"]
+        for j, st in enumerate(kitchen):
+            got = put(rk, side * (2 + j), st)
+            if got and j == len(kitchen) - 1 and not poor:
+                v.set(got[0], y + 1, got[1], "minecraft:potted_red_tulip" if rnd(5) < 0.5 else "minecraft:lantern[hanging=false,waterlogged=false]")
+        if not poor and rnd(6) < 0.7:                         # shelves on the other side of the door
+            put(rk, -side * 2, "minecraft:bookshelf")
+            put(rk, -side * 3, "minecraft:bookshelf")
+        # back bedrooms
+        for k in (-0.25, 0.25):
+            ang = a + k * arc
+            hx, hz = self.polar(s.r_inner_wall - 2.5, ang)
             facing = self.facing_radial(ang)
-            v.set(x, y, z, f"minecraft:light_gray_bed[facing={facing},occupied=false,part=head]")
             dx, dz = {"east": (-1, 0), "west": (1, 0), "south": (0, -1), "north": (0, 1)}[facing]
-            v.set(x + dx, y, z + dz, f"minecraft:light_gray_bed[facing={facing},occupied=false,part=foot]")
-        x, z = self.polar(s.r_atrium + 6, a)
-        v.set(x, y, z, "minecraft:spruce_fence")
-        v.set(x, y + 1, z, "minecraft:spruce_pressure_plate[powered=false]")
+            if clear(hx, hz) and clear(hx + dx, hz + dz):
+                v.set(hx, y, hz, f"minecraft:{bed}_bed[facing={facing},occupied=false,part=head]")
+                v.set(hx + dx, y, hz + dz, f"minecraft:{bed}_bed[facing={facing},occupied=false,part=foot]")
+                # nightstand beside the head, with a lamp on it; a chest at the foot
+                for nx, nz in ((hx + dz, hz + dx), (hx - dz, hz - dx)):
+                    if clear(nx, nz, 2):
+                        v.set(nx, y, nz, "minecraft:barrel[facing=up,open=false]" if poor else f"minecraft:{wood}_planks")
+                        v.set(nx, y + 1, nz, "minecraft:lantern[hanging=false,waterlogged=false]")
+                        break
+                fx, fz = hx + 2 * dx, hz + 2 * dz
+                if rnd(20 + int(k * 4)) < 0.6 and clear(fx, fz):
+                    v.set(fx, y, fz, f"minecraft:chest[facing={self.facing_radial(ang + math.pi)},type=single,waterlogged=false]")
+                if not poor:
+                    for cx, cz in ((hx + 3 * dx, hz + 3 * dz), (hx + 3 * dx + dz, hz + 3 * dz + dx)):
+                        if clear(cx, cz):
+                            v.set(cx, y, cz, f"minecraft:{rug}_carpet")
 
     def cafeteria(self) -> None:
         """Level 1, the cafeteria (model: CAFE_FRONT, the wallscreen SCREEN_*, the ceiling flower, the panelling):
