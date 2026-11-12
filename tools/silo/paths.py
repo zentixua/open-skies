@@ -31,12 +31,14 @@ import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-RING_PATH_R = 64          # surface.Site.out_r: the crater's outer foot
-FLOOR_R = 30              # surface.Site.floor_r
+RING_PATH_R = 110         # surface.Site.path_r: the ring path, Ø≈220 (SPEC 1)
+PATH_W = 3                # surface.Site.path_half: 3 wide, two people side by side (S3E09 05)
+FLOOR_R = 55              # surface.Site.floor_r
 LINK_MAX = 1.08           # flower neighbours: centres within this many ring spacings
 ROSETTES = [(49, 48, 43), (31, 30, 29), (32, 33, 29), (35, 29, 34), (19, 20, 14), (12, 7, 11), (13, 7, 8)]
-ROSETTE_R = 24          # S3E09 aerial: ~50 m across with its own path circle, 4-6 rings inside
+ROSETTE_R = 41          # S3E09 aerial: ~50 m across at the old 156 m spacing, scaled to 270 like the layout
 BEARING = {"W": (-1, 0), "N": (0, -1), "E": (1, 0), "S": (0, 1)}
+CREST_R = 77              # surface.Site.crest_r
 
 SCRIPT = r"""
 import net.minecraft.world.level.levelgen.Heightmap
@@ -139,7 +141,7 @@ def plan(layout: dict) -> tuple[set, set]:
     for c in ring.values():
         n = int(2 * math.pi * RING_PATH_R * 2)
         line(cells, [(c[0] + RING_PATH_R * math.cos(a), c[1] + RING_PATH_R * math.sin(a))
-                     for a in np.linspace(0, 2 * math.pi, n)], 2)
+                     for a in np.linspace(0, 2 * math.pi, n)], PATH_W)
     # stubs: out of the ramp, from the floor's edge to the circle
     for k, c in ring.items():
         if k == 1:
@@ -212,7 +214,7 @@ def trees(layout: dict, avoid: set, keep_clear=()) -> list:
     for k, (rx, rz) in enumerate(rings):
         for j in range(int(h01(k, 1) * 2.6)):
             a = 2 * math.pi * h01(k, j, 2)
-            x, z = int(round(rx + 42 * math.cos(a))), int(round(rz + 42 * math.sin(a)))
+            x, z = int(round(rx + CREST_R * math.cos(a))), int(round(rz + CREST_R * math.sin(a)))
             if free(x, z, 12):
                 out.append([x, z, "minecraft:fancy_oak" if h01(k, j, 3) < 0.3 else "minecraft:oak"])
                 taken.append((x, z))
@@ -224,7 +226,7 @@ def trees(layout: dict, avoid: set, keep_clear=()) -> list:
                 continue
             x, z = gx + int(h01(gx, gz, 6) * G), gz + int(h01(gx, gz, 7) * G)
             d = min(math.hypot(x - a, z - b) for a, b in rings)
-            if d < 72 or d > 200 or not free(x, z, 15):
+            if d < RING_PATH_R + 10 or d > 250 or not free(x, z, 15):
                 continue
             out.append([x, z, "minecraft:birch" if h01(gx, gz, 8) < 0.35 else "minecraft:oak"])
             taken.append((x, z))

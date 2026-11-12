@@ -87,6 +87,26 @@ def place(ring: tuple[float, float], out: tuple[int, int]) -> tuple[int, int]:
     return (int(math.floor(ring[0] + lz * ox + lx * oz)), int(math.floor(ring[1] + lz * oz - lx * ox)))
 
 
+def place_1to1(shaft: tuple[float, float], k: int, bank_r: float = 62.0) -> tuple[tuple[int, int], tuple[int, int]]:
+    """The 1:1 bowl (SPEC-1to1.md): the tree's base column and the view's outward step for a silo whose way in is
+    turned k quarters from due west (silo.py). Someone at the head of the slot looks out along the steps (east in the
+    silo's frame); the tree stands at the model's bearing from that look (HERO_TREE: about 36 degrees to the right, one
+    o'clock) where that line meets the inner bank (r 62, between the floor at 55 and the crest at 77)."""
+    from silo import EXIT_X, RAMP_Z
+    px, pz = EXIT_X, (RAMP_Z[0] + RAMP_Z[1]) / 2
+    lx, lz = HERO_TREE
+    a = math.atan2(-lx, lz)                     # to the right of the view: +z in the silo frame
+    dx, dz = math.cos(a), math.sin(a)
+    b = px * dx + pz * dz
+    t = -b + math.sqrt(b * b - (px * px + pz * pz - bank_r * bank_r))
+    x, z = px + t * dx, pz + t * dz
+    ox, oz = 1, 0
+    for _ in range(k % 4):                      # clockwise quarter turns (turn.py): (x, z) -> (-z, x)
+        x, z = -z, x
+        ox, oz = -oz, ox
+    return (int(math.floor(shaft[0] + x)), int(math.floor(shaft[1] + z))), (ox, oz)
+
+
 if __name__ == "__main__":
     b = site_blocks()
     logs = sum(1 for v in b.values() if "_log" in v)

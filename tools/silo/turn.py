@@ -69,7 +69,10 @@ def turn_volume(v: Volume, k: int, px: int, pz: int) -> Volume:
     ox, oy, oz = v.origin
     nx, ny, nz = v.size
     ids = v.ids
+    bes = dict(v.block_entities)
     for _ in range(k):
+        # np.rot90 over (x, z): the block at [x, y, z] moves to [nz - 1 - z, y, x]
+        bes = {(nz - 1 - z, y, x): nbt for (x, y, z), nbt in bes.items()}
         ids = np.rot90(ids, 1, axes=(0, 2))
         ox, oz = px - (oz + nz - 1 - pz), pz + (ox - px)
         nx, nz = nz, nx
@@ -77,6 +80,5 @@ def turn_volume(v: Volume, k: int, px: int, pz: int) -> Volume:
     out.palette = ["<keep>"] + [turn_state(s, k) for s in v.palette[1:]]
     out.index = {s: i for i, s in enumerate(out.palette) if i}
     out.ids = np.ascontiguousarray(ids)
-    if v.block_entities:
-        raise ValueError("block entities are not turned")
+    out.block_entities = bes                   # sign facing lives in the block state, which turn_state turns
     return out

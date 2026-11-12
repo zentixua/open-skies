@@ -43,9 +43,12 @@ from silo1 import emblem
 
 NORTH = -1                     # -z is north
 
-FLOOR_R = 30                   # surface.Site.floor_r: the level floor
-PORTAL = (-6, 7, -4, 4)        # x0, x1, z0, z1 relative to the ring centre
-CAMERA = (10, 15, -4, 4)
+FLOOR_R = 55                   # surface.Site.floor_r: the level floor (1:1, SPEC-1to1.md)
+# Kept clear: Silo 1's slot and camera block. Its way out faces south-east (build_offline.FIRST: "E", the silo turned
+# twice from due west), so silo.py's slot (x -23..-17, z -24..-20) and camera (x -22..-19, z -26..-25, roof +-1) land at:
+PORTAL = (17, 23, 20, 24)      # x0, x1, z0, z1 relative to the ring centre (the shaft axis)
+CAMERA = (18, 23, 24, 27)
+RING_PATH_R = 110              # surface.Site.path_r
 
 C = (-3, -21)                  # audience centre (03), relative to the ring centre
 TENT_RING = 12
@@ -290,16 +293,16 @@ def ground_paths(ring_x: int, ring_z: int) -> tuple[set, set]:
     """(path, apron) columns in world x, z: the aisle and the straight path due south from the audience, over the
     south berm, to the pale apron on the ring path (03). The apron is ~50 m along the ring path; its depth (16 m) is ours."""
     path, apron = set(), set()
-    for z in range(-23, 66):
+    for z in range(-23, RING_PATH_R + 2):
         for x in (C[0] - 1, C[0], C[0] + 1):
             if z <= -17 and x != C[0]:
                 continue                           # one block wide between the chair rows
             if not _in(x, z, PORTAL):
                 path.add((ring_x + x, ring_z + z))
     for x in range(-25, 26):
-        for z in range(40, 72):
+        for z in range(RING_PATH_R - 30, RING_PATH_R + 9):
             r = math.hypot(x, z)
-            if 56 <= r <= 72:
+            if RING_PATH_R - 8 <= r <= RING_PATH_R + 8:
                 apron.add((ring_x + x, ring_z + z))
     return path - apron, apron
 

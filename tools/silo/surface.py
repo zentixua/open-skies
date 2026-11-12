@@ -1,19 +1,23 @@
-"""The ground above one silo and the way in, to the explorethesilo.com 3D model (silo3d.js, "THE WAY IN" and
-"THE GROUND OUTSIDE"; numbers there in metres, here blocks).
+"""The ground over one silo at 1:1 (SPEC-1to1.md section 1): the bowl, its berm, the ring path, the slot and camera.
 
-Along the tunnel axis, s blocks out from the shell (the model's s from the shaft wall):
-  s 0-10   the Sheriff's Station (desk, holding cell)
-  s 10     inner thick door; s 10-20 the airlock chamber; s 20 outer thick door (both rectangular)
-  s 20-76  the ramp, 7 wide, climbing to the crater floor (model: 60 m for 15 m; here 56 for 6..26, the floor's
-           height over the outer door)
-  s 63-76  the stair head, open to the sky between curbs (S3E09 06, 07, 09; the model's flush leaves seal it later)
-  s 53-60  the sensor block 3 behind the portal: walls leaning in, a thick cap slab overhanging all round, an alcove
-           facing the portal with a pale stone cone on three round steps and the camera on top
-Each silo's entrance sits in its own crater: a flat floor to 30 from the portal, a berm 2 over the plain at 42, back
-to the plain by 64 (model: SITE_FLOOR 30, SITE_RIM 42, SITE_OUT 64, berm 1.6, floor 2.2 under the plain).
+About the shaft axis, which is the ring's centre (construction S3E07 #2, S3E08 #8: the bore in the middle of a round pit):
+  r 0-55     the bowl floor, level, 2 under the plain (Ø110: S3E09 frame 05, people on the far berm 27 px)
+  r 55-77    the inner bank up to the crest, 4 over the floor (frame 10); crest Ø≈155 (floor/crest 0.71)
+  r 77-100   the outer bank back down to the plain
+  r 110      the ring path, 3 wide, on the plain (Ø≈220: crest/path 0.70, aerials 01, 03; frame 05: two side by side)
+On some rings the berm is cut where the path comes in (aerials ×4): a gap along the ring's own bearing.
 
-Deviation: the model's tunnel bends 8 degrees and leaves at 210 degrees; here it runs straight out due west, so the
-tunnel, portal and block are block-aligned rectangles rather than staircased diagonals.
+The way out (silo.way_out) ends in a slot with steps on the bowl floor at about half its radius (SPEC 1, frames
+05-07); here: a pale curb flush with the lawn round the slot, and beside it the camera block (≈4.4 x 2.4 m, S3E09 07:
+two piers, a dark recess, a thin roof slab; the sensor on a cone looking over the steps).
+
+The banks are mown lawn (S3E09 05, 10, 23). Each contour waves a little (an earth bank, not an amphitheatre; shader
+frames 03, 07c, 11 of 1112d): the inner bank and crest take the ground found up to WOBBLE blocks in or out along their
+radius, two slow waves round the ring, different for each silo; lone one-column pillars and pits left by a diagonal
+contour go to their neighbours' level. Risers stay grass (the Fast Better Grass pack draws grass on every side); where
+a riser is 2-3 deep the block under the top one is moss, not dirt (banks.py, round 5 on 25567).
+
+The site is laid in the silo's own frame (way in due west, silo.py) and build_offline turns it like the silo.
 """
 from __future__ import annotations
 
@@ -22,26 +26,19 @@ import math
 import numpy as np
 
 from heights import MISSING
-from silo import Silo
+from silo import CAMERA, EXIT_X, RAMP_X, RAMP_Z, Silo
 from volume import Volume
 
 GRASS = "minecraft:grass_block"
 DIRT = "minecraft:dirt"
-COARSE = "minecraft:coarse_dirt"
+MOSS = "minecraft:moss_block"
 AIR = "minecraft:air"
 WATER = "minecraft:water"
 CONCRETE = "minecraft:light_gray_concrete"
-CONCRETE_B = "minecraft:polished_andesite"
-CONCRETE_C = "minecraft:andesite"
-PLATE = "minecraft:gray_concrete"
-SEAM = "minecraft:polished_deepslate"
 RIM = "minecraft:smooth_stone"
-DOOR = "minecraft:iron_block"
-FLOOR = "minecraft:smooth_stone"
-STEP = "minecraft:smooth_stone_slab[type=bottom]"
 DARK = "minecraft:polished_blackstone"
-PALE = "minecraft:calcite"
-SLOT = "minecraft:end_rod[facing=up]"       # S3E09 09: a narrow vertical white light slot between the wall panels
+PATH = "minecraft:smooth_sandstone"       # S3E09 05: pale beige compacted fine gravel, flush with the lawn
+STEP = "minecraft:smooth_stone_slab[type=bottom,waterlogged=false]"
 
 
 def smooth(e0: float, e1: float, x):
@@ -59,320 +56,170 @@ def hash01(x, z, salt=0):
 
 
 class Site:
-    radius = 190                 # volume half-size around the shaft axis
-    shaft_zone = 120             # the plain skipped 100 around each shaft (and Silo 1 had an older open cut to ~115)
-    # the way in (s from the shell's outer face)
-    station, inner_door, outer_door = 10, 10, 20
-    slope_run, rise = 56, 14
-    half = 3                     # tunnel interior: |l| <= 3 (7 wide)
-    room = 5                     # tunnel clear height
-    portal_l = 13                # leaves along the ramp, ending at its head
-    portal_half = 4              # leaves across: |l| <= 4 (laps onto the walls)
-    # the sensor block (s measured back from the portal)
-    # the camera block at the frames' size (S3E09 07: >= 3.4 m wide, roof top 2.4-3 m against a 1.65 m guide;
-    # 05: ~3 m wide, ~2 m tall from behind), not the explorethesilo model's 12.8 m
-    block_gap, block_depth, alcove_depth = 3, 4, 2
-    block_half, alcove_half = 2, 1
-    # the crater, about the portal centre
-    floor_r, rim_r, out_r = 30, 42, 64
-    floor_drop, berm = 2, 2
+    radius = 135                 # volume half-size about the shaft axis: half the ring spacing (270)
+    floor_r, crest_r, out_r = 55, 77, 100
+    path_r, path_half = 110, 1.5
+    zone_r = 116                 # columns this site lays; the plain (field.py) lays the rest
+    floor_drop, berm = 2, 2      # floor under the plain, crest over it: 4 from floor to crest
+    gap_half = 4                 # berm gap: 8 wide at the bowl, easing out over 4 more each side
+    wobble = 2
 
     def __init__(self, silo: Silo, ground: np.ndarray, water: np.ndarray, top: np.ndarray, bed: np.ndarray | None = None,
-                 weight: np.ndarray | None = None, old_cut_deg: float | None = None, neighbours=()):
-        """neighbours: (shaft x, z[, quarter turns]) of the other silos, in this site's own frame (tunnel due west);
-        a neighbour turned k quarters clockwise runs its tunnel W, N, E or S for k = 0..3 (build_live turns the
-        inputs and the result for a silo that is not due west). The ground each site lays is its own cell (columns
-        nearer its shaft-to-portal line than any other silo's), and their craters are kept."""
-        """ground/water/top/bed over [axis - radius, axis + radius] in x and z, as field.Field.slice gives them:
-        ground is the plain, bed the original ground under it."""
+                 weight: np.ndarray | None = None, neighbours=(), paths: np.ndarray | None = None,
+                 road: np.ndarray | None = None, gap_bearing: float | None = None, wobble: bool = True):
+        """Grids over [axis - radius, axis + radius] in x and z, in the silo's frame: ground is the plain (field.py),
+        bed the original ground under it, weight the plain's weight (0 at Zearth's towns, which no site may touch),
+        paths/road the path and road columns. neighbours: (x, z) of the other shafts in this frame; the site lays only
+        its own cell (columns nearer its shaft than any other). gap_bearing: the berm gap's bearing (radians, this
+        frame), or None for an unbroken berm."""
         self.silo = silo
         R = self.radius
         self.cx = silo.origin[0] + silo.R
         self.cz = silo.origin[2] + silo.R
-        self.grade = silo.surface_y
-        self.walk = silo.origin[1] + silo.level_y(1)         # stand y of level 1
-        self.s_shell = int(math.ceil(silo.s.r_outer))          # s = 0 at the shell's outer face, due west
-        self.ramp_end = self.outer_door + self.slope_run       # the head of the ramp
-        self.portal_s = self.ramp_end - self.portal_l / 2      # portal centre
+        self.grade = silo.surface_y                       # top block of the bowl floor
         n = 2 * R + 1
         ax = np.arange(n) - R
         self.X, self.Z = np.meshgrid(ax, ax, indexing="ij")
-        self.s = -self.X - self.s_shell                         # along the tunnel, out from the shell
-        self.l = self.Z                                         # across it
-        self.d_axis = np.hypot(self.X, self.Z)
-        px = -(self.s_shell + self.portal_s)
-        self.d_portal = np.hypot(self.X - px, self.Z)
+        self.d = np.hypot(self.X, self.Z)
+        self.theta = np.mod(np.arctan2(self.Z, self.X), 2 * math.pi)
         known = ground > MISSING
-        self.plain = np.where(known, ground, self.grade - 1).astype(float)
+        self.plain = np.where(known, ground, self.grade + self.floor_drop).astype(float)
         self.water = water
         self.top = np.where(top > MISSING, top, self.plain)
         self.bed = np.where(bed > MISSING, bed, self.plain) if bed is not None else self.plain
-        self.p_portal = float(self.plain[R + int(px), R])
-        # the ramp climbs from the outer door to the crater floor (the model: "climbing to the crater floor"), so
-        # its rise is the floor's height over the door, not a fixed 14: the shaft's grade (its own 34 m round) and
-        # the portal's plain 115 m out differ by up to ~10, and a fixed rise left the head above or below the floor
-        # (Silo 18 on 25567: head 4 over the bowl, under the camera block). Kept within 6..26 (slabs climb 0.5 a
-        # block at most); outside that the crater floor follows the ramp instead.
-        base = self.walk - 1
-        floor = int(round(self.p_portal - self.floor_drop))
-        self.rise = min(26, max(6, floor - base))
-        self.p_portal = float(base + self.rise + self.floor_drop)
-        # the stair is open to the sky until the floor is 3.5 under the lawn (2.5 clear over a half step under the
-        # ground's own slab): 13 at Silo 1's rise of 15, longer on a gentler ramp (Silo 18, rise 10: 20)
-        self.open_l = max(self.portal_l, math.ceil(3.5 * self.slope_run / self.rise))
-        self.old_cut_deg = old_cut_deg      # an earlier draft's open cut along this bearing, to be filled
-        self.keep = (weight <= 0.05) if weight is not None else np.zeros(ground.shape, bool)   # towns: never touched
-        reach = self.s_shell + self.portal_s
-        bearing = ((-1, 0), (0, -1), (1, 0), (0, 1))      # W N E S: tunnel direction after 0..3 quarter turns
-        def seg_dist(ax, az, k=0):          # distance to a silo's shaft-to-portal line (relative shaft position)
-            dx, dz = bearing[k % 4]
-            t = np.clip(((self.X - ax) * dx + (self.Z - az) * dz) / reach, 0, 1)
-            return np.hypot(self.X - (ax + t * reach * dx), self.Z - (az + t * reach * dz))
-        own = seg_dist(0, 0)
-        self.own_line = own
-        self.cell = np.ones_like(own, bool)
-        self.neighbour_portals = []
-        for nb in neighbours:
-            nx_, nz_ = nb[0], nb[1]
-            k = nb[2] if len(nb) > 2 else 0
-            ax, az = nx_ - self.cx, nz_ - self.cz
-            if (ax, az) == (0, 0) or math.hypot(ax, az) > 2 * R + 2 * self.out_r:
+        self.keep = (weight <= 0.05) if weight is not None else np.zeros(ground.shape, bool)
+        self.paths = paths if paths is not None else np.zeros(ground.shape, bool)
+        self.road = road if road is not None else np.zeros(ground.shape, bool)
+        self.gap_bearing = gap_bearing
+        self.do_wobble = wobble
+        self.cell = np.ones(ground.shape, bool)
+        for nx_, nz_ in neighbours:
+            ax_, az_ = nx_ - self.cx, nz_ - self.cz
+            if math.hypot(ax_, az_) > 2 * R + 20:
                 continue
-            self.cell &= own <= seg_dist(ax, az, k)
-            dx, dz = bearing[k % 4]
-            qx, qz = ax + reach * dx, az + reach * dz           # its portal
-            pi, pk = R + int(round(qx)), R + int(round(qz))
-            if 0 <= pi < n and 0 <= pk < n:
-                self.neighbour_portals.append((np.hypot(self.X - qx, self.Z - qz), float(self.plain[pi, pk])))
+            self.cell &= self.d <= np.hypot(self.X - ax_, self.Z - az_)
+        self.zone = self.cell & (self.d <= self.zone_r) & ~self.keep
+        self.number = silo.s.number
 
     # heights ---------------------------------------------------------------------------------------------------
-    def crater(self, d: np.ndarray, p_floor: float, ground: np.ndarray) -> np.ndarray:
-        """Ground with one crater about a portal at distance d: level floor, berm ring, back to the plain."""
-        prof = np.where(d <= self.floor_r, -self.floor_drop,
-                        np.where(d <= self.rim_r,
-                                 -self.floor_drop + (self.floor_drop + self.berm) * smooth(self.floor_r, self.rim_r, d),
-                                 self.berm * (1 - smooth(self.rim_r, self.out_r, d))))
-        w = smooth(self.floor_r, self.out_r, d)               # the floor is level, the rim follows the plain
-        return (1 - w) * p_floor + w * ground + prof - ground   # the change it makes
+    def profile(self, d: np.ndarray) -> np.ndarray:
+        """Bowl, inner bank, crest and outer bank: the change from the plain."""
+        P = self.plain
+        floor = self.grade
+        crest = P + self.berm
+        inner = floor + (crest - floor) * smooth(self.floor_r, self.crest_r, d)
+        outer = P + self.berm * (1 - smooth(self.crest_r, self.out_r, d))
+        return np.where(d <= self.floor_r, floor, np.where(d <= self.crest_r, inner, outer))
 
     def target(self) -> np.ndarray:
-        """Top block of the finished ground: the plain, with every crater nearby (this silo's and its neighbours',
-        so a site never flattens the next one's)."""
-        t = self.plain + self.crater(self.d_portal, self.p_portal, self.plain)
-        for d, p in self.neighbour_portals:
-            t = t + self.crater(d, p, self.plain)
-        return np.round(t).astype(int)
+        """Top block of the finished ground."""
+        d = self.d
+        if self.do_wobble:
+            # two slow waves round the ring, their phase drifting with the radius (banks.py --wobble)
+            ph = hash01(self.number, 0, 41) * 2 * math.pi
+            w = self.wobble * np.sin(2 * self.theta + ph + d * 0.21) * smooth(self.floor_r - 1, self.floor_r + 3, d) \
+                * (1 - smooth(self.crest_r + 2, self.crest_r + 6, d))
+            d = d + w
+        T = self.profile(d)
+        if self.gap_bearing is not None:
+            off = np.abs(((self.theta - self.gap_bearing + math.pi) % (2 * math.pi)) - math.pi)
+            lat = self.d * np.sin(np.minimum(off, math.pi / 2))
+            front = off < math.pi / 2
+            ramp = self.grade + (self.plain - self.grade) * smooth(self.floor_r, self.out_r, self.d)
+            k = (1 - smooth(self.gap_half, self.gap_half + 4, lat)) * front
+            T = np.where(k > 0, T * (1 - k) + np.minimum(T, ramp) * k, T)
+        T = np.round(T).astype(int)
+        return self.even(T)
 
-    def floor_top(self, s: np.ndarray) -> np.ndarray:
-        """Top block of the tunnel floor (float: half steps become slabs)."""
-        return (self.walk - 1) + np.clip(s - self.outer_door, 0, self.slope_run) * self.rise / self.slope_run
+    def even(self, T: np.ndarray) -> np.ndarray:
+        """Lone one-column pillars and pits on the banks go to their neighbours' level."""
+        bank = (self.d >= self.floor_r - 1) & (self.d <= self.out_r + 2)
+        for _ in range(3):
+            p = np.pad(T, 1, mode="edge")
+            nb = np.stack([p[2:, 1:-1], p[:-2, 1:-1], p[1:-1, 2:], p[1:-1, :-2]])
+            hi, lo = nb.max(axis=0), nb.min(axis=0)
+            med = np.sort(nb, axis=0)[1:3].mean(axis=0).round().astype(int)
+            fix = bank & ((T > hi) | (T < lo))
+            if not fix.any():
+                break
+            T = np.where(fix, med, T)
+        return T
 
     # volume ----------------------------------------------------------------------------------------------------
+    def slot_cells(self) -> tuple[set, set]:
+        """(open slot, curb) columns in this frame: the steps' opening and the pale curb round it."""
+        z0, z1 = RAMP_Z
+        open_ = {(x, z) for x in range(RAMP_X[1] + 1, EXIT_X) for z in range(z0, z1 + 1)}
+        curb = {(x, z) for x in range(RAMP_X[1], EXIT_X + 1) for z in (z0 - 1, z1 + 1)}
+        curb |= {(RAMP_X[1], z) for z in range(z0, z1 + 1)}
+        return open_, curb
+
     def build(self) -> Volume:
         R = self.radius
         T = self.target()
-        f = self.floor_top(self.s)
-        fi = np.floor(f).astype(int)
-        # every column within 100 of any shaft is some site's (the plain skipped those): a cell's reach of 150 from
-        # its own shaft-to-portal line covers it, and the whole crater
-        zone = ((self.own_line <= 150) | (self.d_axis <= self.shaft_zone)) & self.cell & ~self.keep
-        tunnel = (self.s >= -3) & (self.s <= self.ramp_end) & (np.abs(self.l) <= self.half + 1)
-        y_lo = min(self.walk - 46, int(self.bed[zone].min()) - 4)
-        y_hi = int(max(self.top[zone].max(), T[zone].max(), self.grade + 12)) + 2
+        self.T = T
+        zone = self.zone
+        y_lo = int(min(self.grade - 4, self.bed[zone].min() - 4))
+        y_hi = int(max(self.top[zone].max(), T[zone].max(), self.grade + 14)) + 2
         v = Volume((self.cx - R, y_lo, self.cz - R), (2 * R + 1, y_hi - y_lo + 1, 2 * R + 1))
         ids, oy, H = v.ids, y_lo, v.size[1]
-        grass, dirt, coarse, air, water = (v.id(s) for s in (GRASS, DIRT, COARSE, AIR, WATER))
-        noise = hash01(self.X + self.cx, self.Z + self.cz, self.silo.s.number)
-        floor_zone = self.d_portal <= self.floor_r + 4
-        clear_top = self.grade + 12          # also takes away anything an earlier pass raised here
+        grass, dirt, moss, air, water = (v.id(s) for s in (GRASS, DIRT, MOSS, AIR, WATER))
+        path = v.id(PATH)
+        # the lowest neighbour of each column: a riser 2-3 deep shows the block under its top
+        p = np.pad(T, 1, mode="edge")
+        low = np.min(np.stack([p[2:, 1:-1], p[:-2, 1:-1], p[1:-1, 2:], p[1:-1, :-2]]), axis=0)
+        open_, curb = self.slot_cells()
+        clear_top = self.grade + 14
+        shaft = self.silo.R
         for i, k in zip(*np.nonzero(zone)):
+            x, z = i - R, k - R
+            if (x, z) in open_:
+                continue
             t = int(T[i, k])
-            n = int(round(self.plain[i, k]))
+            nat = int(round(self.plain[i, k]))
             col = ids[i, :, k]
-            lo = max(0, min(t, n, int(self.bed[i, k])) - 3 - oy)
-            if self.d_axis[i, k] <= self.silo.R:
-                # over the shaft the silo's own volume owns everything below its earth cover: an old open cut left
-                # the original ground low here, and filling down to it buried the edge of Silo 1's level-1 hall
-                lo = max(lo, self.grade - self.silo.s.cover - oy)
+            # over the shaft the silo's own volume holds everything below the bowl floor
+            lo = self.grade - oy if self.d[i, k] <= shaft else max(0, min(t, nat, int(self.bed[i, k])) - 3 - oy)
             col[lo:max(0, t - oy)] = dirt
-            # 2052 (the opening day, S3E09): the aerial frame shows every floor grassed like the plain; the model's
-            # bleached floor is the later wasteland
-            col[t - oy] = grass
-            a0, a1 = t + 1 - oy, min(H, max(int(self.top[i, k]), n, clear_top) + 1 - oy)
+            if 2 <= t - low[i, k] <= 3:
+                col[max(lo, t - 1 - oy)] = moss
+            if (x, z) in curb:
+                col[t - oy] = v.id(RIM)
+            elif self.paths[i, k] or self.road[i, k]:
+                col[t - oy] = path
+            else:
+                col[t - oy] = grass
+            a0, a1 = t + 1 - oy, min(H, max(int(self.top[i, k]), nat, clear_top) + 1 - oy)
             if a1 > a0:
                 col[a0:a1] = air
             ws = int(self.water[i, k])
-            if ws > t:
+            if ws > t and self.d[i, k] > self.out_r:
                 col[a0:min(H, ws + 1 - oy)] = water
-        self.fringe(v, T, zone)
-        if self.old_cut_deg is not None:
-            a = math.radians(self.old_cut_deg)
-            along = self.X * math.cos(a) + self.Z * math.sin(a)
-            across = -self.X * math.sin(a) + self.Z * math.cos(a)
-            cut = (np.abs(across) <= 6) & (along >= 44) & (along <= self.shaft_zone + 4) & ~tunnel \
-                & (self.d_axis > self.silo.R)          # not into the shaft's shell
-            stone = v.id("minecraft:stone")
-            for i, k in zip(*np.nonzero(cut)):
-                t = int(T[i, k])
-                ids[i, max(0, self.walk - 3 - oy):max(0, t - 3 - oy), k] = stone
-                ids[i, max(0, t - 3 - oy):max(0, t - oy), k] = dirt
-        self.tunnel(v, T, f, fi, tunnel)
-        self.portal(v, T)
-        self.block(v, T)
+        self.camera(v)
         return v
 
-    def fringe(self, v: Volume, T, zone) -> None:
-        """Grass along the foot of every one-block step of the crater banks and berms. S3E09 05 and 10 show them as
-        smooth grassed banks; in blocks a 4 m bank over 12 m is a flight of steps, and each step's riser is the dirt
-        side of a grass block, which reads as a brown terraced wall from the bowl (shader frames 12.11, 04 and 07).
-        Short grass on the tread in front of each riser hides it (tall grass before a two-block riser).
-        presentation: the show's bank is mown; the tufts stand only where a smooth bank would have no riser."""
-        oy, R = v.origin[1], self.radius
-        n = 2 * R + 1
-        bank = zone & (self.d_portal >= self.floor_r - 1) & (self.d_portal <= self.out_r + 2)
-        for d_, _ in self.neighbour_portals:
-            bank |= zone & (d_ >= self.floor_r - 1) & (d_ <= self.out_r + 2)
-        rise = np.zeros(T.shape, int)
-        for di, dk in ((1, 0), (-1, 0), (0, 1), (0, -1)):
-            sh = np.full(T.shape, -10**6)
-            sh[max(0, -di):n - max(0, di), max(0, -dk):n - max(0, dk)] = \
-                T[max(0, di):n - max(0, -di), max(0, dk):n - max(0, -dk)]
-            rise = np.maximum(rise, sh - T)
-        for i, k in zip(*np.nonzero(bank & (rise >= 1))):
-            t = int(T[i, k])
-            if t + 2 - oy >= v.size[1] or self.water[i, k] > t:
-                continue
-            if rise[i, k] >= 2:
-                v.set(i, t + 1 - oy, k, "minecraft:tall_grass[half=lower]")
-                v.set(i, t + 2 - oy, k, "minecraft:tall_grass[half=upper]")
-            else:
-                v.set(i, t + 1 - oy, k, "minecraft:short_grass")
-
-    def tunnel(self, v: Volume, T, f, fi, mask) -> None:
-        oy = v.origin[1]
-        ids = v.ids
-        conc = [v.id(CONCRETE), v.id(CONCRETE_B), v.id(CONCRETE_C)]
-        air, dirt, floor, step = v.id(AIR), v.id(DIRT), v.id(FLOOR), v.id(STEP)
-        stone = v.id("minecraft:stone")
-        door = v.id(DOOR)
-        for i, k in zip(*np.nonzero(mask)):
-            s, l = int(self.s[i, k]), int(self.l[i, k])
-            col = ids[i, :, k]
-            fl, t = int(fi[i, k]), int(T[i, k])
-            roof = min(fl + self.room + 1, t)          # under the crater floor the roof is the ground's own slab
-            inside = abs(l) <= self.half and s >= -3          # from the shell's own doorway (r 43) outward
-            # slip-formed pours: the wall concrete varies in bands of two rows
-            for y in range(fl - 1, roof + 1):
-                band = conc[0] if hash01(s // 3, y // 2, 11) < 0.7 else conc[1 + int(hash01(s, y, 13) > 0.5)]
-                col[y - oy] = band
-            if inside:
-                col[fl - oy] = floor
-                if f[i, k] - fl >= 0.5:
-                    col[fl + 1 - oy] = step
-                    col[fl + 2 - oy:roof - oy] = air
-                else:
-                    col[fl + 1 - oy:roof - oy] = air
-                if s in (self.inner_door, self.outer_door):
-                    # the thick door stands open: its leaf drawn back into a steel frame round the opening
-                    if abs(l) == self.half:
-                        col[fl + 1 - oy:fl + 5 - oy] = door
-                    else:
-                        col[fl + 5 - oy] = door
-            # backfill above the roof up to the ground (an earlier open cut here is closed again)
-            if roof < t:
-                col[roof + 1 - oy:t - oy] = dirt
-            # and below the floor: an earlier ramp (a lower rise, or a shaft at another grade before the field was
-            # levelled) left its air there
-            if s >= 0:
-                col[max(0, self.walk - 45 - oy):fl - 1 - oy] = stone
-        self.slots(v, fi, T)
-        self.station_room(v, fi)
-
-    def slots(self, v: Volume, fi, T) -> None:
-        """S3E09 09, the roofed ramp: fluted concrete panels with a narrow vertical white light slot between each
-        two, one per panel, on both walls. Here a slot every 3 blocks from the outer door to the open stair head:
-        end rods standing in the wall from the floor's second block to the roof's, the concrete behind them."""
-        oy, R = v.origin[1], self.radius
-        s1 = self.ramp_end - self.open_l
-        for s in range(self.outer_door + 2, s1, 3):
-            i = R - (self.s_shell + s)
-            fl = int(fi[i, R])
-            roof = min(fl + self.room + 1, int(T[i, R]))
-            for side in (-1, 1):
-                k = R + side * (self.half + 1)
-                for y in range(fl + 2, roof):
-                    v.set(i, y - oy, k, SLOT)
-                    v.set(i, y - oy, k + side, CONCRETE)
-
-    def station_room(self, v: Volume, fi) -> None:
-        """Sheriff's Station in the first ten blocks: a desk, a holding cell on the south side."""
-        oy, R = v.origin[1], self.radius
-        def at(s, l, dy, state):
-            i = R - (self.s_shell + s)
-            v.set(i, int(fi[i, R + l]) + 1 + dy - oy, R + l, state)
-        for s in (3, 4):
-            at(s, -2, 0, "minecraft:dark_oak_planks")
-        at(3, -2, 1, "minecraft:lantern")
-        at(5, -3, 0, "minecraft:dark_oak_stairs[facing=south]")
-        for s in range(5, 10):
-            at(s, 1, 0, "minecraft:iron_bars"); at(s, 1, 1, "minecraft:iron_bars"); at(s, 1, 2, "minecraft:iron_bars")
-        at(8, 3, 0, "minecraft:gray_bed[facing=west,part=head]")
-        at(9, 3, 0, "minecraft:gray_bed[facing=west,part=foot]")
-
-    def portal(self, v: Volume, T) -> None:
-        """The open stair head over the last open_l blocks of the ramp, a pale concrete curb round it."""
-        oy, R = v.origin[1], self.radius
-        s0 = self.ramp_end - self.open_l
-        for s in range(s0 - 1, self.ramp_end + 2):
-            for l in range(-self.portal_half - 1, self.portal_half + 2):
-                i, k = R - (self.s_shell + s), R + l
-                t = int(T[i, k])
-                rim = s in (s0 - 1, self.ramp_end + 1) or abs(l) == self.portal_half + 1
-                if rim:
-                    v.set(i, t - oy, k, RIM)
-                    continue
-                # opening day (S3E09 06, 07, 09): the stair head is an open trench between concrete curbs flush
-                # with the lawn, roofed further down; the model's flush leaves are the sealed silo of later years
-                if abs(l) > self.half:
-                    v.set(i, t - oy, k, RIM)
-                    continue
-                fl = int(math.floor(self.floor_top(np.array(float(s)))))
-                for y in range(fl + 1 + (1 if self.floor_top(np.array(float(s))) - fl >= 0.5 else 0), t + 1):
-                    v.set(i, y - oy, k, AIR)
-
-    def block(self, v: Volume, T) -> None:
-        """The camera block (S3E09 07, 08): two thick light concrete piers with sloped outer faces, a dark recessed
-        back wall, a thin flat roof slab cantilevered over them; in front, on a stepped plinth, a truncated concrete
-        cone carrying the sensor, looking out over the stair."""
-        oy, R = v.origin[1], self.radius
-        face = self.ramp_end - self.open_l - self.block_gap          # s of the open face
-        back = face - self.block_depth + 1
-        i_of = lambda s: R - (self.s_shell + s)
-        t = int(T[i_of(face), R])
-        put = lambda s, l, y, st: v.set(i_of(s), y - oy, R + l, st)
-        for s in range(back, face + 1):
-            for l in range(-self.block_half, self.block_half + 1):
+    def camera(self, v: Volume) -> None:
+        """The camera block (S3E09 07, 08) beside the slot, looking over the steps: two light concrete piers, a dark
+        recessed back wall, a thin roof slab over them; in the recess a truncated cone carrying the sensor."""
+        R, oy = self.radius, v.origin[1]
+        x0, x1, z0, z1 = CAMERA
+        g = self.grade
+        put = lambda x, y, z, st: v.set(R + x, y - oy, R + z, st)
+        face = z1 if RAMP_Z[0] > z1 else z0                 # the side toward the slot
+        back = z0 if face == z1 else z1
+        toward = "south" if face > back else "north"        # the sensor looks over the steps
+        for x in range(x0, x1 + 1):
+            for z in (z0, z1):
+                pier = x in (x0, x1)
                 for dy in (1, 2):
-                    recess = abs(l) <= self.alcove_half and s > face - self.alcove_depth
-                    if recess:
-                        put(s, l, t + dy, AIR)
-                    elif abs(l) <= self.alcove_half:
-                        put(s, l, t + dy, DARK)                      # the recessed back wall, dark grey
+                    if pier:
+                        put(x, g + dy, z, CONCRETE)
+                    elif z == back:
+                        put(x, g + dy, z, DARK)
                     else:
-                        put(s, l, t + dy, CONCRETE)
-                # the piers' sloped outer faces
-                for sd in (-1, 1):
-                    put(s, sd * (self.block_half + 1), t + 1,
-                        f"minecraft:andesite_stairs[facing={'south' if sd < 0 else 'north'},half=bottom]")
-        # the roof: one thin slab, overhanging the front and the sides
-        for s in range(back, face + 2):
-            for l in range(-self.block_half - 1, self.block_half + 2):
-                put(s, l, t + 3, STEP)
-        # the plinth (stepped), the cone, the sensor, in front of the recess under the roof's lip
-        mz = face
-        for l in range(-1, 2):
-            for s in range(mz - 1, mz + 2):
-                if (s, l) != (mz, 0):
-                    put(s, l, t + 1, STEP)
-        put(mz, 0, t + 1, "minecraft:andesite_wall")                 # the truncated cone
-        put(mz, 0, t + 2, "minecraft:observer[facing=west]")         # the sensor, looking out over the stair
+                        put(x, g + dy, z, AIR)
+        put(x0 + 1, g + 1, face, "minecraft:andesite_wall")
+        put(x0 + 1, g + 2, face, f"minecraft:observer[facing={toward},powered=false]")
+        for x in range(x0 - 1, x1 + 2):
+            for z in range(min(z0, z1) - 1, max(z0, z1) + 2):
+                put(x, g + 3, z, STEP)

@@ -130,7 +130,7 @@ class Field:
         top = np.maximum(top, self.old_height[sl] + 20)
         return self.height[sl], water, top, self.ground[sl], self.weight[sl]
 
-    def tiles(self, size: int = 128, skip_site: float = 100, gaps: int | None = None):
+    def tiles(self, size: int = 128, skip_site: float = 100, gaps: int | None = None, paths: set | None = None):
         """Plain tiles, nearest to Silo 1 first: (name, Volume) without columns a silo site rebuilds anyway.
 
         With gaps (the sites' half-size, surface.Site.radius) only the columns the first pass skipped as near a
@@ -148,7 +148,7 @@ class Field:
                 tiles.append((math.hypot(cx - s1["x"], cz - s1["z"]), i, k))
         tiles.sort()
         for _, i, k in tiles:
-            v = self.tile(i, k, size, skip_site, gaps)
+            v = self.tile(i, k, size, skip_site, gaps, paths)
             if v is not None:
                 yield f"{'gap' if gaps else 'plain'}_{self.x0 + i}_{self.z0 + k}", v
 
@@ -174,7 +174,9 @@ class Field:
             laid |= square & zone & (d <= near + 1e-6)
         return laid
 
-    def tile(self, i: int, k: int, size: int, skip_site: float, gaps: int | None = None) -> Volume | None:
+    def tile(self, i: int, k: int, size: int, skip_site: float, gaps: int | None = None,
+             paths: set | None = None) -> Volume | None:
+        """paths: world columns whose top block becomes path (paths.py: smooth sandstone, flush with the lawn)."""
         sl = (slice(i, i + size), slice(k, k + size))
         w, h, n, top = self.weight[sl], self.height[sl], self.ground[sl], self.top[sl]
         dist, filled, ws = self.dist[sl], self.filled[sl], self.water[sl]
@@ -187,7 +189,7 @@ class Field:
             return None
         clear = work & (w > TREES_OUT)
         lo = int(np.minimum(h, n)[work].min()) - 3
-        hi = int(np.maximum(np.maximum(np.maximum(np.where(clear, top, h), np.maximum(h, n)), ws), old_h + 3)[work].max()) + 1
+        hi = int(np.maximum(np.maximum(np.where(clear, top, h), np.maximum(h, n)), ws)[work].max()) + 1
         nx, nz = h.shape
         v = Volume((self.x0 + i, lo, self.z0 + k), (nx, hi - lo + 1, nz))
         ids = v.ids
@@ -195,6 +197,7 @@ class Field:
         X = np.arange(nx)[:, None] + self.x0 + i
         Z = np.arange(nz)[None, :] + self.z0 + k
         tuft = hash01(X, Z, 3) < 0.3
+        path = v.id("minecraft:smooth_sandstone")
         for a, b in zip(*np.nonzero(work)):
             t, nat = int(h[a, b]), int(n[a, b])
             col = ids[a, :, b]
@@ -202,11 +205,15 @@ class Field:
                 col[min(t, nat) - 2 - lo:t - lo] = dirt
                 col[t - lo] = grass
             up = int(top[a, b]) if clear[a, b] else nat
-            up = max(up, int(old_h[a, b]) + 3)     # the rolling draft's raised ground and its paths go
             if filled[a, b]:
                 up = max(up, int(ws[a, b]))        # the water above the new ground goes
             if up > t:
                 col[t + 1 - lo:up + 1 - lo] = air
+            if paths and (self.x0 + i + a, self.z0 + k + b) in paths and not filled[a, b]:
+                col[t - lo] = path
+                if t + 1 - lo < col.shape[0]:
+                    col[t + 1 - lo] = air
+                continue
             if (t != nat or clear[a, b]) and tuft[a, b] and t + 1 - lo < col.shape[0]:
                 if t != nat:
                     col[t + 1 - lo] = tall
