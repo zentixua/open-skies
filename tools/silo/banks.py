@@ -15,14 +15,15 @@ The steps still ran in perfect concentric rings, an amphitheatre (shader frames 
 by earth-moving and grass has no exact circles: with --wobble AMP every lawn or path column of the inner bank and
 crest first takes the ground found up to AMP blocks further in or out along its own radius (two slow waves round the
 ring whose phase drifts with the radius, so neighbouring contours wave differently; different for each silo; moss from an earlier pass goes back to lawn first), so each contour waves and the
-treads vary in width; then the moss is laid on the new risers. Trunks and anything else standing on a column keep it.
+treads vary in width; a contour running diagonally leaves lone one-column pillars and pits, which go to their
+neighbours' level; then the moss is laid on the new risers. --smooth-only does that evening alone, for banks waved before it. Trunks and anything else standing on a column keep it.
 
 With --hero, Silo 18's tree is replaced by hero_tree.py's: the blocks listed in --hero-clear (the previous tree's
 offsets about the same base column) that are still logs or leaves go first, and a foot log under the base becomes
 grass again.
 
   ALMIGHTY_URL=... ALMIGHTY_TOKEN_FILE=... uv run tools/silo/banks.py <layout.json> [--number N ...] [--hero]
-      [--hero-clear old.json] [--dry]
+      [--hero-clear old.json] [--wobble AMP [--smooth-only]] [--dry]
 """
 from __future__ import annotations
 
@@ -93,7 +94,7 @@ def scan = {
 def ground = scan()
 if (unloaded) return [unloaded: unloaded, hero: hero, cleared: cleared]
 double rx = args.rx as double, rz = args.rz as double
-int moved = 0, unmossed = 0
+int moved = 0, unmossed = 0, smoothed = 0
 if (args.wobble) {
   def w = args.wobble
   def grassS = Blocks.GRASS_BLOCK.defaultBlockState(), dirtS = Blocks.DIRT.defaultBlockState()
@@ -111,7 +112,7 @@ if (args.wobble) {
   }
   // each column takes the original ground found a little further in or out along its own radius: the contours wave
   def target = [:]
-  for (int x = cx - r1; x <= cx + r1; x++) {
+  if (w.move) for (int x = cx - r1; x <= cx + r1; x++) {
     for (int z = cz - r1; z <= cz + r1; z++) {
       double d = Math.hypot(x + 0.5 - rx, z + 0.5 - rz)
       if (d < (w.r0 as double) || d > (w.r1 as double)) continue
@@ -150,6 +151,36 @@ if (args.wobble) {
     moved++
   }
   ground = scan()
+  // a contour running diagonally leaves single columns a block above or below all four neighbours: a lone pillar or
+  // pit, not a step. Each goes to its neighbours' nearest level
+  for (int pass = 0; pass < 2; pass++) {
+    for (int x = cx - r1; x <= cx + r1; x++) {
+      for (int z = cz - r1; z <= cz + r1; z++) {
+        double d = Math.hypot(x + 0.5 - rx, z + 0.5 - rz)
+        if (d < (w.r0 as double) || d > (w.r1 as double)) continue
+        int g = ground[x * 65536L + z]
+        def nb = [[1, 0], [-1, 0], [0, 1], [0, -1]].collect { o -> ground[(x + o[0]) * 65536L + z + o[1]] }
+        if (nb.contains(null)) continue
+        int t = nb.every { it > g } ? (nb.min() as int) : nb.every { it < g } ? (nb.max() as int) : g
+        if (t == g) continue
+        def top = lvl.getBlockState(new BlockPos(x, g, z))
+        if (!(top.is(Blocks.GRASS_BLOCK) || top.is(Blocks.DIRT))) continue
+        if (!lvl.getBlockState(new BlockPos(x, Math.max(g, t) + 1, z)).isAir()) continue
+        boolean nearTrunk = false
+        for (int ax = -2; ax <= 2 && !nearTrunk; ax++)
+          for (int az = -2; az <= 2 && !nearTrunk; az++)
+            for (int ay = 0; ay <= 2; ay++)
+              if (lvl.getBlockState(new BlockPos(x + ax, g + ay, z + az)).is(BlockTags.LOGS)) { nearTrunk = true; break }
+        if (nearTrunk) continue
+        if (t > g) { for (int y = g; y < t; y++) lvl.setBlock(new BlockPos(x, y, z), dirtS, 18) }
+        else { for (int y = t + 1; y <= g; y++) lvl.setBlock(new BlockPos(x, y, z), air, 18) }
+        lvl.setBlock(new BlockPos(x, t, z), top, 18)
+        ground[x * 65536L + z] = t
+        smoothed++
+      }
+    }
+  }
+  ground = scan()
 }
 def moss = Blocks.MOSS_BLOCK.defaultBlockState()
 int mossed = 0, tufts = 0
@@ -174,7 +205,7 @@ for (int x = cx - r1; x <= cx + r1; x++) {
     }
   }
 }
-return [mossed: mossed, tufts: tufts, hero: hero, cleared: cleared, moved: moved, unmossed: unmossed]
+return [mossed: mossed, tufts: tufts, hero: hero, cleared: cleared, moved: moved, unmossed: unmossed, smoothed: smoothed]
 """
 
 
@@ -186,6 +217,8 @@ def main():
     ap.add_argument("--hero-clear", help="json [[dx, dy, dz], ...]: the previous tree's blocks about its base")
     ap.add_argument("--wobble", type=float, default=0.0, metavar="AMP",
                     help="wave the inner bank's contours by up to AMP blocks before laying the moss")
+    ap.add_argument("--smooth-only", action="store_true",
+                    help="with --wobble: only even out lone pillars and pits left by an earlier wobble, move nothing")
     ap.add_argument("--dry", action="store_true")
     a = ap.parse_args()
     layout = json.load(open(a.layout))
@@ -215,7 +248,8 @@ def main():
             args = {"x": cx, "z": cz, "rx": rx, "rz": rz, "r0": BANK[0], "r1": r1,
                     "hero": h18 if s["number"] == 18 else None,
                     "wobble": {"r0": WOBBLE[0], "r1": WOBBLE[1], "amp": a.wobble,
-                               "p1": 6.283 * hero_seed(s["number"], 1), "p2": 6.283 * hero_seed(s["number"], 2)}
+                               "p1": 6.283 * hero_seed(s["number"], 1), "p2": 6.283 * hero_seed(s["number"], 2),
+                               "move": not a.smooth_only}
                     if a.wobble and s["number"] != 1 else None}   # Silo 1: the opening-day set stands to r 34
             for attempt in range(3):                # leased chunks finish loading a little after area.prepare
                 res = br.call("script", {"code": SCRIPT, "args": args, "timeout_ms": 10000})
