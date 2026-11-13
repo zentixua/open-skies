@@ -36,11 +36,12 @@ cx, cz, grade, k = s["x"], s["z"], D[f"silo{a.silo}"]["grade"], TURNS[s["dir"]]
 
 
 def world(fx: float, fz: float) -> tuple[float, float]:
-    """Silo frame (way in due west) -> world, k clockwise quarter turns (turn.py: (x, z) -> (-z, x))."""
-    x, z = fx, fz
+    """Silo-frame point -> world: its block (floor) turned k quarters as turn.turn_volume turns blocks (integer
+    (x, z) -> (-z, x) about the shaft column), then that block's centre."""
+    x, z = math.floor(fx), math.floor(fz)
     for _ in range(k % 4):
         x, z = -z, x
-    return cx + x, cz + z
+    return cx + x + 0.5, cz + z + 0.5
 
 
 # the volume and its walk graph, in world rows (Silo built at its real place, frame not turned)
@@ -124,13 +125,16 @@ way.append(cells[-1])
 cam_back = CAMERA[1]
 surface = [(110, 0), (60, 0), (0, 0), (cam_back + 5, 0), (cam_back + 3, 4.5), (EXIT_X + 0.5, 4.5),
            (EXIT_X + 0.5, 0.5)]
-legs = [("surface", [(*world(x + 0.5, z + 0.5), grade + 1) for x, z in surface])]
+if a.silo == 1:          # Silo 1's cut is where the opening-day path leaves due south: frame -z after its two turns
+    surface = [(0, -110), (0, -40), (-10, -10), (EXIT_X + 0.5, -4.5), (EXIT_X + 0.5, 0.5)]
+legs = [("surface", [(*world(x, z), grade + 1) for x, z in surface])]
 legs.append(("down", [(*world(x, z), y) for x, y, z in way[1:]]))
 
 if os.environ.get("DRY"):
     for leg, pts in legs:
         print(leg, len(pts), [tuple(round(v, 1) for v in p) for p in pts[:6]], "...", [tuple(round(v, 1) for v in p) for p in pts[-3:]])
     print("ys", [round(c[1]) for c in way[::max(1, len(way) // 20)]])
+    print("down 8-16", [tuple(round(float(v), 2) for v in p) for p in legs[1][1][8:16]])
     sys.exit(0)
 os.environ.setdefault("ALMIGHTY_URL", "http://10.0.6.2:25654")
 br = Bridge()

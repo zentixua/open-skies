@@ -344,7 +344,20 @@ class Builder:
             for x, z in cols:
                 v.ids[x - min(xs), :, z - min(zs)] = v.id("minecraft:air")
             vols.append(v)
-        self.apply(vols, f"slots opened: {len(vols)}")
+            # the steps (silo.way_out's state was smooth_stone_stairs, which vanilla lacks: the game made them air)
+            from silo import STEPS
+            from turn import turn_volume
+            st = Volume((s["x"] + RAMP_X[1] + 1, g - STEPS, s["z"] + RAMP_Z[0]),
+                        (EXIT_X - RAMP_X[1], STEPS + 1, RAMP_Z[1] - RAMP_Z[0] + 1))
+            for i, x in enumerate(range(RAMP_X[1] + 1, EXIT_X + 1)):
+                ys = g - STEPS + 1 + i - (g - STEPS)          # the step's row in the volume (its top at k - 1)
+                for kz in range(st.size[2]):
+                    st.set(i, ys, kz, "minecraft:polished_andesite_stairs[facing=east,half=bottom,shape=straight,"
+                           "waterlogged=false]")
+                    for yy in range(ys + 1, st.size[1]):
+                        st.set(i, yy, kz, "minecraft:air")
+            vols.append(turn_volume(st, TURNS[s["dir"]], s["x"], s["z"]))
+        self.apply(vols, f"slots opened: {len(vols) // 2}")
 
     def pond_cells(self) -> set:
         """Columns of the ponds the show's 2052 aerial has at the complex's edges (canon_ground.py, water over half

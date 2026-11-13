@@ -1078,7 +1078,7 @@ class Silo:
             for yy in range(lo, hi + 1):
                 v.set(X_, yy, Z_, CONCRETE if (yy < k or (yy == roof and kind != "step")) else AIR)
             if kind == "step":
-                v.set(X_, k - 1, Z_, "minecraft:smooth_stone_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]")
+                v.set(X_, k - 1, Z_, "minecraft:polished_andesite_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]")
                 continue
             rib = ((z if along == "z" else x) % 2) == 0
             v.set(X_, k - 1, Z_, "minecraft:waxed_cut_copper" if rib else "minecraft:smooth_stone")
