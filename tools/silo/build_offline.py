@@ -324,6 +324,28 @@ class Builder:
         self.apply(vols, f"trees: {len(spots)} and Silo 18's")
         self.mark("trees", {"count": len(spots), "hero": [hero[0], hero[1]] if hero else None})
 
+    def slots(self) -> None:
+        """Open every slot to the sky: air over its columns from the bowl floor up (the site pass used to leave the
+        golden ground there; surface.py now clears it, this fixes a world built before that)."""
+        from silo import EXIT_X, RAMP_X, RAMP_Z
+        from tunnels import TURNS
+        from turn import turn_points
+        vols = []
+        for s in self.layout["silos"]:
+            n = s["number"]
+            g = self.done.get(f"silo{n}", {}).get("grade")
+            if g is None:
+                continue
+            cols = [(s["x"] + x, s["z"] + z) for x in range(RAMP_X[1] + 1, EXIT_X) for z in range(RAMP_Z[0], RAMP_Z[1] + 1)]
+            cols = turn_points(cols, TURNS[s["dir"]], s["x"], s["z"])
+            xs = [c[0] for c in cols]; zs = [c[1] for c in cols]
+            top = 200
+            v = Volume((min(xs), g + 1, min(zs)), (max(xs) - min(xs) + 1, top - g, max(zs) - min(zs) + 1))
+            for x, z in cols:
+                v.ids[x - min(xs), :, z - min(zs)] = v.id("minecraft:air")
+            vols.append(v)
+        self.apply(vols, f"slots opened: {len(vols)}")
+
     def pond_cells(self) -> set:
         """Columns of the ponds the show's 2052 aerial has at the complex's edges (canon_ground.py, water over half
         of a 4 m cell, smoothed), never within a ring's path circle or on a path."""
@@ -467,7 +489,7 @@ def main():
     bp.add_argument("--world", required=True, help="the world copy to write")
     bp.add_argument("--state", required=True)
     bp.add_argument("--number", type=int, nargs="*")
-    bp.add_argument("--what", nargs="*", default=["all"], choices=["plain", "silos", "ponds", "trees", "biome", "all"])
+    bp.add_argument("--what", nargs="*", default=["all"], choices=["plain", "silos", "slots", "ponds", "trees", "biome", "all"])
     bp.add_argument("--canon-ground", help="canon_ground.py's npz: ponds and the plain's groves where the show's 2052 "
                     "aerial has them")
     a = ap.parse_args()
@@ -486,6 +508,8 @@ def main():
             if not a.number and b.done.get(f"silo{s['number']}"):
                 continue
             b.silo(s)
+    if "slots" in what:
+        b.slots()
     if what & {"ponds", "all"}:
         b.ponds()
     if what & {"trees", "all"}:

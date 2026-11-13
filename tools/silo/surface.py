@@ -176,6 +176,12 @@ class Site:
         for i, k in zip(*np.nonzero(zone)):
             x, z = i - R, k - R
             if (x, z) in open_:
+                # the slot: the silo's volume holds the steps up to the bowl floor; over it, whatever the golden ground
+                # had (a hill, the old surface) must go, or the opening stays roofed over (v3, 13.11)
+                col = ids[i, :, k]
+                a0, a1 = self.grade + 1 - oy, min(H, max(int(self.top[i, k]), int(round(self.plain[i, k])), clear_top) + 1 - oy)
+                if a1 > a0:
+                    col[a0:a1] = air
                 continue
             t = int(T[i, k])
             nat = int(round(self.plain[i, k]))

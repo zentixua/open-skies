@@ -72,6 +72,11 @@ for dx, dz in ((1, 0), (0, 1)):
         ia = (xa + A[0].start) * H_ * Z_ + (ya + A[1].start) * Z_ + (za + A[2].start)
         ib = ia + dx * H_ * Z_ + dy * Z_ + dz
         rows += [pos[ia], pos[ib]]; cols += [pos[ib], pos[ia]]
+cl = w.climb & node                     # ladders and scaffolding: the node right over it, as walk.py
+m = node[:, :-1, :] & node[:, 1:, :] & (cl[:, :-1, :] | cl[:, 1:, :])
+xa, ya, za = np.nonzero(m)
+ia = xa * H_ * Z_ + ya * Z_ + za
+rows += [pos[ia], pos[ia + Z_]]; cols += [pos[ia + Z_], pos[ia]]
 r = np.concatenate(rows); c = np.concatenate(cols)
 G = coo_matrix((np.ones(r.size, np.int8), (r, c)), shape=(idx.size, idx.size)).tocsr()
 
@@ -119,8 +124,8 @@ way.append(cells[-1])
 cam_back = CAMERA[1]
 surface = [(110, 0), (60, 0), (0, 0), (cam_back + 5, 0), (cam_back + 3, 4.5), (EXIT_X + 0.5, 4.5),
            (EXIT_X + 0.5, 0.5)]
-legs = [("surface", [world(x + 0.5, z + 0.5) for x, z in surface])]
-legs.append(("down", [world(x, z) for x, _, z in way[1:]]))
+legs = [("surface", [(*world(x + 0.5, z + 0.5), grade + 1) for x, z in surface])]
+legs.append(("down", [(*world(x, z), y) for x, y, z in way[1:]]))
 
 if os.environ.get("DRY"):
     for leg, pts in legs:
@@ -130,7 +135,7 @@ if os.environ.get("DRY"):
 os.environ.setdefault("ALMIGHTY_URL", "http://10.0.6.2:25654")
 br = Bridge()
 name = f"walker{a.silo}"
-x0, z0 = legs[0][1][0]
+x0, z0, _ = legs[0][1][0]
 area = br.call("area.prepare", {"from": [int(cx) - 140, int(cz) - 140], "to": [int(cx) + 140, int(cz) + 140],
                                 "ttl_seconds": 900, "wait": 50})
 fail = False
@@ -143,9 +148,11 @@ try:
     time.sleep(3)
     for leg, pts in legs:
         print(f"{leg}: {len(pts)} waypoints", flush=True)
-        for q, (x, z) in enumerate(pts):
-            res = br.call("bot.act", {"name": name, "actions": [{"walk_to": [x, z], "within": 0.6}],
-                                      "replace": True, "wait": 50})
+        for q, (x, z, y) in enumerate(pts):
+            acts = [{"walk_to": [x, z], "within": 0.25}]
+            if q + 1 < len(pts) and pts[q + 1][2] < y - 2:
+                acts.append({"wait": 20 + 4 * int(y - pts[q + 1][2])})     # down a ladder or a drop: let it land
+            res = br.call("bot.act", {"name": name, "actions": acts, "replace": True, "wait": 50})
             st = br.call("bot", {"name": name})
             p = st.get("body", st).get("pos") or st.get("pos")
             d = math.hypot(p[0] - x, p[2] - z)
