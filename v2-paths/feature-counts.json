@@ -1,0 +1,1788 @@
+[
+{
+"kind": "ring",
+"name": "ring 1",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 2",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 3",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 4",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 5",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 6",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 7",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 8",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 9",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 10",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 11",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 12",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 13",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 14",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 15",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 16",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 17",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 18",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 19",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 20",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 21",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 22",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 23",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 24",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 25",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 26",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 27",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 28",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 29",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 30",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 31",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 32",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 33",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 34",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 35",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 36",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 37",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 38",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 39",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 40",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 41",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 42",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 43",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 44",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 45",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 46",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 47",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 48",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 49",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "ring",
+"name": "ring 50",
+"n": 700,
+"hit": 700,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 2",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 3",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 4",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 5",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 6",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 7",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 8",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 9",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 10",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 11",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 12",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 13",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 14",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 15",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 16",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 17",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 18",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 19",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 20",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 21",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 22",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 23",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 24",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 25",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 26",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 27",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 28",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 29",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 30",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 31",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 32",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 33",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 34",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 35",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 36",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 37",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 38",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 39",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 40",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 41",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 42",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 43",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 44",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 45",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 46",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 47",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 48",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 49",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "stub",
+"name": "stub 50",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "link",
+"name": "link 1-49",
+"n": 3,
+"hit": 3,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "link",
+"name": "link 2-11",
+"n": 67,
+"hit": 67,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "link",
+"name": "link 2-35",
+"n": 2,
+"hit": 2,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "link",
+"name": "link 5-11",
+"n": 19,
+"hit": 19,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "link",
+"name": "link 7-9",
+"n": 50,
+"hit": 50,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "link",
+"name": "link 7-10",
+"n": 50,
+"hit": 50,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "link",
+"name": "link 8-13",
+"n": 50,
+"hit": 31,
+"gaps": [
+[
+19,
+[
+2378.285482897955,
+-2294.18811606445
+]
+]
+],
+"miss_tops": [
+[
+"grass_block",
+7
+]
+]
+},
+{
+"kind": "link",
+"name": "link 8-22",
+"n": 72,
+"hit": 17,
+"gaps": [
+[
+34,
+[
+2494.8761438853994,
+-2082.0052661685963
+]
+],
+[
+21,
+[
+2494.215577940863,
+-2106.033352401111
+]
+]
+],
+"miss_tops": [
+[
+"grass_block",
+19
+]
+]
+},
+{
+"kind": "link",
+"name": "link 9-10",
+"n": 50,
+"hit": 50,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "link",
+"name": "link 9-19",
+"n": 41,
+"hit": 28,
+"gaps": [
+[
+13,
+[
+2976.0058486458324,
+-2470.0464237836536
+]
+]
+],
+"miss_tops": [
+[
+"grass_block",
+5
+]
+]
+},
+{
+"kind": "link",
+"name": "link 14-18",
+"n": 52,
+"hit": 45,
+"gaps": [
+[
+7,
+[
+3379.7317421051307,
+-2315.2644648175774
+]
+]
+],
+"miss_tops": [
+[
+"grass_block",
+3
+]
+]
+},
+{
+"kind": "link",
+"name": "link 14-19",
+"n": 50,
+"hit": 50,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "link",
+"name": "link 15-21",
+"n": 51,
+"hit": 42,
+"gaps": [
+[
+9,
+[
+3248.9635296190627,
+-1783.091106762258
+]
+]
+],
+"miss_tops": [
+[
+"grass_block",
+3
+]
+]
+},
+{
+"kind": "link",
+"name": "link 16-17",
+"n": 56,
+"hit": 56,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "link",
+"name": "link 17-18",
+"n": 51,
+"hit": 16,
+"gaps": [
+[
+35,
+[
+3571.6596273412565,
+-2243.597275628921
+]
+]
+],
+"miss_tops": [
+[
+"grass_block",
+12
+]
+]
+},
+{
+"kind": "link",
+"name": "link 18-50",
+"n": 6,
+"hit": 6,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "link",
+"name": "link 20-21",
+"n": 36,
+"hit": 36,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "link",
+"name": "link 20-24",
+"n": 14,
+"hit": 14,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "link",
+"name": "link 20-25",
+"n": 40,
+"hit": 40,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "link",
+"name": "link 21-24",
+"n": 25,
+"hit": 25,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "link",
+"name": "link 22-25",
+"n": 52,
+"hit": 18,
+"gaps": [
+[
+34,
+[
+2603.6729424410455,
+-1984.5518476452985
+]
+]
+],
+"miss_tops": [
+[
+"grass_block",
+12
+]
+]
+},
+{
+"kind": "link",
+"name": "link 22-26",
+"n": 63,
+"hit": 63,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "link",
+"name": "link 23-28",
+"n": 51,
+"hit": 14,
+"gaps": [
+[
+37,
+[
+2524.0347425580135,
+-1467.5343627424597
+]
+]
+],
+"miss_tops": [
+[
+"grass_block",
+13
+]
+]
+},
+{
+"kind": "link",
+"name": "link 24-25",
+"n": 51,
+"hit": 51,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "link",
+"name": "link 26-27",
+"n": 51,
+"hit": 16,
+"gaps": [
+[
+35,
+[
+2185.0903498374246,
+-1942.042994228961
+]
+]
+],
+"miss_tops": [
+[
+"grass_block",
+12
+]
+]
+},
+{
+"kind": "link",
+"name": "link 29-31",
+"n": 16,
+"hit": 16,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "link",
+"name": "link 29-32",
+"n": 26,
+"hit": 26,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "link",
+"name": "link 31-42",
+"n": 40,
+"hit": 40,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "link",
+"name": "link 31-48",
+"n": 54,
+"hit": 54,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "link",
+"name": "link 32-33",
+"n": 51,
+"hit": 51,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "link",
+"name": "link 33-34",
+"n": 51,
+"hit": 51,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "link",
+"name": "link 36-41",
+"n": 19,
+"hit": 19,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "link",
+"name": "link 37-42",
+"n": 51,
+"hit": 16,
+"gaps": [
+[
+35,
+[
+3836.5303953796692,
+-3372.731616717403
+]
+]
+],
+"miss_tops": [
+[
+"grass_block",
+12
+]
+]
+},
+{
+"kind": "link",
+"name": "link 37-48",
+"n": 24,
+"hit": 16,
+"gaps": [
+[
+8,
+[
+3839.7825151107513,
+-3297.758056452138
+]
+]
+],
+"miss_tops": [
+[
+"grass_block",
+3
+]
+]
+},
+{
+"kind": "link",
+"name": "link 39-40",
+"n": 51,
+"hit": 51,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "link",
+"name": "link 40-41",
+"n": 50,
+"hit": 48,
+"gaps": [
+[
+2,
+[
+3730.629668051859,
+-4008.854370751019
+]
+]
+],
+"miss_tops": [
+[
+"grass_block",
+1
+]
+]
+},
+{
+"kind": "link",
+"name": "link 42-48",
+"n": 55,
+"hit": 55,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "link",
+"name": "link 43-46",
+"n": 50,
+"hit": 50,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "link",
+"name": "link 43-47",
+"n": 51,
+"hit": 16,
+"gaps": [
+[
+35,
+[
+3988.1874267266744,
+-2956.6925579378876
+]
+]
+],
+"miss_tops": [
+[
+"grass_block",
+12
+]
+]
+},
+{
+"kind": "link",
+"name": "link 44-50",
+"n": 51,
+"hit": 50,
+"gaps": [
+[
+1,
+[
+3738.5303953796692,
+-2530.731616717403
+]
+]
+],
+"miss_tops": [
+[
+"grass_block",
+1
+]
+]
+},
+{
+"kind": "link",
+"name": "link 45-46",
+"n": 44,
+"hit": 44,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "link",
+"name": "link 46-47",
+"n": 50,
+"hit": 14,
+"gaps": [
+[
+36,
+[
+4134.212332296287,
+-2913.755764662077
+]
+]
+],
+"miss_tops": [
+[
+"grass_block",
+12
+]
+]
+},
+{
+"kind": "axis",
+"name": "axis N gate-Silo1",
+"n": 1419,
+"hit": 928,
+"gaps": [
+[
+208,
+[
+3520.614950634697,
+-2668.7023977433005
+]
+],
+[
+184,
+[
+4310.0,
+-1970.0
+]
+],
+[
+47,
+[
+3974.4739069111424,
+-2266.981664315938
+]
+],
+[
+44,
+[
+4158.7136812411845,
+-2103.906911142454
+]
+]
+],
+"miss_tops": [
+[
+"grass_block",
+155
+],
+[
+"water",
+9
+]
+]
+},
+{
+"kind": "axis",
+"name": "axis S Silo1-Silo2",
+"n": 657,
+"hit": 422,
+"gaps": [
+[
+107,
+[
+2874.944720596827,
+-3056.8186675513475
+]
+],
+[
+60,
+[
+3024.7374714088087,
+-2909.5301012305385
+]
+],
+[
+46,
+[
+3130.305695790586,
+-2805.7267306806352
+]
+],
+[
+13,
+[
+2887.070800424464,
+-3044.895307420615
+]
+]
+],
+"miss_tops": [
+[
+"grass_block",
+79
+]
+]
+},
+{
+"kind": "founders",
+"name": "W to 42",
+"n": 538,
+"hit": 451,
+"gaps": [
+[
+68,
+[
+3438.9241865332415,
+-3065.6524314885596
+]
+],
+[
+19,
+[
+3610.6191216638636,
+-3304.549230369403
+]
+]
+],
+"miss_tops": [
+[
+"grass_block",
+29
+]
+]
+},
+{
+"kind": "founders",
+"name": "E to 25",
+"n": 682,
+"hit": 511,
+"gaps": [
+[
+97,
+[
+3181.759293354382,
+-2702.340776368318
+]
+],
+[
+74,
+[
+2931.249083321136,
+-2333.0114943825442
+]
+]
+],
+"miss_tops": [
+[
+"grass_block",
+57
+]
+]
+},
+{
+"kind": "founders",
+"name": "SW to 30",
+"n": 342,
+"hit": 271,
+"gaps": [
+[
+67,
+[
+3158.0529863332645,
+-2876.337617802532
+]
+],
+[
+4,
+[
+3219.7079208805344,
+-2685.9428946808343
+]
+]
+],
+"miss_tops": [
+[
+"grass_block",
+24
+]
+]
+},
+{
+"kind": "founders",
+"name": "SE to 10",
+"n": 313,
+"hit": 131,
+"gaps": [
+[
+182,
+[
+3270.329284917151,
+-2683.5598398577267
+]
+]
+],
+"miss_tops": [
+[
+"grass_block",
+61
+]
+]
+},
+{
+"kind": "founders",
+"name": "N cross to 44",
+"n": 629,
+"hit": 195,
+"gaps": [
+[
+254,
+[
+3248.0,
+-2648.0
+]
+],
+[
+180,
+[
+3683.5900277008304,
+-2647.243767313019
+]
+]
+],
+"miss_tops": [
+[
+"grass_block",
+145
+]
+]
+},
+{
+"kind": "founders",
+"name": "N cross to 17",
+"n": 671,
+"hit": 225,
+"gaps": [
+[
+250,
+[
+3248.0,
+-2648.0
+]
+],
+[
+196,
+[
+3601.286140032477,
+-2456.487152545611
+]
+]
+],
+"miss_tops": [
+[
+"grass_block",
+149
+]
+]
+},
+{
+"kind": "rosette",
+"name": "rosette (49, 48, 43)",
+"n": 1288,
+"hit": 0,
+"gaps": [
+[
+1288,
+[
+3701.4857278739273,
+-3060.833643710457
+]
+]
+],
+"miss_tops": [
+[
+"grass_block",
+430
+]
+]
+},
+{
+"kind": "rosette",
+"name": "rosette (31, 30, 29)",
+"n": 1288,
+"hit": 463,
+"gaps": [
+[
+211,
+[
+3245.844186950008,
+-3300.814621942098
+]
+],
+[
+153,
+[
+3306.7064940203527,
+-3311.9624635468203
+]
+],
+[
+126,
+[
+3232.668903734305,
+-3297.2383740775563
+]
+],
+[
+125,
+[
+3237.7500810798656,
+-3300.115927736055
+]
+]
+],
+"miss_tops": [
+[
+"grass_block",
+275
+]
+]
+},
+{
+"kind": "rosette",
+"name": "rosette (32, 33, 29)",
+"n": 1288,
+"hit": 1263,
+"gaps": [
+[
+14,
+[
+3287.281146498598,
+-3636.816635069312
+]
+],
+[
+11,
+[
+3286.8743013461335,
+-3642.364614917339
+]
+]
+],
+"miss_tops": [
+[
+"grass_block",
+9
+]
+]
+},
+{
+"kind": "rosette",
+"name": "rosette (35, 29, 34)",
+"n": 1288,
+"hit": 1288,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "rosette",
+"name": "rosette (19, 20, 14)",
+"n": 1288,
+"hit": 1288,
+"gaps": [],
+"miss_tops": []
+},
+{
+"kind": "rosette",
+"name": "rosette (12, 7, 11)",
+"n": 1288,
+"hit": 592,
+"gaps": [
+[
+251,
+[
+2460.8448051239034,
+-2781.1855743494507
+]
+],
+[
+188,
+[
+2469.511278438544,
+-2790.6449352912164
+]
+],
+[
+162,
+[
+2462.8174176625057,
+-2771.989012264937
+]
+],
+[
+92,
+[
+2452.7926627587053,
+-2781.185445334928
+]
+]
+],
+"miss_tops": [
+[
+"grass_block",
+232
+]
+]
+},
+{
+"kind": "rosette",
+"name": "rosette (13, 7, 8)",
+"n": 1288,
+"hit": 1277,
+"gaps": [
+[
+8,
+[
+2466.0562693390957,
+-2421.559083841646
+]
+],
+[
+3,
+[
+2467.7639043837326,
+-2425.1817058627184
+]
+]
+],
+"miss_tops": [
+[
+"grass_block",
+4
+]
+]
+},
+{
+"kind": "event",
+"name": "Silo1 south path",
+"n": 361,
+"hit": 353,
+"gaps": [],
+"miss_tops": [
+[
+"smooth_stone_slab",
+2
+],
+[
+"birch_trapdoor",
+1
+]
+]
+},
+{
+"kind": "event",
+"name": "Silo1 apron",
+"n": 823,
+"hit": 721,
+"gaps": [],
+"miss_tops": [
+[
+"grass_block",
+34
+]
+]
+}
+]
