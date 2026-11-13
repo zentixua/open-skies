@@ -311,6 +311,9 @@ class Builder:
         cg = self.a.canon_ground
         spots = paths.trees(self.layout, avoid, [(hero[0], hero[1])] if hero else [], ground=cg,
                             water=self.pond_cells() if cg else None)
+        f = self.field
+        inside = lambda x, z: 4 <= x - f.x0 < f.height.shape[0] - 4 and 4 <= z - f.z0 < f.height.shape[1] - 4
+        spots = [s for s in spots if inside(s[0], s[1])]     # beyond the plain's grid Zearth's own land stays
         vols = []
         for x, z, kind in spots:
             g = self.ground_at(x, z)
@@ -338,6 +341,10 @@ class Builder:
             cx, cz = x0 + i * C, z0 + k * C
             if min(math.hypot(cx - a, cz - b) for a, b in rings) < paths.RING_PATH_R + 10:
                 continue
+            f = self.field
+            if not (0 <= cx - f.x0 and cx + C - f.x0 <= f.height.shape[0] and 0 <= cz - f.z0
+                    and cz + C - f.z0 <= f.height.shape[1]):
+                continue                     # beyond the plain's grid: Zearth's own land, left as it is
             for dx in range(C):
                 for dz in range(C):
                     c = (cx + dx, cz + dz)
