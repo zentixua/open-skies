@@ -445,7 +445,7 @@ class Builder:
         cx0, cz0, C = int(cgd["x0"]), int(cgd["z0"]), int(cgd["cell"])
         II, KK = np.meshgrid(np.arange(nx) + X0, np.arange(nz) + Z0, indexing="ij")
         ci = np.clip((II - cx0) // C, 0, Tm.shape[0] - 1); ck = np.clip((KK - cz0) // C, 0, Tm.shape[1] - 1)
-        wet = (water != MISSING) & (ground != MISSING) & (water - ground <= 12) & (Tm[ci, ck] > 0.5)
+        wet = (water != MISSING) & (ground != MISSING) & (water > ground) & (water - ground <= 12) & (Tm[ci, ck] > 0.5)
         f = self.field
         inplain = (II - f.x0 >= 0) & (II - f.x0 < f.height.shape[0]) & (KK - f.z0 >= 0) & (KK - f.z0 < f.height.shape[1])
         wet &= ~inplain
