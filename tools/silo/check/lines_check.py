@@ -15,7 +15,7 @@ L = json.load(open(a.layout)); meas = json.load(open(os.path.join(HERE, "..", "c
 one = next(s for s in L["silos"] if s["number"] == 1)["ring"]
 rot = math.radians(L["rotation_deg"]); cs, sn = math.cos(rot), math.sin(rot); e = L["spacing"]
 W = lambda p: (one[0] + p[0] * e * cs - p[1] * e * sn, one[1] + p[0] * e * sn + p[1] * e * cs)
-path_ids = [i for i, n in enumerate(names) if n.split(":")[-1] in ("smooth_sandstone", "dirt_path", "gravel")]
+path_ids = [i for i, n in enumerate(names) if n.split(":")[-1] in ("smooth_sandstone", "white_terracotta", "dirt_path", "gravel")]
 mask = np.isin(G, path_ids)
 dist = ndimage.distance_transform_edt(~mask)
 bad = []

@@ -584,7 +584,9 @@ class Surroundings:
                 key = (int(a0 + i), int(b0 + k))
                 if key in self.done:
                     continue                    # forecourt or band already there
-                self.column(v, i, k, int(gg[i, k]), int(hl[i, k]), int(max(top[i, k], wtr[i, k])), "minecraft:smooth_sandstone")
+                from surface import path_state
+                self.column(v, i, k, int(gg[i, k]), int(hl[i, k]), int(max(top[i, k], wtr[i, k])),
+                            path_state(int(a0 + i), int(b0 + k)))
             vs.append(v)
         return vs
 

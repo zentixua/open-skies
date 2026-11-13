@@ -38,6 +38,14 @@ CONCRETE = "minecraft:light_gray_concrete"
 RIM = "minecraft:smooth_stone"
 DARK = "minecraft:polished_blackstone"
 PATH = "minecraft:smooth_sandstone"       # S3E09 05: pale beige compacted fine gravel, flush with the lawn
+PATH_DULL = "minecraft:white_terracotta"  # mixed in (3 of 5 columns): smooth sandstone alone read bright cream from the
+                                          # air (13.11 Photon shot); the show's paths are a muted beige-grey
+
+
+def path_state(x: int, z: int) -> str:
+    """The path block for world column x, z: a stable speckle of white terracotta and smooth sandstone."""
+    h = ((x * 73856093) ^ (z * 19349663)) & 0xFFFF
+    return PATH_DULL if h % 5 < 3 else PATH
 STEP = "minecraft:smooth_stone_slab[type=bottom,waterlogged=false]"
 
 
@@ -198,7 +206,7 @@ class Site:
                     # the trench's parapet stands ≈0.5 m over the lawn (S3E09 06, 07, 10); the head end stays open
                     col[t + 1 - oy] = v.id(STEP)
             elif self.paths[i, k] or self.road[i, k]:
-                col[t - oy] = path
+                col[t - oy] = v.id(path_state(self.cx - R + i, self.cz - R + k))
             else:
                 col[t - oy] = grass
             a0, a1 = t + 1 - oy, min(H, max(int(self.top[i, k]), nat, clear_top) + 1 - oy)

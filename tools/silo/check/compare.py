@@ -47,7 +47,7 @@ canon_w = {n: canon_check.to_world(u, one, rot, edge) for n, u in canon_check.GR
 # over the path columns; the bowls themselves are too shallow (floor ~3 below a plain that rolls +-2) to segment
 known = GY > -9000
 level = float(np.median(GY[known]))
-PATHB = {i for i, n in enumerate(names) if n.split(":")[-1] in ("smooth_sandstone", "dirt_path")}
+PATHB = {i for i, n in enumerate(names) if n.split(":")[-1] in ("smooth_sandstone", "white_terracotta", "dirt_path")}
 mask = np.isin(G, list(PATHB)).astype(np.float32)
 R = 110
 yy, xx = np.mgrid[-R - 3:R + 4, -R - 3:R + 4]
@@ -82,7 +82,7 @@ print(open(os.path.join(a.out, "check.txt")).read().splitlines()[-1], f"({len(bo
 # colour top-down -------------------------------------------------------------------------------------------------
 PAL = {"grass_block": (95, 159, 53), "dirt": (134, 96, 67), "coarse_dirt": (120, 85, 58), "podzol": (90, 66, 40),
        "dirt_path": (148, 120, 74), "water": (64, 100, 196), "ice": (160, 190, 235), "sand": (219, 207, 163),
-       "gravel": (136, 126, 120), "stone": (122, 122, 122), "smooth_sandstone": (224, 214, 170),
+       "gravel": (136, 126, 120), "stone": (122, 122, 122), "smooth_sandstone": (224, 214, 170), "white_terracotta": (205, 178, 160),
        "smooth_stone": (155, 155, 155), "smooth_stone_slab": (155, 155, 155), "moss_block": (89, 109, 45),
        "andesite": (136, 136, 138), "diorite": (188, 188, 190), "granite": (153, 114, 99), "deepslate": (80, 80, 86)}
 

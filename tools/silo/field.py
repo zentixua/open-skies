@@ -21,7 +21,9 @@ from volume import Volume
 SIGMA = 40.0          # metres of the low-pass
 MAX_CHANGE = 9        # blocks the plain may move the natural ground
 CORE, EDGE = 150.0, 240.0   # plain weight 1 within CORE of the complex's hull, 0 at EDGE (a 90 m blend to Zearth)
-UNDULATE = 2.0        # blocks: the plain's gentle roll over ~100 m (the 2052 field is mown but not a table)
+UNDULATE = 1.0        # blocks: the plain's roll, over ~700 m (13.11 review: a +-2 roll over 110 m showed as dozens of
+                      # wavy 1-block terrace lines under shaders; the 2052 field reads as smooth open grass)
+ROLL_CELL = 700       # metres per value-noise cell of that roll
 TREES_OUT = 0.5       # plain weight above which trees are cleared
 SHORE = 8             # shaped ground within this many blocks of remaining water stays above its surface
 FILL = 0.35           # plain weight above which water is filled
@@ -150,7 +152,7 @@ class Field:
         core = known & land & (w >= 0.99)
         self.level = int(self.layout.get("level") or round(float(np.median(g[core]))))
         base = np.where(land, g, np.where(wet, self.water + 1.0, g))
-        roll = UNDULATE * (2 * smooth_noise(self.nx, self.nz, 110, 13) - 1)     # presentation: a gentle roll
+        roll = UNDULATE * (2 * smooth_noise(self.nx, self.nz, ROLL_CELL, 13) - 1)   # presentation: a slow, low roll
         plain = base + w * (self.level + roll - base)
         del roll
         self.filled = wet & (w > FILL)
@@ -240,7 +242,8 @@ class Field:
         X = np.arange(nx)[:, None] + self.x0 + i
         Z = np.arange(nz)[None, :] + self.z0 + k
         tuft = hash01(X, Z, 3) < 0.3
-        path = v.id("minecraft:smooth_sandstone")
+        from surface import path_state
+        path = None
         for a, b in zip(*np.nonzero(work)):
             t, nat = int(h[a, b]), int(n[a, b])
             col = ids[a, :, b]
@@ -254,7 +257,7 @@ class Field:
                 col[t + 1 - lo:up + 1 - lo] = air
             # also on a filled lake: the fill is lawn now, and the lines of the show cross where the lakes were
             if paths and (self.x0 + i + a, self.z0 + k + b) in paths:
-                col[t - lo] = path
+                col[t - lo] = v.id(path_state(self.x0 + i + a, self.z0 + k + b))
                 if t + 1 - lo < col.shape[0]:
                     col[t + 1 - lo] = air
                 continue

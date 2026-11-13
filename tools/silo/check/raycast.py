@@ -27,7 +27,7 @@ X0, Z0 = int(d["x0"]), int(d["z0"])
 names = list(d["names"])
 PAL = {"grass_block": (110, 160, 60), "dirt": (134, 96, 67), "coarse_dirt": (120, 85, 58), "dirt_path": (148, 120, 74),
        "water": (64, 100, 196), "sand": (219, 207, 163), "gravel": (150, 142, 136), "stone": (122, 122, 122),
-       "smooth_sandstone": (222, 212, 175), "smooth_stone": (170, 170, 170), "smooth_stone_slab": (170, 170, 170),
+       "smooth_sandstone": (222, 212, 175), "white_terracotta": (205, 178, 160), "smooth_stone": (170, 170, 170), "smooth_stone_slab": (170, 170, 170),
        "polished_andesite": (140, 142, 140), "polished_andesite_stairs": (140, 142, 140),
        "light_gray_concrete": (155, 155, 150), "gray_concrete": (90, 92, 96), "white_concrete": (220, 222, 222),
        "moss_block": (89, 109, 45), "clay": (160, 165, 178), "polished_blackstone": (45, 42, 48)}

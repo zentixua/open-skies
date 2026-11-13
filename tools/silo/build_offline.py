@@ -431,9 +431,10 @@ class Builder:
         ground, water, top = read_area(self.a.golden, X0, Z0, nx, nz, min_y=-64, height=384)
         log(f"golden heights {nx} x {nz} in {time.time() - t0:.0f}s")
         f = self.field
-        II, KK = np.meshgrid(np.arange(nx) + X0, np.arange(nz) + Z0, indexing="ij")
-        ci = np.clip((II - cx0) // C, 0, T.shape[0] - 1); ck = np.clip((KK - cz0) // C, 0, T.shape[1] - 1)
-        inplain = (II - f.x0 >= 0) & (II - f.x0 < f.height.shape[0]) & (KK - f.z0 >= 0) & (KK - f.z0 < f.height.shape[1])
+        xs_, zs_ = np.arange(nx) + X0, np.arange(nz) + Z0
+        ci = np.clip((xs_ - cx0) // C, 0, T.shape[0] - 1)[:, None]; ck = np.clip((zs_ - cz0) // C, 0, T.shape[1] - 1)[None, :]
+        inplain = ((xs_ - f.x0 >= 0) & (xs_ - f.x0 < f.height.shape[0]))[:, None] & \
+            ((zs_ - f.z0 >= 0) & (zs_ - f.z0 < f.height.shape[1]))[None, :]
         sc = os.path.join(self.a.state, "surroundings-cols.npy")
         built = np.zeros((nx, nz), bool)
         if os.path.exists(sc):
@@ -446,7 +447,33 @@ class Builder:
         wet = (water != MISSING) & (ground != MISSING) & (water > ground) & (Tm[ci, ck] > 0.5) & (Wm[ci, ck] < 0.2) \
             & ~inplain & ~built
         t = np.load(self.a.terrain_for_towns, allow_pickle=True) if self.a.terrain_for_towns else None
+        town = np.zeros((nx, nz), bool)
+        if t is not None:
+            bi = (xs_ - int(t["x0"])) // 16; bk = (zs_ - int(t["z0"])) // 16
+            okb = ((bi >= 0) & (bi < t["bes"].shape[0]))[:, None] & ((bk >= 0) & (bk < t["bes"].shape[1]))[None, :]
+            town = okb & (t["bes"][np.clip(bi, 0, t["bes"].shape[0] - 1)[:, None], np.clip(bk, 0, t["bes"].shape[1] - 1)[None, :]] >= 3)
+        wet &= ~town
         vols = []
+        # the forest floor: under the frame's closed forest, Zearth's snow, bare stone and sand become grass on dirt
+        # (the 13.11 Photon shot showed white and grey patches where the frame has continuous forest)
+        floor_m = (Tm[ci, ck] > 0.5) & (Wm[ci, ck] < 0.2) & ~inplain & ~built & ~town & (water == MISSING) & (ground != MISSING)
+        n_floor = int(floor_m.sum())
+        for bx in range(0, nx, 16):
+            for bz in range(0, nz, 16):
+                m = floor_m[bx:bx + 16, bz:bz + 16]
+                if not m.any():
+                    continue
+                gb = ground[bx:bx + 16, bz:bz + 16]; tp = top[bx:bx + 16, bz:bz + 16]
+                lo, hi = int(gb[m].min()) - 2, int(gb[m].max()) + 1
+                v = Volume((X0 + bx, lo, Z0 + bz), (m.shape[0], hi - lo + 1, m.shape[1]))
+                for i, k in zip(*np.nonzero(m)):
+                    g = int(gb[i, k])
+                    v.set(i, g - 2 - lo, k, "minecraft:dirt"); v.set(i, g - 1 - lo, k, "minecraft:dirt")
+                    v.set(i, g - lo, k, "minecraft:grass_block[snowy=false]")
+                    if int(tp[i, k]) == g + 1:
+                        v.set(i, g + 1 - lo, k, "minecraft:air")      # a snow layer or a plant on the old floor
+                vols.append(v)
+        log(f"forest floor: {n_floor} columns")
         n_fill = int(wet.sum())
         for bx in range(0, nx, 16):
             for bz in range(0, nz, 16):
@@ -467,9 +494,9 @@ class Builder:
             for gz in range(Z0, Z1, step):
                 x, z = gx + int(paths.h01(gx, gz, 26) * step), gz + int(paths.h01(gx, gz, 27) * step)
                 i, k = x - X0, z - Z0
-                if not (0 <= i < nx and 0 <= k < nz) or inplain[i, k] or built[i, k]:
+                if not (0 <= i < nx and 0 <= k < nz) or inplain[i, 0 if inplain.shape[1] == 1 else k] or built[i, k]:
                     continue
-                dd = dens[ci[i, k], ck[i, k]]
+                dd = dens[ci[i, 0], ck[0, k]]
                 if dd < 0.25 or paths.h01(gx, gz, 28) > dd ** 0.6:
                     continue
                 if float(np.min(np.hypot(rings[:, 0] - x, rings[:, 1] - z))) < paths.RING_PATH_R + 6:
@@ -477,10 +504,8 @@ class Builder:
                 g = int(ground[i, k])
                 if g == MISSING:
                     continue
-                if t is not None:
-                    tbx, tbz = (x - int(t["x0"])) // 16, (z - int(t["z0"])) // 16
-                    if 0 <= tbx < t["bes"].shape[0] and 0 <= tbz < t["bes"].shape[1] and t["bes"][tbx, tbz] >= 3:
-                        continue
+                if town[i, k]:
+                    continue
                 if water[i, k] != MISSING:
                     if not wet[i, k]:
                         continue
@@ -489,11 +514,11 @@ class Builder:
                     continue
                 r = paths.h01(gx, gz, 29)
                 dmin = 0
-                kind = "minecraft:spruce" if r < 0.3 else ("minecraft:dark_oak" if D[ci[i, k], ck[i, k]] > 0.5 and r < 0.75
+                kind = "minecraft:spruce" if r < 0.3 else ("minecraft:dark_oak" if D[ci[i, 0], ck[0, k]] > 0.5 and r < 0.75
                                                          else ("minecraft:oak" if r < 0.9 else "minecraft:fancy_oak"))
                 vols.append(self.tree_volume(x, g, z, tree_blocks(kind, int(h01(x, z, 13) * 1e6))))
                 n_tree += 1
-        self.apply(vols, f"forest2: {n_fill} lake columns filled, {n_tree} trees")
+        self.apply(vols, f"forest2: {n_floor} floor columns, {n_fill} lake columns filled, {n_tree} trees")
         self.mark("forest2", {"filled": n_fill, "trees": n_tree})
 
     def slots(self) -> None:
