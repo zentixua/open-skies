@@ -398,6 +398,7 @@ class Builder:
             return g, w, t
         S = Surroundings(lay, ground_fn=ground_fn, source=sp)
         vols = S.volumes()
+        vols += self.yard_clutter(S)
         cols = set()
         for v in vols:
             ox, oy, oz = v.origin
@@ -406,6 +407,51 @@ class Builder:
         np.save(os.path.join(self.a.state, "surroundings-cols.npy"), np.array(sorted(cols), dtype=np.int32))
         self.apply(vols, f"surroundings: {len(vols)} volumes, {len(cols)} columns")
         self.mark("surroundings", {"volumes": len(vols), "columns": len(cols), "gate_shift_m": round(math.hypot(*shift), 1)})
+
+    @staticmethod
+    def yard_clutter(S) -> list:
+        """What makes the frame's yards read busy from 2-4 km (presentation, the frame shows only dots and stripes):
+        parked vehicles in rows on the car parks and vehicle yards (a block long-ways, 2 x 1 x 4, light colours), and
+        stacks of containers in rows on the gravel yards (3 x 3 x 6, two high, muted colours), on the levelled surface
+        surroundings.py left (S.done), off its buildings."""
+        from surroundings import inside
+        cars = ["minecraft:white_concrete", "minecraft:light_gray_concrete", "minecraft:gray_concrete",
+                "minecraft:light_blue_concrete", "minecraft:red_concrete"]
+        boxes = ["minecraft:blue_terracotta", "minecraft:light_gray_concrete", "minecraft:brown_terracotta",
+                 "minecraft:cyan_terracotta", "minecraft:white_concrete"]
+        out = []
+        for it in S.src["items"]:
+            kind = it["kind"]
+            if kind not in ("vehicle_rows", "gravel") or not it.get("poly") or it["id"] in ("nw_strip", "sw_mast_pad"):
+                continue
+            poly = np.array([S.w(p) for p in it["poly"]], float)
+            x0, z0 = np.floor(poly.min(0)).astype(int); x1, z1 = np.ceil(poly.max(0)).astype(int)
+            X, Z = np.meshgrid(np.arange(x0, x1 + 1) + 0.5, np.arange(z0, z1 + 1) + 0.5, indexing="ij")
+            m = inside(poly, X, Z)
+            ys = [S.done.get((int(x), int(z))) for x, z in zip(X[m], Z[m])]
+            ys = [y for y in ys if y is not None]
+            if not ys:
+                continue
+            v = Volume((int(x0), int(min(ys)) + 1, int(z0)), (X.shape[0], int(max(ys)) - int(min(ys)) + 8, X.shape[1]))
+            for i, k in zip(*np.nonzero(m)):
+                x, z = int(x0 + i), int(z0 + k)
+                y = S.done.get((x, z))
+                if y is None:
+                    continue
+                if kind == "vehicle_rows":
+                    row, slot = z % 7, x % 3            # rows 7 m apart, cars 3 m apart, 4 long
+                    if row < 4 and slot < 2 and h01(x // 3, z // 7, 51) < 0.8:
+                        v.set(i, y + 1 - v.origin[1], k, cars[int(h01(x // 3, z // 7, 52) * len(cars))])
+                else:
+                    row, slot = z % 10, x % 8           # container rows 10 m apart, stacks 8 m apart
+                    if row < 3 and slot < 6 and h01(x // 8, z // 10, 53) < 0.45:
+                        c = boxes[int(h01(x // 8, z // 10, 54) * len(boxes))]
+                        hgt = 6 if h01(x // 8, z // 10, 55) < 0.5 else 3
+                        for dy in range(1, hgt + 1):
+                            v.set(i, y + dy - v.origin[1], k, c)
+            out.append(v)
+        log(f"yard clutter: {len(out)} yards")
+        return out
 
     def forest2(self) -> None:
         """Second forest pass beyond the plain, toward the 2052 frame's closed canopy: Zearth's lakes of any depth
