@@ -1,0 +1,27 @@
+{
+ "position": [
+  1067.0,
+  1454.5,
+  -4938.4
+ ],
+ "height_above_ground_m": 1385,
+ "yaw_deg": -45.81,
+ "pitch_deg": 26.55,
+ "roll_deg": 1.16,
+ "focal_px_at_1920_wide": 1954.5,
+ "principal_point": [
+  960.0,
+  401.0
+ ],
+ "hfov_deg": 52.32,
+ "vfov_deg_1920x802": 23.19,
+ "vfov_deg_16x9": 30.89,
+ "fit_rms_px": 7.44,
+ "fit_max_px": 16.65,
+ "nearest_ring_m": 2040,
+ "farthest_ring_m": 4058,
+ "ground_at_top_edge_m": 5184,
+ "ground_plane_y": 70,
+ "build_limit_note": "deep-world datapack: min_y -896, height 1216 -> max build y 319; the camera is far above it, spectator flight still works (no limit on flying height)",
+ "about": "Camera of the S3 2052 aerial (aerial2052-1920.jpg): a pinhole camera (position, yaw, pitch, roll, focal; principal point at the frame centre) least-squares fitted to the 50 ring centres measured on the aerial (canon/lines.json centre_world) and their pixels through canon/fit.json Hf1920, on the v4 world's ground (y 70). Minecraft convention: yaw 0 looks +z (south), 90 looks -x; pitch > 0 looks down. Minecraft's FOV setting is vertical: vfov_deg_16x9 for a 16:9 window assumes the 1920x802 frame is the centre band of a 1920x1080 picture."
+}
