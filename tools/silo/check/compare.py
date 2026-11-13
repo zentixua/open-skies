@@ -17,7 +17,7 @@ import sys
 
 import numpy as np
 from PIL import Image, ImageDraw
-from scipy import signal
+from scipy import ndimage, signal
 
 
 def signal_fft(img, k):
@@ -103,10 +103,21 @@ rgb = np.zeros((nx, nz, 3), np.uint8)
 for gi in np.unique(G):
     if gi >= 0:
         rgb[G == gi] = col(names[gi])
-S = np.where(known, GY, level)
-gx, gz = np.gradient(S)
-f = rgb.astype(float) * np.clip(1.0 + 0.11 * (gx + gz), 0.72, 1.28)[..., None]
-f[CAN] = f[CAN] * 0.6 + np.array([30, 70, 25]) * 0.4
+S = np.where(known, GY, level).astype(float)
+CANH = np.where(CAN, 6.0, 0.0)                        # tree crowns stand ~6 m over the ground they shade
+Hs = S + CANH
+# relief: a hillshade (sun from the north-west, 35 degrees up) and a little ambient occlusion from the local height
+# below the surroundings, so berms, bowls and groves read as they do in an aerial photograph
+gx_, gz_ = np.gradient(ndimage.gaussian_filter(Hs, 0.7))
+az, alt = math.radians(315), math.radians(35)
+lx, lz, ly = math.cos(alt) * math.cos(az), math.cos(alt) * math.sin(az), math.sin(alt)
+nrm = np.sqrt(gx_ ** 2 + gz_ ** 2 + 1)
+shade = np.clip((-gx_ * lx - gz_ * lz + ly) / nrm / ly, 0.35, 1.35)
+ao = np.clip(1 + 0.04 * (Hs - ndimage.uniform_filter(Hs, 9)), 0.75, 1.1)
+f = rgb.astype(float) * (shade * ao)[..., None]
+leafy = CAN & (np.random.default_rng(0).random(CAN.shape) < 0.5)
+f[CAN] = f[CAN] * 0.55 + np.array([24, 52, 22]) * 0.45
+f[leafy] *= 0.85
 RGB = np.clip(f, 0, 255).astype(np.uint8)          # [x, z]
 
 sc = 0.5
