@@ -581,6 +581,10 @@ class Silo:
             a = sum(cells[ci][3] for ci in cols) / len(cols)
             facing = self.facing_radial(a + math.pi)
             fx, fz = DIRS[facing]
+            if len(cols) == 2:
+                (x0, z0), (x1, z1) = [cells[ci][:2] for ci in cols]
+                if (x1 - x0) * fx + (z1 - z0) * fz != 0:        # a pair one behind the other (stepped facade): the
+                    cols = [min(cols, key=lambda ci: self.r[cells[ci][0], cells[ci][1]])]   # front leaf alone
             # where the round facade steps, it is two cells thick along the door's axis: open the cell behind too
             for ci in cols:
                 bx, bz = cells[ci][0] - fx, cells[ci][1] - fz
@@ -1071,6 +1075,14 @@ class Silo:
             if mid and i % 3 == 1 and roof < grade:
                 v.set(X_, roof, Z_, "minecraft:sea_lantern")
         self.exit_cells = [(x, z) for x in range(RAMP_X[1] + 1, EXIT_X + 1) for z in range(RAMP_Z[0] - 1, RAMP_Z[1] + 2)]
+
+    def walk_targets(self) -> dict[str, tuple[int, int, int]]:
+        """Places walk.py requires reachable that its room check does not cover (silo frame x, row index, z)."""
+        m = self.machines()
+        out = {}
+        if hasattr(m, "camp_at"):
+            out["George's camp"] = m.camp_at
+        return out
 
     def generator_hall(self) -> None:
         """The generator hall below level 144 (machines.Builder, from the model)."""

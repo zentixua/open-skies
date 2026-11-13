@@ -1,8 +1,8 @@
 """Can a player walk it? Flood fill over a generated silo volume from the surface (offline, no server).
 
 A vanilla player is 0.6 wide and 1.8 tall, steps up 0.6 without jumping and jumps 1.25. Each block state gets a
-collision class from its name: none (air, plates, crops, banners, light), partial (slabs, stairs, carpets, beds,
-chests: the player stands inside the cell on its top), full (1), tall (walls and fences, 1.5: never jumped), thin
+collision class from its name: none (air, plates, crops, banners, light), partial (slabs, carpets, beds, chests:
+the player stands inside the cell on its top; stairs count as full, walked up from their low side), full (1), tall (walls and fences, 1.5: never jumped), thin
 obstacles (panes, bars, chains, end rods: block the body, carry it on top) and doors (block the body but open: wooden
 by hand, iron by the plates the generator puts on both sides, which this check also requires). Ladders, scaffolding
 and water are climbed.
@@ -29,7 +29,7 @@ NONE, PARTIAL, FULL, TALL, THIN, DOOR, CLIMB = range(7)
 
 # collision height of partial blocks, block units (vanilla shapes)
 PARTIAL_H = {
-    "carpet": 0.0625, "slab": 0.5, "stairs": 0.5, "bed": 0.5625, "chest": 0.875, "trapped_chest": 0.875,
+    "carpet": 0.0625, "slab": 0.5, "bed": 0.5625, "chest": 0.875, "trapped_chest": 0.875,
     "ender_chest": 0.875, "daylight_detector": 0.375, "flower_pot": 0.375, "lantern": 0.5625, "soul_lantern": 0.5625,
     "farmland": 0.9375, "dirt_path": 0.9375, "stonecutter": 0.5625, "campfire": 0.4375, "enchanting_table": 0.75,
     "lectern": 0.875, "brewing_stand": 0.875, "candle": 0.375, "snow": 0.125, "sculk_sensor": 0.5,
@@ -66,7 +66,7 @@ def classify(state: str) -> tuple[int, float]:
         t = props.get("type", "bottom")
         return (PARTIAL, 0.5) if t == "bottom" else (FULL, 1.0)
     if name.endswith("_stairs"):
-        return (PARTIAL, 0.5) if props.get("half", "bottom") == "bottom" else (FULL, 1.0)
+        return FULL, 1.0                         # walked up from the low side to the top of its high half
     if name.endswith("_bed"):
         return PARTIAL, PARTIAL_H["bed"]
     if name.startswith("potted_"):
@@ -125,11 +125,23 @@ class Walk:
         m = part & up1 & ((t <= 0.2) | up2)
         feet[m] = np.broadcast_to(ys, self.shape)[m] + t[m]
         # standing in a free cell on the block below (full, thin, or the 1.5 top of a wall); climbing needs no floor
+        # a swimmer at the top of water climbs out onto a block one above the surface: the water's top carries too
+        water = np.zeros(len(palette), bool)
+        water[[i for i, st in enumerate(palette) if st.startswith("minecraft:water")]] = True
+        below_w = np.zeros_like(free)
+        below_w[:, 1:, :] = water[grid[:, :-1, :]]
         support = (below_c == FULL) | (below_c == THIN) | (below_c == TALL) | ((below_c == CLIMB) & (below_t >= 1.0))
+        support |= below_w & ~water[grid]
         lift = np.where(below_c == TALL, 0.5, 0.0).astype(np.float32)
         m2 = free & up1 & ~part & ((support & ((lift == 0) | up2)) | (c == CLIMB))
         feet[m2] = np.broadcast_to(ys, self.shape)[m2] + lift[m2]
         self.on_wall = m2 & (below_c == TALL) & (c != CLIMB)
+        # under a roof: something solid two to five rows over the feet (a room or a deck under a deck, not the top of
+        # a tank, a pillar or a roof in a tall hall)
+        roof = np.zeros_like(free)
+        for k in range(2, 6):
+            roof[:, :-k, :] |= ~free[:, k:, :]
+        self.roofed = roof
         self.feet = feet
         self.node = ~np.isnan(feet)
         self.climb = c == CLIMB
@@ -248,14 +260,18 @@ def report(silo, walk: Walk, min_nodes: int = 4, verbose: bool = True) -> dict:
                 same |= lab3[nx, np.clip(uy + dy, 0, H - 1), nz] == ul
             fits = walk.free[nx, uy, nz] & walk.free[nx, np.clip(uy + 1, 0, H - 1), nz]
             np.add.at(walls, ul[~same & ~fits], 1)
-        # and a part standing only on the tops of walls and fences (parapets) is no room either
-        floor = np.bincount(lab[un & ~walk.on_wall.ravel()[idx]], minlength=n)
+        # and a part standing only on the tops of walls and fences (parapets) or with nothing over it is no room either
+        floor = np.bincount(lab[un & ~walk.on_wall.ravel()[idx] & walk.roofed.ravel()[idx]], minlength=n)
+        cavern_top = silo.yi(silo.void_top_rel)
+        out["cavern"] = []
         for comp in np.flatnonzero((sizes >= min_nodes) & (walls > 0) & (floor > 0)):
             m = lab == comp
             cx, cy, cz = xs[m], ys[m], zs[m]
             x0, z0 = cx.mean() - silo.R, cz.mean() - silo.R
             y = int(np.median(cy))
-            out["components"].append({
+            # The digger void is a cavern with the model's machine in it: its ledges, legs and cage are sculpture,
+            # listed but not failed. What a person uses there is checked by target below.
+            (out["cavern"] if cy.max() < cavern_top else out["components"]).append({
                 "nodes": int(m.sum()), "level": level_of(silo, y), "y": y,
                 "r": round(math.hypot(x0, z0), 1), "bearing": round(math.degrees(math.atan2(z0, x0)) % 360),
                 "at": (int(round(x0)), int(round(z0))),
@@ -264,6 +280,12 @@ def report(silo, walk: Walk, min_nodes: int = 4, verbose: bool = True) -> dict:
             })
         out["components"].sort(key=lambda c: (str(c["level"]), -c["nodes"]))
     out["doors_without_plates"] = walk.doors_without_plates()
+    # places a person must reach, wherever they lie: George's camp in the cavern
+    out["targets"] = {}
+    for name, (tx, ty, tz) in getattr(silo, "walk_targets", lambda: {})().items():
+        col = [reach[np.searchsorted(idx, (tx + silo.R) * H * Z + yy * Z + (tz + silo.R))]
+               for yy in range(ty, ty + 3) if walk.node[tx + silo.R, yy, tz + silo.R]]
+        out["targets"][name] = bool(col and any(col))
     return out
 
 
@@ -301,14 +323,16 @@ def main() -> int:
     for n in a.silo:
         t = time.time()
         r = check(n, a.min)
+        missed = [k for k, ok in r["targets"].items() if not ok]
         print(f"silo {n}: {r['reached']}/{r['nodes']} nodes reachable, {len(r['components'])} unreachable parts, "
-              f"{len(r['doors_without_plates'])} iron doors without a plate ({time.time() - t:.0f} s)")
+              f"{len(r['doors_without_plates'])} iron doors without a plate, targets missed: {missed or 'none'}, "
+              f"{len(r['cavern'])} unreachable bits of the cavern's sculpture ({time.time() - t:.0f} s)")
         for c in r["components"]:
             print(f"  level {c['level']}: {c['nodes']} nodes at r {c['r']} bearing {c['bearing']} (x {c['at'][0]}, "
                   f"z {c['at'][1]}), box {c['box']}")
         for d in r["doors_without_plates"][:20]:
             print(f"  iron door without a plate at {d}")
-        bad += len(r["components"]) + len(r["doors_without_plates"])
+        bad += len(r["components"]) + len(r["doors_without_plates"]) + len(missed)
     return 1 if bad else 0
 
 

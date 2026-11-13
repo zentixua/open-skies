@@ -228,6 +228,21 @@ class Builder:
             for dy in range(7, 14):
                 self.put(lx - dx, yf + dy, lz - dz, RUST)
                 self.put(lx, yf + dy, lz, f"minecraft:ladder[facing={f},waterlogged=false]")
+            # not in the model (a viewer, nobody walks it): a grating from the catwalk in to the ladder's foot
+            for rr in np.arange(5.4, 9.6, 0.4):
+                for sd in (-0.6, 0.6):
+                    px = mx + rr * math.cos(la) - sd * math.sin(la)
+                    pz = mz + rr * math.sin(la) + sd * math.cos(la)
+                    if self.get(px, yf + 6, pz) in (None, AIR):
+                        self.put(px, yf + 6, pz, GRATE)
+        # not in the model either: a ladder up the first column from the walkway deck to the catwalk, through it
+        cx, cz = at(10.3, 45)
+        ca_, sa_ = math.cos(math.radians(45) + rot), math.sin(math.radians(45) + rot)
+        f = silo.facing_radial(math.radians(45) + rot + math.pi)          # on the column's face toward the vessel
+        dx, dz = {"east": (1, 0), "west": (-1, 0), "south": (0, 1), "north": (0, -1)}[f]
+        lx, lz = int(round(cx)) + dx, int(round(cz)) + dz
+        for dy in range(0, 7):
+            self.put(lx, yf + dy, lz, f"minecraft:ladder[facing={f},waterlogged=false]")
         for x, z, kind in ((-10, 5, "stand"), (-11, -5, "stand"), (13, -4, "stand"), (3, -14, "stand"),
                            (-4, 10.8, "rail"), (9, -6.8, "rail")):
             a = math.atan2(z, x) + rot                                 # machine-local (x, z) to silo
@@ -281,10 +296,14 @@ class Builder:
                 self.put(wx, yf + dy, wz, POST)
         up = silo.facing_radial(b + math.pi / 2)                # the stair climbs toward +x
         for i, dy in enumerate((2, 1, 0)):                     # 16 steps down from x -8.5 at z 0.9..2.1
-            m = (x >= -8.5 - (i + 1) * 1.6) & (x < -8.5 - i * 1.6) & (zl >= 0.9) & (zl < 2.1)
+            # widened to z 0.5..2.5: the run lies diagonal to the block grid here, and 1.2 m rasterises to steps
+            # that touch only at their corners
+            m = (x >= -8.5 - (i + 1) * 1.6) & (x < -8.5 - i * 1.6) & (zl >= 0.5) & (zl < 2.5)
             v.mask(yf + dy, yf + dy, m, f"minecraft:polished_deepslate_stairs[facing={up},half=bottom,shape=straight,waterlogged=false]")
             for ddy in range(0, dy):
                 v.mask(yf + ddy, yf + ddy, m, CONCRETE)
+            # the run is straight and the hall's wall round: its far steps cut a niche in the wall, room for a head
+            v.mask(yf + dy + 1, yf + dy + 3, m & (silo.r >= WALL_R - 0.5), AIR)
 
     def hatch(self, yf: int) -> None:
         """The round hatch, 3.2 m in radius, through the hall floor into the void (model: at the camera orbit 25.5 m
@@ -297,6 +316,23 @@ class Builder:
         v.mask(top, yf - 1, d < 3.2, AIR)
         v.mask(yf, yf, (d >= 3.2) & (d < 3.9), "minecraft:smooth_stone_slab[type=bottom,waterlogged=false]")
         self.hatch_at = (hx, hz)
+
+    def hatch_ladder(self) -> None:
+        """Not in the model: a ladder down the hatch's wall on the side toward the axis and on down a steel post to
+        the void's water, so whoever goes down can come back up (52 m). Drawn after the void is cut."""
+        silo = self.silo
+        hx, hz = self.hatch_at
+        yf = silo.yi(silo.gen_floor_rel)
+        top = silo.yi(silo.void_top_rel)
+        f = silo.facing_radial(math.atan2(hz, hx))            # the ladder faces out of the hall, its back to the axis
+        dx, dz = {"east": (1, 0), "west": (-1, 0), "south": (0, 1), "north": (0, -1)}[f]
+        lx, lz = int(round(hx)) - 3 * dx, int(round(hz)) - 3 * dz
+        floor = silo.yi(silo.void_floor_rel)
+        for y in range(floor - 1, yf):
+            if y < top:
+                self.put(lx - dx, y, lz - dz, "minecraft:polished_deepslate")
+            if y >= floor + 2:
+                self.put(lx, y, lz, f"minecraft:ladder[facing={f},waterlogged=false]")
 
     # digger void ----------------------------------------------------------------------------------------------
     def digger_void(self) -> None:
@@ -326,6 +362,8 @@ class Builder:
         self.big_ring(floor)
         self.camp(floor)
         self.tunnel_in(floor)
+        if hasattr(self, "hatch_at"):
+            self.hatch_ladder()
 
     def trusses(self, y: int) -> None:
         """The truss framework across the floor at the water line: sixteen radial runs (r 48-88) and two rings (60,
@@ -464,6 +502,7 @@ class Builder:
         R, v, y = self.silo.R, self.v, floor + 2
         v.box(R + cx - 4, floor, R + cz - 3, R + cx + 4, y, R + cz + 3, CONCRETE_DARK)
         top = y + 1
+        self.camp_at = (cx - 2, top, cz - 2)                                          # a free corner of the slab
         put = lambda dx, dz, dy, st: v.set(R + cx + dx, top + dy, R + cz + dz, st)
         put(3, 2, 0, "minecraft:gray_bed[facing=west,occupied=false,part=head]")      # cot at (2.8, 2.0)
         put(4, 2, 0, "minecraft:gray_bed[facing=west,occupied=false,part=foot]")
