@@ -1,0 +1,2187 @@
+{
+ "build_vs_frame": {
+  "axis_north (Silo 1 fit point toward the gate fit point)": {
+   "offset_m": [
+    6.29,
+    11.75
+   ],
+   "positive_is": "west"
+  },
+  "axis_south (same line south to Silo 2's circle)": {
+   "offset_m": [
+    5.32,
+    3.23
+   ],
+   "positive_is": "west"
+  },
+  "founders_west (centre line Silo 1 -> 42, at the two circles)": {
+   "offset_m": [
+    -5.86,
+    0.75
+   ],
+   "positive_is": "north"
+  },
+  "founders_east (centre line Silo 1 -> 25, at the two circles)": {
+   "offset_m": [
+    -1.52,
+    -27.89
+   ],
+   "positive_is": "south"
+  },
+  "north_cross (40 m beyond the farther of the 44/17 circles), at u -1 and +1": {
+   "offset_m": [
+    -31.47,
+    -28.85
+   ],
+   "positive_is": "south"
+  }
+ },
+ "about": "Straight paths, ring circles and rosettes measured on the S3 2052 aerial (aerial2052-1920.jpg, branch silo-canon-img) through canon/fit.json Hf1920, by tools/silo/canon_lines.py. Canon units: Silo 1's fit point at 0,0, flower edge 1, x east, y south, gate north. World: Silo 1 [3248.0, -2800.0], rotation 128, spacing 270. Errors: fit = the ridge's scatter (statistical), abs_m = the homography's absolute error (6.1 m rms of 50 measured ring centres against the canon ground after a similarity; 12.2 m max). Straightness and line-through-centre need no absolute accuracy: a homography keeps lines straight.",
+ "axis": {
+  "bearing_deg": 0.253,
+  "u_at_v0": 0.0215,
+  "rms_m": 0.57,
+  "north_vs_south_half": {
+   "bearing_diff_deg": 0.084,
+   "offset_at_silo1_m": 0.07
+  },
+  "offset_of_ring_centre_m": {
+   "1": 3.05,
+   "2": -1.47
+  },
+  "offset_of_canon_point_m": {
+   "1": 5.8,
+   "2": -11.22,
+   "gate": 11.75
+  },
+  "note": "one straight line: gate, Silo 1's centre and Silo 2's centre within a few metres. The halves are measured separately (axis_north, axis_south).",
+  "offsets_positive_is": "west"
+ },
+ "lines": [
+  {
+   "name": "axis_north",
+   "note": "gate to Silo 1's ring path; no path crosses Silo 1's north berm; the same line's samples go on to v -4.905 (gate canopy at -4.99) past a gap at v -4.9 to -4.3, where the stream of visitors covers the path",
+   "from": [
+    0.0403,
+    -4.4
+   ],
+   "to": [
+    0.0243,
+    -0.45
+   ],
+   "from_world": [
+    4177.5,
+    -2060.0
+   ],
+   "to_world": [
+    3339.7,
+    -2720.0
+   ],
+   "length_m": 1066.5,
+   "bearing_deg": 180.232,
+   "fit": {
+    "samples": 680,
+    "rms_m": 0.66,
+    "offset_sigma_m": 0.03,
+    "angle_sigma_deg": 0.005
+   },
+   "abs_m": 6.1,
+   "angle_abs_deg": 0.46,
+   "ends_on_rings": [
+    "gate",
+    1
+   ],
+   "end_gap_to_ring_path_m": [
+    160.6,
+    16.9
+   ],
+   "offsets_positive_is": "west"
+  },
+  {
+   "name": "axis_south",
+   "note": "Silo 1's ring path (south, past the bare apron) to Silo 2's ring path",
+   "from": [
+    0.0203,
+    0.45
+   ],
+   "to": [
+    0.0115,
+    2.0501
+   ],
+   "from_world": [
+    3148.9,
+    -2870.5
+   ],
+   "to_world": [
+    2809.9,
+    -3138.3
+   ],
+   "length_m": 432.0,
+   "bearing_deg": 180.316,
+   "fit": {
+    "samples": 299,
+    "rms_m": 0.61,
+    "offset_sigma_m": 0.04,
+    "angle_sigma_deg": 0.017
+   },
+   "abs_m": 6.1,
+   "angle_abs_deg": 1.14,
+   "ends_on_rings": [
+    1,
+    2
+   ],
+   "end_gap_to_ring_path_m": [
+    5.4,
+    21.4
+   ],
+   "offsets_positive_is": "west"
+  },
+  {
+   "name": "founders_west",
+   "note": "Silo 1's ring path due west to Silo 42's ring path; it ends where it bends onto the ring circle (end_gap_to_ring_path_m)",
+   "from": [
+    -0.4501,
+    -0.0163
+   ],
+   "to": [
+    -2.87,
+    0.0333
+   ],
+   "from_world": [
+    3326.3,
+    -2893.1
+   ],
+   "to_world": [
+    3718.0,
+    -3416.2
+   ],
+   "length_m": 653.5,
+   "bearing_deg": 268.825,
+   "fit": {
+    "samples": 419,
+    "rms_m": 1.28,
+    "offset_sigma_m": 0.06,
+    "angle_sigma_deg": 0.019
+   },
+   "abs_m": 6.1,
+   "angle_abs_deg": 0.76,
+   "ends_on_rings": [
+    1,
+    42
+   ],
+   "offset_of_silo1_centre_m": -12.7,
+   "v_at_u0": -0.0255,
+   "end_gap_to_ring_path_m": [
+    14.3,
+    32.1
+   ],
+   "offsets_positive_is": "north"
+  },
+  {
+   "name": "founders_east",
+   "note": "Silo 1's ring path east to Silo 25's ring path; meets 25's circle north of the centre line; it ends where it bends onto the ring circle (end_gap_to_ring_path_m)",
+   "from": [
+    0.4901,
+    -0.024
+   ],
+   "to": [
+    2.8443,
+    -0.0904
+   ],
+   "from_world": [
+    3171.6,
+    -2691.7
+   ],
+   "to_world": [
+    2794.4,
+    -2179.8
+   ],
+   "length_m": 635.9,
+   "bearing_deg": 88.383,
+   "fit": {
+    "samples": 394,
+    "rms_m": 1.4,
+    "offset_sigma_m": 0.07,
+    "angle_sigma_deg": 0.021
+   },
+   "abs_m": 6.1,
+   "angle_abs_deg": 0.78,
+   "ends_on_rings": [
+    1,
+    25
+   ],
+   "offset_of_silo1_centre_m": 8.56,
+   "v_at_u0": -0.0101,
+   "end_gap_to_ring_path_m": [
+    19.8,
+    25.3
+   ],
+   "offsets_positive_is": "south"
+  },
+  {
+   "name": "north_cross",
+   "note": "cross path north of the 44 and 17 rings; joins the axis by two fillets (a Y on each side, about 0.1 units long); curves at its ends to 44/45 and 16/17; the Y junction leaves a gap at the axis, bridged here",
+   "from": [
+    -1.03,
+    -3.0634
+   ],
+   "to": [
+    1.365,
+    -3.0751
+   ],
+   "from_world": [
+    4071.0,
+    -2509.9
+   ],
+   "to_world": [
+    3675.4,
+    -1998.4
+   ],
+   "length_m": 646.7,
+   "bearing_deg": 89.722,
+   "fit": {
+    "samples": 227,
+    "rms_m": 1.68,
+    "offset_sigma_m": 0.11,
+    "angle_sigma_deg": 0.042
+   },
+   "abs_m": 6.1,
+   "angle_abs_deg": 0.76,
+   "v_at_u0": -3.0685,
+   "angle_to_axis_deg": 89.47,
+   "offsets_positive_is": "south"
+  }
+ ],
+ "rosettes": [
+  {
+   "centre": [
+    -1.7276,
+    -0.9205
+   ],
+   "centre_world": [
+    3731.0,
+    -3014.6
+   ],
+   "kind": "concentric",
+   "outer_r_m": 37.9,
+   "ring_radii_m_angle_mean": [
+    13.5,
+    26.6,
+    37.5
+   ],
+   "between": [
+    49,
+    48,
+    43
+   ],
+   "from_triangle_centroid_m": 66.8,
+   "fit": {
+    "samples": 113,
+    "rms_m": 2.1,
+    "centre_sigma_m": 0.3
+   }
+  },
+  {
+   "centre": [
+    -1.6532,
+    0.9816
+   ],
+   "centre_world": [
+    3314.0,
+    -3314.9
+   ],
+   "kind": "plain (one circle, faint inner ring)",
+   "outer_r_m": 40.0,
+   "ring_radii_m_angle_mean": [
+    38.9
+   ],
+   "between": [
+    30,
+    31,
+    29
+   ],
+   "from_triangle_centroid_m": 29.1,
+   "fit": {
+    "samples": 114,
+    "rms_m": 1.7,
+    "centre_sigma_m": 0.2
+   }
+  },
+  {
+   "centre": [
+    -2.6567,
+    1.4604
+   ],
+   "centre_world": [
+    3378.9,
+    -3608.0
+   ],
+   "kind": "concentric (faint)",
+   "outer_r_m": 41.1,
+   "ring_radii_m_angle_mean": [
+    24.2,
+    31.6,
+    41.0
+   ],
+   "between": [
+    32,
+    33,
+    29
+   ],
+   "from_triangle_centroid_m": 8.4,
+   "fit": {
+    "samples": 120,
+    "rms_m": 1.6,
+    "centre_sigma_m": 0.2
+   }
+  },
+  {
+   "centre": [
+    -1.796,
+    2.1065
+   ],
+   "centre_world": [
+    3098.4,
+    -3532.3
+   ],
+   "kind": "concentric",
+   "outer_r_m": 42.4,
+   "ring_radii_m_angle_mean": [
+    6.8,
+    14.9,
+    26.5,
+    32.9,
+    41.0
+   ],
+   "between": [
+    35,
+    34,
+    29
+   ],
+   "from_triangle_centroid_m": 12.1,
+   "fit": {
+    "samples": 108,
+    "rms_m": 2.1,
+    "centre_sigma_m": 0.3
+   }
+  },
+  {
+   "centre": [
+    1.7502,
+    2.0012
+   ],
+   "centre_world": [
+    2531.3,
+    -2760.3
+   ],
+   "kind": "concentric",
+   "outer_r_m": 43.0,
+   "ring_radii_m_angle_mean": [
+    6.1,
+    17.9,
+    20.4,
+    26.1,
+    31.3,
+    40.7
+   ],
+   "between": [
+    12,
+    11,
+    7
+   ],
+   "from_triangle_centroid_m": 24.7,
+   "fit": {
+    "samples": 118,
+    "rms_m": 3.7,
+    "centre_sigma_m": 0.5
+   }
+  },
+  {
+   "centre": [
+    2.607,
+    1.4365
+   ],
+   "centre_world": [
+    2509.0,
+    -2484.1
+   ],
+   "kind": "circle with trees inside",
+   "outer_r_m": 44.3,
+   "ring_radii_m_angle_mean": [
+    35.1
+   ],
+   "between": [
+    13,
+    7,
+    8
+   ],
+   "from_triangle_centroid_m": 30.8,
+   "fit": {
+    "samples": 130,
+    "rms_m": 9.6,
+    "centre_sigma_m": 1.2
+   }
+  },
+  {
+   "centre": [
+    1.8061,
+    -1.1705
+   ],
+   "centre_world": [
+    3196.8,
+    -2221.1
+   ],
+   "kind": "dark disc (trees), circle faint",
+   "outer_r_m": 41.3,
+   "ring_radii_m_angle_mean": [
+    6.7,
+    34.1
+   ],
+   "between": [
+    19,
+    20,
+    14
+   ],
+   "from_triangle_centroid_m": 34.0,
+   "fit": {
+    "samples": 106,
+    "rms_m": 6.7,
+    "centre_sigma_m": 0.9
+   }
+  },
+  {
+   "centre": [
+    2.189,
+    -2.0664
+   ],
+   "centre_world": [
+    3323.8,
+    -1990.8
+   ],
+   "kind": "dark disc (trees), circle faint",
+   "outer_r_m": 41.4,
+   "ring_radii_m_angle_mean": [
+    18.5,
+    40.5
+   ],
+   "between": [
+    21,
+    14,
+    15
+   ],
+   "from_triangle_centroid_m": 48.0,
+   "fit": {
+    "samples": 105,
+    "rms_m": 4.1,
+    "centre_sigma_m": 0.6
+   }
+  },
+  {
+   "centre": [
+    -3.9983,
+    0.1532
+   ],
+   "centre_world": [
+    3880.0,
+    -3676.2
+   ],
+   "kind": "circle with trees inside",
+   "outer_r_m": 42.7,
+   "ring_radii_m_angle_mean": [
+    6.5,
+    17.8,
+    31.9,
+    42.8
+   ],
+   "between": [
+    36,
+    42,
+    41
+   ],
+   "from_triangle_centroid_m": 25.7,
+   "fit": {
+    "samples": 110,
+    "rms_m": 5.1,
+    "centre_sigma_m": 0.7
+   }
+  }
+ ],
+ "rings": {
+  "1": {
+   "centre": [
+    0.0101,
+    0.0213
+   ],
+   "centre_world": [
+    3241.8,
+    -2801.4
+   ],
+   "r_m": 110.4,
+   "from_canon_m": 6.4,
+   "fit": {
+    "samples": 100,
+    "rms_m": 7.7,
+    "centre_sigma_m": 1.1
+   }
+  },
+  "2": {
+   "centre": [
+    0.0156,
+    2.5735
+   ],
+   "centre_world": [
+    2697.9,
+    -3224.5
+   ],
+   "r_m": 119.9,
+   "from_canon_m": 9.8,
+   "fit": {
+    "samples": 113,
+    "rms_m": 2.7,
+    "centre_sigma_m": 0.4
+   }
+  },
+  "3": {
+   "centre": [
+    -1.4676,
+    3.6889
+   ],
+   "centre_world": [
+    2707.1,
+    -3725.5
+   ],
+   "r_m": 114.5,
+   "from_canon_m": 5.8,
+   "fit": {
+    "samples": 106,
+    "rms_m": 9.2,
+    "centre_sigma_m": 1.3
+   }
+  },
+  "4": {
+   "centre": [
+    -0.4768,
+    3.437
+   ],
+   "centre_world": [
+    2596.0,
+    -3472.8
+   ],
+   "r_m": 110.2,
+   "from_canon_m": 9.4,
+   "fit": {
+    "samples": 112,
+    "rms_m": 2.3,
+    "centre_sigma_m": 0.3
+   }
+  },
+  "5": {
+   "centre": [
+    0.5531,
+    3.4036
+   ],
+   "centre_world": [
+    2431.9,
+    -3248.1
+   ],
+   "r_m": 111.7,
+   "from_canon_m": 3.8,
+   "fit": {
+    "samples": 122,
+    "rms_m": 8.2,
+    "centre_sigma_m": 1.1
+   }
+  },
+  "6": {
+   "centre": [
+    1.5663,
+    3.5516
+   ],
+   "centre_world": [
+    2232.0,
+    -3057.1
+   ],
+   "r_m": 111.2,
+   "from_canon_m": 4.0,
+   "fit": {
+    "samples": 134,
+    "rms_m": 7.8,
+    "centre_sigma_m": 1.0
+   }
+  },
+  "7": {
+   "centre": [
+    1.9961,
+    1.3695
+   ],
+   "centre_world": [
+    2624.8,
+    -2602.9
+   ],
+   "r_m": 112.9,
+   "from_canon_m": 9.1,
+   "fit": {
+    "samples": 116,
+    "rms_m": 7.3,
+    "centre_sigma_m": 1.0
+   }
+  },
+  "8": {
+   "centre": [
+    2.7608,
+    0.8317
+   ],
+   "centre_world": [
+    2612.1,
+    -2350.9
+   ],
+   "r_m": 111.9,
+   "from_canon_m": 14.1,
+   "fit": {
+    "samples": 103,
+    "rms_m": 5.2,
+    "centre_sigma_m": 0.7
+   }
+  },
+  "9": {
+   "centre": [
+    1.9285,
+    0.432
+   ],
+   "centre_world": [
+    2835.5,
+    -2461.5
+   ],
+   "r_m": 113.3,
+   "from_canon_m": 10.1,
+   "fit": {
+    "samples": 131,
+    "rms_m": 3.9,
+    "centre_sigma_m": 0.5
+   }
+  },
+  "10": {
+   "centre": [
+    1.0405,
+    1.0038
+   ],
+   "centre_world": [
+    2861.5,
+    -2745.5
+   ],
+   "r_m": 113.8,
+   "from_canon_m": 13.2,
+   "fit": {
+    "samples": 110,
+    "rms_m": 2.7,
+    "centre_sigma_m": 0.4
+   }
+  },
+  "11": {
+   "centre": [
+    1.1748,
+    1.9816
+   ],
+   "centre_world": [
+    2631.1,
+    -2879.4
+   ],
+   "r_m": 113.3,
+   "from_canon_m": 3.8,
+   "fit": {
+    "samples": 113,
+    "rms_m": 7.7,
+    "centre_sigma_m": 1.0
+   }
+  },
+  "12": {
+   "centre": [
+    2.1164,
+    2.3804
+   ],
+   "centre_world": [
+    2389.7,
+    -2745.4
+   ],
+   "r_m": 113.2,
+   "from_canon_m": 6.5,
+   "fit": {
+    "samples": 125,
+    "rms_m": 8.3,
+    "centre_sigma_m": 1.0
+   }
+  },
+  "13": {
+   "centre": [
+    2.9016,
+    1.807
+   ],
+   "centre_world": [
+    2381.2,
+    -2483.0
+   ],
+   "r_m": 115.7,
+   "from_canon_m": 3.2,
+   "fit": {
+    "samples": 101,
+    "rms_m": 8.8,
+    "centre_sigma_m": 1.2
+   }
+  },
+  "14": {
+   "centre": [
+    1.6854,
+    -1.8716
+   ],
+   "centre_world": [
+    3366.0,
+    -2130.3
+   ],
+   "r_m": 112.9,
+   "from_canon_m": 2.7,
+   "fit": {
+    "samples": 89,
+    "rms_m": 7.6,
+    "centre_sigma_m": 1.1
+   }
+  },
+  "15": {
+   "centre": [
+    2.0069,
+    -2.7988
+   ],
+   "centre_world": [
+    3509.9,
+    -1907.8
+   ],
+   "r_m": 112.5,
+   "from_canon_m": 3.4,
+   "fit": {
+    "samples": 79,
+    "rms_m": 9.0,
+    "centre_sigma_m": 1.4
+   }
+  },
+  "16": {
+   "centre": [
+    1.4553,
+    -3.5409
+   ],
+   "centre_world": [
+    3759.5,
+    -1901.8
+   ],
+   "r_m": 112.6,
+   "from_canon_m": 3.0,
+   "fit": {
+    "samples": 75,
+    "rms_m": 7.6,
+    "centre_sigma_m": 1.2
+   }
+  },
+  "17": {
+   "centre": [
+    1.0394,
+    -2.6137
+   ],
+   "centre_world": [
+    3631.3,
+    -2144.4
+   ],
+   "r_m": 112.4,
+   "from_canon_m": 3.2,
+   "fit": {
+    "samples": 86,
+    "rms_m": 8.8,
+    "centre_sigma_m": 1.3
+   }
+  },
+  "18": {
+   "centre": [
+    0.6988,
+    -1.6866
+   ],
+   "centre_world": [
+    3490.7,
+    -2371.0
+   ],
+   "r_m": 112.7,
+   "from_canon_m": 1.0,
+   "fit": {
+    "samples": 78,
+    "rms_m": 7.9,
+    "centre_sigma_m": 1.3
+   }
+  },
+  "19": {
+   "centre": [
+    1.341,
+    -0.9364
+   ],
+   "centre_world": [
+    3224.3,
+    -2359.0
+   ],
+   "r_m": 114.7,
+   "from_canon_m": 4.4,
+   "fit": {
+    "samples": 91,
+    "rms_m": 7.9,
+    "centre_sigma_m": 1.2
+   }
+  },
+  "20": {
+   "centre": [
+    2.3463,
+    -1.0781
+   ],
+   "centre_world": [
+    3087.4,
+    -2121.6
+   ],
+   "r_m": 118.3,
+   "from_canon_m": 7.6,
+   "fit": {
+    "samples": 93,
+    "rms_m": 5.6,
+    "centre_sigma_m": 0.8
+   }
+  },
+  "21": {
+   "centre": [
+    2.6904,
+    -2.0289
+   ],
+   "centre_world": [
+    3232.5,
+    -1890.3
+   ],
+   "r_m": 113.4,
+   "from_canon_m": 7.6,
+   "fit": {
+    "samples": 73,
+    "rms_m": 5.3,
+    "centre_sigma_m": 0.9
+   }
+  },
+  "22": {
+   "centre": [
+    4.3209,
+    -0.3835
+   ],
+   "centre_world": [
+    2611.3,
+    -1816.9
+   ],
+   "r_m": 113.1,
+   "from_canon_m": 2.7,
+   "fit": {
+    "samples": 120,
+    "rms_m": 7.7,
+    "centre_sigma_m": 1.0
+   }
+  },
+  "23": {
+   "centre": [
+    4.6442,
+    -1.3263
+   ],
+   "centre_world": [
+    2758.2,
+    -1591.4
+   ],
+   "r_m": 117.5,
+   "from_canon_m": 5.2,
+   "fit": {
+    "samples": 87,
+    "rms_m": 7.2,
+    "centre_sigma_m": 1.1
+   }
+  },
+  "24": {
+   "centre": [
+    3.6785,
+    -1.174
+   ],
+   "centre_world": [
+    2886.3,
+    -1822.2
+   ],
+   "r_m": 115.8,
+   "from_canon_m": 3.4,
+   "fit": {
+    "samples": 86,
+    "rms_m": 8.5,
+    "centre_sigma_m": 1.3
+   }
+  },
+  "25": {
+   "centre": [
+    3.3375,
+    -0.2239
+   ],
+   "centre_world": [
+    2740.9,
+    -2052.7
+   ],
+   "r_m": 112.7,
+   "from_canon_m": 1.7,
+   "fit": {
+    "samples": 118,
+    "rms_m": 7.7,
+    "centre_sigma_m": 1.0
+   }
+  },
+  "26": {
+   "centre": [
+    3.9677,
+    0.5693
+   ],
+   "centre_world": [
+    2467.3,
+    -2050.5
+   ],
+   "r_m": 114.5,
+   "from_canon_m": 6.4,
+   "fit": {
+    "samples": 85,
+    "rms_m": 8.1,
+    "centre_sigma_m": 1.2
+   }
+  },
+  "27": {
+   "centre": [
+    4.9491,
+    0.3707
+   ],
+   "centre_world": [
+    2346.4,
+    -1808.6
+   ],
+   "r_m": 112.6,
+   "from_canon_m": 2.5,
+   "fit": {
+    "samples": 98,
+    "rms_m": 9.3,
+    "centre_sigma_m": 1.3
+   }
+  },
+  "28": {
+   "centre": [
+    5.3007,
+    -0.5633
+   ],
+   "centre_world": [
+    2486.7,
+    -1578.6
+   ],
+   "r_m": 115.7,
+   "from_canon_m": 0.6,
+   "fit": {
+    "samples": 87,
+    "rms_m": 9.6,
+    "centre_sigma_m": 1.5
+   }
+  },
+  "29": {
+   "centre": [
+    -2.0521,
+    1.5247
+   ],
+   "centre_world": [
+    3264.7,
+    -3490.0
+   ],
+   "r_m": 115.5,
+   "from_canon_m": 5.2,
+   "fit": {
+    "samples": 110,
+    "rms_m": 8.9,
+    "centre_sigma_m": 1.2
+   }
+  },
+  "30": {
+   "centre": [
+    -1.1413,
+    1.1451
+   ],
+   "centre_world": [
+    3194.1,
+    -3233.2
+   ],
+   "r_m": 109.4,
+   "from_canon_m": 1.8,
+   "fit": {
+    "samples": 108,
+    "rms_m": 9.1,
+    "centre_sigma_m": 1.2
+   }
+  },
+  "31": {
+   "centre": [
+    -1.9768,
+    0.52
+   ],
+   "centre_world": [
+    3466.0,
+    -3307.0
+   ],
+   "r_m": 113.6,
+   "from_canon_m": 10.6,
+   "fit": {
+    "samples": 119,
+    "rms_m": 4.1,
+    "centre_sigma_m": 0.5
+   }
+  },
+  "32": {
+   "centre": [
+    -2.8553,
+    0.9348
+   ],
+   "centre_world": [
+    3523.7,
+    -3562.9
+   ],
+   "r_m": 116.0,
+   "from_canon_m": 5.7,
+   "fit": {
+    "samples": 91,
+    "rms_m": 8.1,
+    "centre_sigma_m": 1.2
+   }
+  },
+  "33": {
+   "centre": [
+    -2.9734,
+    1.9495
+   ],
+   "centre_world": [
+    3327.5,
+    -3756.7
+   ],
+   "r_m": 115.8,
+   "from_canon_m": 0.6,
+   "fit": {
+    "samples": 105,
+    "rms_m": 9.5,
+    "centre_sigma_m": 1.3
+   }
+  },
+  "34": {
+   "centre": [
+    -2.1723,
+    2.539
+   ],
+   "centre_world": [
+    3068.9,
+    -3684.2
+   ],
+   "r_m": 115.7,
+   "from_canon_m": 2.3,
+   "fit": {
+    "samples": 109,
+    "rms_m": 8.7,
+    "centre_sigma_m": 1.2
+   }
+  },
+  "35": {
+   "centre": [
+    -1.239,
+    2.1438
+   ],
+   "centre_world": [
+    2997.8,
+    -3420.0
+   ],
+   "r_m": 114.2,
+   "from_canon_m": 4.1,
+   "fit": {
+    "samples": 108,
+    "rms_m": 9.2,
+    "centre_sigma_m": 1.2
+   }
+  },
+  "36": {
+   "centre": [
+    -4.4045,
+    -0.1097
+   ],
+   "centre_world": [
+    4003.5,
+    -3718.9
+   ],
+   "r_m": 115.8,
+   "from_canon_m": 3.3,
+   "fit": {
+    "samples": 106,
+    "rms_m": 8.1,
+    "centre_sigma_m": 1.1
+   }
+  },
+  "37": {
+   "centre": [
+    -3.7727,
+    -0.912
+   ],
+   "centre_world": [
+    4069.2,
+    -3451.1
+   ],
+   "r_m": 114.1,
+   "from_canon_m": 5.9,
+   "fit": {
+    "samples": 90,
+    "rms_m": 7.5,
+    "centre_sigma_m": 1.1
+   }
+  },
+  "38": {
+   "centre": [
+    -4.777,
+    -1.0403
+   ],
+   "centre_world": [
+    4263.4,
+    -3643.4
+   ],
+   "r_m": 112.9,
+   "from_canon_m": 3.7,
+   "fit": {
+    "samples": 110,
+    "rms_m": 9.6,
+    "centre_sigma_m": 1.3
+   }
+  },
+  "39": {
+   "centre": [
+    -5.3584,
+    -0.2772
+   ],
+   "centre_world": [
+    4197.7,
+    -3894.0
+   ],
+   "r_m": 116.0,
+   "from_canon_m": 10.8,
+   "fit": {
+    "samples": 105,
+    "rms_m": 5.1,
+    "centre_sigma_m": 0.7
+   }
+  },
+  "40": {
+   "centre": [
+    -5.0134,
+    0.6695
+   ],
+   "centre_world": [
+    3938.9,
+    -3978.0
+   ],
+   "r_m": 117.8,
+   "from_canon_m": 3.5,
+   "fit": {
+    "samples": 101,
+    "rms_m": 7.2,
+    "centre_sigma_m": 1.0
+   }
+  },
+  "41": {
+   "centre": [
+    -4.0515,
+    0.7972
+   ],
+   "centre_world": [
+    3751.9,
+    -3794.5
+   ],
+   "r_m": 113.6,
+   "from_canon_m": 10.9,
+   "fit": {
+    "samples": 94,
+    "rms_m": 3.4,
+    "centre_sigma_m": 0.5
+   }
+  },
+  "42": {
+   "centre": [
+    -3.4104,
+    0.0277
+   ],
+   "centre_world": [
+    3809.0,
+    -3530.2
+   ],
+   "r_m": 113.8,
+   "from_canon_m": 3.2,
+   "fit": {
+    "samples": 88,
+    "rms_m": 10.2,
+    "centre_sigma_m": 1.5
+   }
+  },
+  "43": {
+   "centre": [
+    -1.7167,
+    -1.7315
+   ],
+   "centre_world": [
+    3901.8,
+    -2877.4
+   ],
+   "r_m": 113.4,
+   "from_canon_m": 2.3,
+   "fit": {
+    "samples": 91,
+    "rms_m": 8.4,
+    "centre_sigma_m": 1.2
+   }
+  },
+  "44": {
+   "centre": [
+    -1.1338,
+    -2.5174
+   ],
+   "centre_world": [
+    3972.1,
+    -2622.8
+   ],
+   "r_m": 113.8,
+   "from_canon_m": 10.7,
+   "fit": {
+    "samples": 104,
+    "rms_m": 3.3,
+    "centre_sigma_m": 0.5
+   }
+  },
+  "45": {
+   "centre": [
+    -1.4738,
+    -3.4109
+   ],
+   "centre_world": [
+    4218.7,
+    -2546.6
+   ],
+   "r_m": 120.9,
+   "from_canon_m": 4.4,
+   "fit": {
+    "samples": 95,
+    "rms_m": 4.8,
+    "centre_sigma_m": 0.7
+   }
+  },
+  "46": {
+   "centre": [
+    -2.0848,
+    -2.6491
+   ],
+   "centre_world": [
+    4158.2,
+    -2803.2
+   ],
+   "r_m": 113.9,
+   "from_canon_m": 5.0,
+   "fit": {
+    "samples": 88,
+    "rms_m": 6.1,
+    "centre_sigma_m": 0.9
+   }
+  },
+  "47": {
+   "centre": [
+    -2.7207,
+    -1.8645
+   ],
+   "centre_world": [
+    4097.0,
+    -3068.9
+   ],
+   "r_m": 107.9,
+   "from_canon_m": 6.6,
+   "fit": {
+    "samples": 102,
+    "rms_m": 7.8,
+    "centre_sigma_m": 1.1
+   }
+  },
+  "48": {
+   "centre": [
+    -2.3374,
+    -0.93
+   ],
+   "centre_world": [
+    3834.4,
+    -3142.7
+   ],
+   "r_m": 115.1,
+   "from_canon_m": 6.5,
+   "fit": {
+    "samples": 91,
+    "rms_m": 8.4,
+    "centre_sigma_m": 1.2
+   }
+  },
+  "49": {
+   "centre": [
+    -1.3454,
+    -0.81
+   ],
+   "centre_world": [
+    3644.0,
+    -2951.6
+   ],
+   "r_m": 113.2,
+   "from_canon_m": 1.2,
+   "fit": {
+    "samples": 98,
+    "rms_m": 8.5,
+    "centre_sigma_m": 1.2
+   }
+  },
+  "50": {
+   "centre": [
+    -0.7408,
+    -1.6023
+   ],
+   "centre_world": [
+    3712.1,
+    -2691.3
+   ],
+   "r_m": 113.9,
+   "from_canon_m": 4.9,
+   "fit": {
+    "samples": 89,
+    "rms_m": 5.1,
+    "centre_sigma_m": 0.8
+   }
+  }
+ },
+ "links": [
+  {
+   "rings": [
+    2,
+    4
+   ],
+   "gap_m": 38.3,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.07,
+   "offset_from_centre_line_m": 7.9
+  },
+  {
+   "rings": [
+    2,
+    5
+   ],
+   "gap_m": 35.4,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.32,
+   "offset_from_centre_line_m": -1.3
+  },
+  {
+   "rings": [
+    3,
+    4
+   ],
+   "gap_m": 51.3,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.09,
+   "offset_from_centre_line_m": -2.1
+  },
+  {
+   "rings": [
+    4,
+    5
+   ],
+   "gap_m": 56.3,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.11,
+   "offset_from_centre_line_m": 0.1
+  },
+  {
+   "rings": [
+    5,
+    6
+   ],
+   "gap_m": 53.6,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.09,
+   "offset_from_centre_line_m": 2.7
+  },
+  {
+   "rings": [
+    7,
+    8
+   ],
+   "gap_m": 27.6,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.34,
+   "offset_from_centre_line_m": 1.0
+  },
+  {
+   "rings": [
+    7,
+    9
+   ],
+   "gap_m": 27.6,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.24,
+   "offset_from_centre_line_m": -0.5
+  },
+  {
+   "rings": [
+    7,
+    10
+   ],
+   "gap_m": 49.6,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.24,
+   "offset_from_centre_line_m": 1.0
+  },
+  {
+   "rings": [
+    7,
+    11
+   ],
+   "gap_m": 50.4,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.26,
+   "offset_from_centre_line_m": 4.3
+  },
+  {
+   "rings": [
+    7,
+    12
+   ],
+   "gap_m": 48.8,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.22,
+   "offset_from_centre_line_m": 1.8
+  },
+  {
+   "rings": [
+    7,
+    13
+   ],
+   "gap_m": 42.9,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.17,
+   "offset_from_centre_line_m": 0.3
+  },
+  {
+   "rings": [
+    8,
+    9
+   ],
+   "gap_m": 24.1,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.0,
+   "offset_from_centre_line_m": -1.4
+  },
+  {
+   "rings": [
+    8,
+    13
+   ],
+   "gap_m": 38.5,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.23,
+   "offset_from_centre_line_m": -4.0
+  },
+  {
+   "rings": [
+    9,
+    10
+   ],
+   "gap_m": 58.1,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.14,
+   "offset_from_centre_line_m": 5.2
+  },
+  {
+   "rings": [
+    10,
+    11
+   ],
+   "gap_m": 39.4,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.1,
+   "offset_from_centre_line_m": -1.3
+  },
+  {
+   "rings": [
+    11,
+    12
+   ],
+   "gap_m": 49.6,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.05,
+   "offset_from_centre_line_m": 0.4
+  },
+  {
+   "rings": [
+    12,
+    13
+   ],
+   "gap_m": 33.6,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.15,
+   "offset_from_centre_line_m": -3.3
+  },
+  {
+   "rings": [
+    14,
+    15
+   ],
+   "gap_m": 39.6,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.16,
+   "offset_from_centre_line_m": -6.2
+  },
+  {
+   "rings": [
+    14,
+    17
+   ],
+   "gap_m": 40.3,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.12,
+   "offset_from_centre_line_m": -5.2
+  },
+  {
+   "rings": [
+    14,
+    18
+   ],
+   "gap_m": 45.4,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.05,
+   "offset_from_centre_line_m": -3.8
+  },
+  {
+   "rings": [
+    14,
+    19
+   ],
+   "gap_m": 41.5,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.27,
+   "offset_from_centre_line_m": 2.0
+  },
+  {
+   "rings": [
+    14,
+    20
+   ],
+   "gap_m": 47.6,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.08,
+   "offset_from_centre_line_m": 0.8
+  },
+  {
+   "rings": [
+    14,
+    21
+   ],
+   "gap_m": 48.4,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.1,
+   "offset_from_centre_line_m": 7.4
+  },
+  {
+   "rings": [
+    15,
+    16
+   ],
+   "gap_m": 24.6,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.11,
+   "offset_from_centre_line_m": 1.4
+  },
+  {
+   "rings": [
+    15,
+    17
+   ],
+   "gap_m": 41.1,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.0,
+   "offset_from_centre_line_m": null
+  },
+  {
+   "rings": [
+    15,
+    21
+   ],
+   "gap_m": 52.1,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.09,
+   "offset_from_centre_line_m": -2.7
+  },
+  {
+   "rings": [
+    16,
+    17
+   ],
+   "gap_m": 49.4,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.1,
+   "offset_from_centre_line_m": -2.4
+  },
+  {
+   "rings": [
+    17,
+    18
+   ],
+   "gap_m": 41.6,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.09,
+   "offset_from_centre_line_m": -2.2
+  },
+  {
+   "rings": [
+    18,
+    19
+   ],
+   "gap_m": 39.2,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.32,
+   "offset_from_centre_line_m": 1.8
+  },
+  {
+   "rings": [
+    19,
+    20
+   ],
+   "gap_m": 41.1,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.09,
+   "offset_from_centre_line_m": 5.4
+  },
+  {
+   "rings": [
+    20,
+    21
+   ],
+   "gap_m": 41.3,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.18,
+   "offset_from_centre_line_m": -5.4
+  },
+  {
+   "rings": [
+    22,
+    23
+   ],
+   "gap_m": 38.5,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.0,
+   "offset_from_centre_line_m": 1.3
+  },
+  {
+   "rings": [
+    22,
+    24
+   ],
+   "gap_m": 46.1,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.16,
+   "offset_from_centre_line_m": -4.4
+  },
+  {
+   "rings": [
+    22,
+    25
+   ],
+   "gap_m": 43.2,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.09,
+   "offset_from_centre_line_m": 0.4
+  },
+  {
+   "rings": [
+    22,
+    26
+   ],
+   "gap_m": 46.8,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.18,
+   "offset_from_centre_line_m": 6.5
+  },
+  {
+   "rings": [
+    22,
+    27
+   ],
+   "gap_m": 39.3,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.16,
+   "offset_from_centre_line_m": -6.5
+  },
+  {
+   "rings": [
+    22,
+    28
+   ],
+   "gap_m": 40.2,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.16,
+   "offset_from_centre_line_m": -6.5
+  },
+  {
+   "rings": [
+    23,
+    24
+   ],
+   "gap_m": 30.7,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.13,
+   "offset_from_centre_line_m": -4.0
+  },
+  {
+   "rings": [
+    23,
+    28
+   ],
+   "gap_m": 38.6,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.23,
+   "offset_from_centre_line_m": 5.0
+  },
+  {
+   "rings": [
+    24,
+    25
+   ],
+   "gap_m": 44.0,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.2,
+   "offset_from_centre_line_m": 3.6
+  },
+  {
+   "rings": [
+    25,
+    26
+   ],
+   "gap_m": 46.3,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.13,
+   "offset_from_centre_line_m": -4.9
+  },
+  {
+   "rings": [
+    26,
+    27
+   ],
+   "gap_m": 43.2,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.06,
+   "offset_from_centre_line_m": 4.5
+  },
+  {
+   "rings": [
+    27,
+    28
+   ],
+   "gap_m": 41.2,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.09,
+   "offset_from_centre_line_m": -6.6
+  },
+  {
+   "rings": [
+    29,
+    30
+   ],
+   "gap_m": 41.5,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.06,
+   "offset_from_centre_line_m": -3.2
+  },
+  {
+   "rings": [
+    29,
+    31
+   ],
+   "gap_m": 42.9,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.66,
+   "offset_from_centre_line_m": -6.5
+  },
+  {
+   "rings": [
+    29,
+    32
+   ],
+   "gap_m": 37.6,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.1,
+   "offset_from_centre_line_m": 6.1
+  },
+  {
+   "rings": [
+    29,
+    33
+   ],
+   "gap_m": 42.6,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.09,
+   "offset_from_centre_line_m": -1.1
+  },
+  {
+   "rings": [
+    29,
+    34
+   ],
+   "gap_m": 44.6,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.14,
+   "offset_from_centre_line_m": -6.5
+  },
+  {
+   "rings": [
+    29,
+    35
+   ],
+   "gap_m": 46.2,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.13,
+   "offset_from_centre_line_m": -2.7
+  },
+  {
+   "rings": [
+    30,
+    31
+   ],
+   "gap_m": 58.7,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.08,
+   "offset_from_centre_line_m": -1.6
+  },
+  {
+   "rings": [
+    30,
+    35
+   ],
+   "gap_m": 47.3,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.0,
+   "offset_from_centre_line_m": -0.6
+  },
+  {
+   "rings": [
+    31,
+    32
+   ],
+   "gap_m": 32.7,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.04,
+   "offset_from_centre_line_m": -3.8
+  },
+  {
+   "rings": [
+    32,
+    33
+   ],
+   "gap_m": 44.0,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.11,
+   "offset_from_centre_line_m": -5.0
+  },
+  {
+   "rings": [
+    32,
+    42
+   ],
+   "gap_m": 57.3,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.06,
+   "offset_from_centre_line_m": -2.8
+  },
+  {
+   "rings": [
+    33,
+    34
+   ],
+   "gap_m": 37.0,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.07,
+   "offset_from_centre_line_m": -6.6
+  },
+  {
+   "rings": [
+    34,
+    35
+   ],
+   "gap_m": 43.8,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.2,
+   "offset_from_centre_line_m": -0.8
+  },
+  {
+   "rings": [
+    36,
+    37
+   ],
+   "gap_m": 45.8,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.05,
+   "offset_from_centre_line_m": 3.6
+  },
+  {
+   "rings": [
+    36,
+    38
+   ],
+   "gap_m": 41.9,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.0,
+   "offset_from_centre_line_m": 1.8
+  },
+  {
+   "rings": [
+    36,
+    39
+   ],
+   "gap_m": 29.7,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.0,
+   "offset_from_centre_line_m": -1.2
+  },
+  {
+   "rings": [
+    36,
+    40
+   ],
+   "gap_m": 33.4,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.15,
+   "offset_from_centre_line_m": -6.7
+  },
+  {
+   "rings": [
+    36,
+    41
+   ],
+   "gap_m": 33.4,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.12,
+   "offset_from_centre_line_m": -2.4
+  },
+  {
+   "rings": [
+    36,
+    42
+   ],
+   "gap_m": 41.4,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.15,
+   "offset_from_centre_line_m": 0.9
+  },
+  {
+   "rings": [
+    37,
+    38
+   ],
+   "gap_m": 46.4,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.05,
+   "offset_from_centre_line_m": -7.4
+  },
+  {
+   "rings": [
+    37,
+    42
+   ],
+   "gap_m": 44.0,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.14,
+   "offset_from_centre_line_m": -2.1
+  },
+  {
+   "rings": [
+    38,
+    39
+   ],
+   "gap_m": 30.1,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.09,
+   "offset_from_centre_line_m": 2.5
+  },
+  {
+   "rings": [
+    39,
+    40
+   ],
+   "gap_m": 38.3,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.23,
+   "offset_from_centre_line_m": -5.8
+  },
+  {
+   "rings": [
+    40,
+    41
+   ],
+   "gap_m": 30.6,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.17,
+   "offset_from_centre_line_m": -5.9
+  },
+  {
+   "rings": [
+    41,
+    42
+   ],
+   "gap_m": 43.0,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.11,
+   "offset_from_centre_line_m": -0.6
+  },
+  {
+   "rings": [
+    43,
+    44
+   ],
+   "gap_m": 37.0,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.14,
+   "offset_from_centre_line_m": -1.5
+  },
+  {
+   "rings": [
+    43,
+    46
+   ],
+   "gap_m": 39.6,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.09,
+   "offset_from_centre_line_m": -0.4
+  },
+  {
+   "rings": [
+    43,
+    47
+   ],
+   "gap_m": 52.1,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.07,
+   "offset_from_centre_line_m": -2.2
+  },
+  {
+   "rings": [
+    43,
+    48
+   ],
+   "gap_m": 45.2,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.14,
+   "offset_from_centre_line_m": -3.5
+  },
+  {
+   "rings": [
+    43,
+    49
+   ],
+   "gap_m": 41.6,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.09,
+   "offset_from_centre_line_m": 0.8
+  },
+  {
+   "rings": [
+    43,
+    50
+   ],
+   "gap_m": 38.5,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.07,
+   "offset_from_centre_line_m": 2.7
+  },
+  {
+   "rings": [
+    44,
+    45
+   ],
+   "gap_m": 23.4,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.18,
+   "offset_from_centre_line_m": 1.2
+  },
+  {
+   "rings": [
+    44,
+    46
+   ],
+   "gap_m": 31.5,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.0,
+   "offset_from_centre_line_m": -3.2
+  },
+  {
+   "rings": [
+    44,
+    50
+   ],
+   "gap_m": 41.2,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.36,
+   "offset_from_centre_line_m": 5.7
+  },
+  {
+   "rings": [
+    45,
+    46
+   ],
+   "gap_m": 28.9,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.14,
+   "offset_from_centre_line_m": -2.5
+  },
+  {
+   "rings": [
+    46,
+    47
+   ],
+   "gap_m": 50.9,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.14,
+   "offset_from_centre_line_m": -4.5
+  },
+  {
+   "rings": [
+    47,
+    48
+   ],
+   "gap_m": 49.7,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.07,
+   "offset_from_centre_line_m": 3.9
+  },
+  {
+   "rings": [
+    48,
+    49
+   ],
+   "gap_m": 41.5,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.0,
+   "offset_from_centre_line_m": 1.1
+  },
+  {
+   "rings": [
+    49,
+    50
+   ],
+   "gap_m": 42.0,
+   "kind": "no straight connector on the centre line",
+   "coverage": 0.09,
+   "offset_from_centre_line_m": -1.8
+  }
+ ],
+ "not_straight": [
+  "Silo 1 to 30 and Silo 1 to 10: curves from Silo 1's south ring path (S-bends), not lines",
+  "most other paths between rings are arcs tangent to the ring circles"
+ ]
+}
