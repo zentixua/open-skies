@@ -1,0 +1,3005 @@
+{
+ "about": "Surroundings of the 50-silo complex in the show's 2052 aerial (S3E09 frame 01), measured in metres about Silo 1's ring centre in the canon frame: x east, z south, the gate north; flower edge 270 m. World = Silo 1 + R(layout rotation) * (x, z) * layout spacing / 270. Written by canon_surroundings.py; built by surroundings.py.",
+ "edge_m": 270.0,
+ "frame": "aerial2052-1920.jpg = /mnt/project-files/silo/frames/s3e09/01-aerial-complex.jpg, homography canon/fit.json Hf1920",
+ "camera": {
+  "focal_px": 1886.0,
+  "pose_error": 0.075,
+  "height_m": 1349,
+  "note": "for heights only; up is -z of the fit's frame"
+ },
+ "accuracy": "across +-5 m; depth +-10 m near the field, +-30 m at the yards beyond it, +-100 m at the gate; heights +-30 %",
+ "gate_note": "The gate is the frame's farthest point and its least certain. Through Hf1920 the canopy is at 1.52 km north of Silo 1; layout.json's gate (canon_layout gate, -4.993 edges = 1.35 km) comes from the joint fit with the founders' plaque, whose own frame residual at the gate is 25 px: the 2052 frame puts it 170 m farther. Here the gate group stays where the frame shows it and surroundings.py carries the avenue on from layout's gate to the canopy. Scale near the gate disagrees between frames: frame 01 gives the lawn 100 m across, frame 02 by coach sizes (width 2.55 m, length 12 m) about 63 m; s3e09/notes.md read 7 coach lengths, 85 m. Sizes in this group are frame 01's, which is consistent with every other feature here; frame 02 gives what frame 01 cannot resolve (lane counts, canopy peaks and height, the band, coaches).",
+ "items": [
+  {
+   "id": "gate_paved",
+   "kind": "paved",
+   "group": "gate",
+   "what": "the coach park: asphalt round the lawn, the access road widening into it (frame 02: 3-4 lanes each way with grass medians, ~35 coaches)",
+   "source_px": {
+    "poly": [
+     [
+      885,
+      18
+     ],
+     [
+      872,
+      24
+     ],
+     [
+      866,
+      35
+     ],
+     [
+      868,
+      48
+     ],
+     [
+      875,
+      55
+     ],
+     [
+      890,
+      59
+     ],
+     [
+      905,
+      57
+     ],
+     [
+      915,
+      52
+     ],
+     [
+      918,
+      45
+     ],
+     [
+      912,
+      33
+     ],
+     [
+      903,
+      23
+     ],
+     [
+      890,
+      17
+     ]
+    ]
+   },
+   "poly": [
+    [
+     4.5,
+     -1983.2
+    ],
+    [
+     -34.0,
+     -1927.1
+    ],
+    [
+     -56.5,
+     -1824.0
+    ],
+    [
+     -59.4,
+     -1705.4
+    ],
+    [
+     -46.1,
+     -1642.6
+    ],
+    [
+     -11.6,
+     -1605.6
+    ],
+    [
+     26.6,
+     -1620.3
+    ],
+    [
+     55.3,
+     -1662.0
+    ],
+    [
+     68.3,
+     -1723.6
+    ],
+    [
+     62.9,
+     -1834.4
+    ],
+    [
+     47.9,
+     -1931.1
+    ],
+    [
+     18.4,
+     -1992.1
+    ]
+   ],
+   "m_per_px_across": 2.65,
+   "shifted_x_m": -13.6
+  },
+  {
+   "id": "gate_lawn",
+   "kind": "lawn",
+   "group": "gate",
+   "what": "the oval lawn the loop goes round",
+   "source_px": {
+    "ellipse": [
+     [
+      875,
+      48
+     ],
+     [
+      915,
+      48
+     ],
+     [
+      895,
+      40
+     ],
+     [
+      895,
+      56
+     ]
+    ]
+   },
+   "centre": [
+    8.4,
+    -1701.2
+   ],
+   "axes_m": [
+    100.5,
+    142.7
+   ],
+   "angle_deg": 3.9,
+   "m_per_px_across": 2.51,
+   "shifted_x_m": -13.6
+  },
+  {
+   "id": "gate_forecourt",
+   "kind": "paved",
+   "group": "gate",
+   "what": "forecourt in front of the canopy, where the crowd stands (frame 02)",
+   "source_px": {
+    "poly": [
+     [
+      882,
+      58
+     ],
+     [
+      910,
+      57
+     ],
+     [
+      909,
+      66
+     ],
+     [
+      884,
+      66
+     ]
+    ]
+   },
+   "poly": [
+    [
+     -30.8,
+     -1615.5
+    ],
+    [
+     39.1,
+     -1619.4
+    ],
+    [
+     30.0,
+     -1543.1
+    ],
+    [
+     -30.9,
+     -1547.2
+    ]
+   ],
+   "m_per_px_across": 2.47,
+   "shifted_x_m": -13.6
+  },
+  {
+   "id": "gate_canopy",
+   "kind": "canopy",
+   "group": "gate",
+   "peaks": 5,
+   "what": "white tensile canopy over the entrance, 5-6 peaks on low arches (frame 02)",
+   "source_px": {
+    "line": [
+     [
+      885,
+      67
+     ],
+     [
+      909,
+      67
+     ]
+    ]
+   },
+   "line": [
+    [
+     -29.1,
+     -1538.7
+    ],
+    [
+     29.1,
+     -1534.8
+    ]
+   ],
+   "height_m": 13,
+   "how": "frame 02: peaks 38 px over their base at about 3 px/m (scale from the lawn's 85 m)",
+   "m_per_px_across": 2.44,
+   "shifted_x_m": -13.6
+  },
+  {
+   "id": "gate_band",
+   "kind": "band",
+   "group": "gate",
+   "what": "long low grey band either side of the canopy (frame 02: wall or fence, uncertain)",
+   "source_px": {
+    "line": [
+     [
+      829,
+      70
+     ],
+     [
+      964,
+      70
+     ]
+    ]
+   },
+   "line": [
+    [
+     -166.6,
+     -1522.9
+    ],
+    [
+     159.8,
+     -1500.9
+    ]
+   ],
+   "m_per_px_across": 2.43,
+   "shifted_x_m": -13.6
+  },
+  {
+   "id": "gate_pads_w",
+   "kind": "round_pad",
+   "group": "gate",
+   "what": "three white rings with dark centres west of the avenue (fountains, planters or pads: uncertain)",
+   "source_px": {
+    "points": [
+     [
+      743,
+      79
+     ],
+     [
+      764,
+      79
+     ],
+     [
+      787,
+      78
+     ]
+    ]
+   },
+   "points": [
+    [
+     -375.9,
+     -1463.0
+    ],
+    [
+     -325.6,
+     -1459.7
+    ],
+    [
+     -270.3,
+     -1464.1
+    ]
+   ],
+   "diameter_m": 24.0,
+   "m_per_px_across": 2.4,
+   "shifted_x_m": -13.6
+  },
+  {
+   "id": "gate_pads_e",
+   "kind": "round_pad",
+   "group": "gate",
+   "what": "the same three east of the avenue",
+   "source_px": {
+    "points": [
+     [
+      1010,
+      73
+     ],
+     [
+      1029,
+      73
+     ],
+     [
+      1052,
+      73
+     ]
+    ]
+   },
+   "points": [
+    [
+     267.5,
+     -1468.9
+    ],
+    [
+     313.0,
+     -1465.9
+    ],
+    [
+     368.1,
+     -1462.2
+    ]
+   ],
+   "diameter_m": 24.0,
+   "m_per_px_across": 2.4,
+   "shifted_x_m": -13.6
+  },
+  {
+   "id": "access_road",
+   "kind": "road",
+   "group": "gate",
+   "lanes": 4,
+   "what": "the access road north through the forest, two lanes each way with a yellow centre line (frame 02)",
+   "source_px": {
+    "line": [
+     [
+      885,
+      18
+     ],
+     [
+      886,
+      0
+     ]
+    ]
+   },
+   "line": [
+    [
+     4.5,
+     -1983.2
+    ],
+    [
+     21.0,
+     -2166.0
+    ]
+   ],
+   "width_m": 15,
+   "width_how": "2-3 px at 2-2.5 m/px across: two lanes; not finer than that",
+   "how": "frame 02: 2+2 lanes of 3.5 m and a centre line; it widens to 3-4 lanes each way with grass medians into the coach park",
+   "m_per_px_across": 2.65,
+   "shifted_x_m": -13.6
+  },
+  {
+   "id": "road_north",
+   "kind": "road",
+   "group": "roads",
+   "what": "perimeter road along the north edge, past the gate to the north-east halls and yard",
+   "source_px": {
+    "line": [
+     [
+      700,
+      73
+     ],
+     [
+      800,
+      66
+     ],
+     [
+      893,
+      62
+     ],
+     [
+      980,
+      62
+     ],
+     [
+      1137,
+      67
+     ],
+     [
+      1240,
+      80
+     ],
+     [
+      1310,
+      98
+     ],
+     [
+      1460,
+      125
+     ],
+     [
+      1600,
+      160
+     ],
+     [
+      1700,
+      190
+     ],
+     [
+      1760,
+      214
+     ]
+    ]
+   },
+   "line": [
+    [
+     -466.0,
+     -1519.0
+    ],
+    [
+     -222.1,
+     -1561.1
+    ],
+    [
+     7.3,
+     -1579.5
+    ],
+    [
+     220.1,
+     -1565.1
+    ],
+    [
+     594.5,
+     -1497.6
+    ],
+    [
+     816.8,
+     -1376.3
+    ],
+    [
+     943.3,
+     -1227.8
+    ],
+    [
+     1218.4,
+     -1014.0
+    ],
+    [
+     1429.9,
+     -769.2
+    ],
+    [
+     1555.2,
+     -580.6
+    ],
+    [
+     1609.8,
+     -442.9
+    ]
+   ],
+   "width_m": 7,
+   "width_how": "2-3 px at 2-2.5 m/px across: two lanes; not finer than that",
+   "m_per_px_across": 2.43
+  },
+  {
+   "id": "road_south",
+   "kind": "road",
+   "group": "roads",
+   "what": "perimeter road along the south edge, light masts and parked white vans on it",
+   "source_px": {
+    "line": [
+     [
+      300,
+      800
+     ],
+     [
+      500,
+      799
+     ],
+     [
+      667,
+      777
+     ],
+     [
+      944,
+      749
+     ],
+     [
+      1111,
+      740
+     ],
+     [
+      1311,
+      733
+     ],
+     [
+      1520,
+      736
+     ],
+     [
+      1920,
+      735
+     ]
+    ]
+   },
+   "line": [
+    [
+     -883.2,
+     1237.4
+    ],
+    [
+     -658.5,
+     1246.4
+    ],
+    [
+     -472.1,
+     1215.8
+    ],
+    [
+     -151.9,
+     1179.1
+    ],
+    [
+     44.4,
+     1171.4
+    ],
+    [
+     280.4,
+     1169.4
+    ],
+    [
+     521.6,
+     1187.0
+    ],
+    [
+     984.9,
+     1207.6
+    ]
+   ],
+   "width_m": 7,
+   "width_how": "2-3 px at 2-2.5 m/px across: two lanes; not finer than that",
+   "m_per_px_across": 1.13
+  },
+  {
+   "id": "road_se",
+   "kind": "road",
+   "group": "roads",
+   "what": "gravel road up the west side of the south-east yard",
+   "source_px": {
+    "line": [
+     [
+      1450,
+      736
+     ],
+     [
+      1520,
+      700
+     ],
+     [
+      1560,
+      650
+     ],
+     [
+      1600,
+      615
+     ],
+     [
+      1660,
+      603
+     ],
+     [
+      1750,
+      580
+     ]
+    ]
+   },
+   "line": [
+    [
+     440.4,
+     1183.0
+    ],
+    [
+     548.1,
+     1116.7
+    ],
+    [
+     637.2,
+     1014.7
+    ],
+    [
+     719.3,
+     939.0
+    ],
+    [
+     808.2,
+     915.0
+    ],
+    [
+     950.8,
+     866.0
+    ]
+   ],
+   "width_m": 7,
+   "width_how": "2-3 px at 2-2.5 m/px across: two lanes; not finer than that",
+   "m_per_px_across": 1.16
+  },
+  {
+   "id": "road_sw",
+   "kind": "road",
+   "group": "roads",
+   "what": "gravel road from the west woods round to the mast pad and the south-west hangar",
+   "source_px": {
+    "line": [
+     [
+      160,
+      598
+     ],
+     [
+      215,
+      588
+     ],
+     [
+      255,
+      590
+     ],
+     [
+      272,
+      608
+     ],
+     [
+      280,
+      640
+     ],
+     [
+      282,
+      662
+     ],
+     [
+      300,
+      690
+     ],
+     [
+      330,
+      728
+     ]
+    ]
+   },
+   "line": [
+    [
+     -1153.0,
+     803.3
+    ],
+    [
+     -1085.9,
+     782.0
+    ],
+    [
+     -1031.2,
+     789.8
+    ],
+    [
+     -999.1,
+     835.4
+    ],
+    [
+     -972.9,
+     911.7
+    ],
+    [
+     -960.1,
+     961.5
+    ],
+    [
+     -925.5,
+     1023.4
+    ],
+    [
+     -874.4,
+     1103.2
+    ]
+   ],
+   "width_m": 7,
+   "width_how": "2-3 px at 2-2.5 m/px across: two lanes; not finer than that",
+   "m_per_px_across": 1.33
+  },
+  {
+   "id": "road_sw_south",
+   "kind": "road",
+   "group": "roads",
+   "what": "gravel road from the mast pad south-east down to the south road",
+   "source_px": {
+    "line": [
+     [
+      372,
+      705
+     ],
+     [
+      430,
+      708
+     ],
+     [
+      480,
+      722
+     ],
+     [
+      530,
+      752
+     ],
+     [
+      560,
+      770
+     ]
+    ]
+   },
+   "line": [
+    [
+     -832.1,
+     1059.1
+    ],
+    [
+     -761.1,
+     1068.7
+    ],
+    [
+     -697.5,
+     1100.0
+    ],
+    [
+     -632.6,
+     1161.5
+    ],
+    [
+     -595.1,
+     1197.0
+    ]
+   ],
+   "width_m": 7,
+   "width_how": "2-3 px at 2-2.5 m/px across: two lanes; not finer than that",
+   "m_per_px_across": 1.21
+  },
+  {
+   "id": "road_e",
+   "kind": "road",
+   "group": "roads",
+   "what": "road down the east side from the pond to the south-east yard",
+   "source_px": {
+    "line": [
+     [
+      1745,
+      475
+     ],
+     [
+      1752,
+      520
+     ],
+     [
+      1765,
+      560
+     ],
+     [
+      1790,
+      578
+     ]
+    ]
+   },
+   "line": [
+    [
+     1081.0,
+     584.3
+    ],
+    [
+     1028.8,
+     712.1
+    ],
+    [
+     995.0,
+     817.5
+    ],
+    [
+     1005.7,
+     863.8
+    ]
+   ],
+   "width_m": 7,
+   "width_how": "2-3 px at 2-2.5 m/px across: two lanes; not finer than that",
+   "m_per_px_across": 1.44
+  },
+  {
+   "id": "rail_main",
+   "kind": "rail",
+   "group": "nw",
+   "tracks": 2,
+   "what": "railway along the north-west edge (two pale lines in the corridor; track count uncertain)",
+   "source_px": {
+    "line": [
+     [
+      0,
+      295
+     ],
+     [
+      80,
+      262
+     ],
+     [
+      160,
+      228
+     ],
+     [
+      240,
+      192
+     ],
+     [
+      330,
+      152
+     ],
+     [
+      420,
+      122
+     ],
+     [
+      520,
+      104
+     ],
+     [
+      640,
+      86
+     ],
+     [
+      700,
+      75
+     ]
+    ]
+   },
+   "line": [
+    [
+     -1712.2,
+     -237.6
+    ],
+    [
+     -1614.4,
+     -387.6
+    ],
+    [
+     -1509.8,
+     -555.5
+    ],
+    [
+     -1398.5,
+     -750.3
+    ],
+    [
+     -1259.3,
+     -989.6
+    ],
+    [
+     -1093.3,
+     -1184.1
+    ],
+    [
+     -879.8,
+     -1302.1
+    ],
+    [
+     -607.3,
+     -1423.2
+    ],
+    [
+     -465.8,
+     -1502.5
+    ]
+   ],
+   "gauge_m": 1.435,
+   "track_spacing_m": 4.5,
+   "spacing_how": "standard gauge and track centres; the frame resolves only the corridor",
+   "m_per_px_across": 1.82
+  },
+  {
+   "id": "rail_yard",
+   "kind": "rail",
+   "group": "nw",
+   "tracks": 4,
+   "what": "sidings fanning out in the yard (3-4 lines visible)",
+   "source_px": {
+    "line": [
+     [
+      120,
+      240
+     ],
+     [
+      330,
+      152
+     ]
+    ]
+   },
+   "line": [
+    [
+     -1570.5,
+     -496.0
+    ],
+    [
+     -1259.3,
+     -989.6
+    ]
+   ],
+   "gauge_m": 1.435,
+   "track_spacing_m": 4.5,
+   "spacing_how": "standard gauge and track centres; the frame resolves only the corridor",
+   "m_per_px_across": 1.94
+  },
+  {
+   "id": "nw_yard",
+   "kind": "gravel",
+   "group": "nw",
+   "what": "rail yard: grey gravel",
+   "source_px": {
+    "poly": [
+     [
+      150,
+      170
+     ],
+     [
+      230,
+      155
+     ],
+     [
+      300,
+      148
+     ],
+     [
+      325,
+      153
+     ],
+     [
+      290,
+      195
+     ],
+     [
+      250,
+      215
+     ],
+     [
+      190,
+      215
+     ],
+     [
+      150,
+      205
+     ]
+    ]
+   },
+   "poly": [
+    [
+     -1620.4,
+     -897.2
+    ],
+    [
+     -1472.5,
+     -983.5
+    ],
+    [
+     -1329.9,
+     -1020.4
+    ],
+    [
+     -1269.0,
+     -983.7
+    ],
+    [
+     -1291.9,
+     -726.3
+    ],
+    [
+     -1348.6,
+     -616.4
+    ],
+    [
+     -1468.6,
+     -623.7
+    ],
+    [
+     -1563.9,
+     -685.4
+    ]
+   ],
+   "m_per_px_across": 2.13
+  },
+  {
+   "id": "nw_strip",
+   "kind": "gravel",
+   "group": "nw",
+   "what": "gravel strip beside the line south-west of the yard",
+   "source_px": {
+    "poly": [
+     [
+      0,
+      250
+     ],
+     [
+      60,
+      225
+     ],
+     [
+      160,
+      205
+     ],
+     [
+      170,
+      215
+     ],
+     [
+      120,
+      250
+     ],
+     [
+      40,
+      300
+     ],
+     [
+      0,
+      310
+     ]
+    ]
+   },
+   "poly": [
+    [
+     -1786.2,
+     -457.6
+    ],
+    [
+     -1712.0,
+     -583.8
+    ],
+    [
+     -1543.6,
+     -684.2
+    ],
+    [
+     -1508.6,
+     -626.1
+    ],
+    [
+     -1555.9,
+     -443.9
+    ],
+    [
+     -1632.3,
+     -210.4
+    ],
+    [
+     -1689.3,
+     -169.4
+    ]
+   ],
+   "m_per_px_across": 1.93
+  },
+  {
+   "id": "nw_shed_a",
+   "kind": "shed",
+   "group": "nw",
+   "what": "long gabled shed by the sidings",
+   "source_px": {
+    "poly": [
+     [
+      214,
+      203
+     ],
+     [
+      248,
+      195
+     ],
+     [
+      252,
+      200
+     ],
+     [
+      218,
+      208
+     ]
+    ]
+   },
+   "poly": [
+    [
+     -1436.8,
+     -689.1
+    ],
+    [
+     -1378.1,
+     -731.5
+    ],
+    [
+     -1363.4,
+     -701.7
+    ],
+    [
+     -1421.9,
+     -659.8
+    ]
+   ],
+   "height_m": 6.3,
+   "height_how": "3 px of side at 0.47 px per metre up (camera from Hf1920), +-30 %",
+   "m_per_px_across": 2.04
+  },
+  {
+   "id": "nw_shed_b",
+   "kind": "shed",
+   "group": "nw",
+   "what": "its twin",
+   "source_px": {
+    "poly": [
+     [
+      224,
+      197
+     ],
+     [
+      258,
+      189
+     ],
+     [
+      262,
+      194
+     ],
+     [
+      228,
+      202
+     ]
+    ]
+   },
+   "poly": [
+    [
+     -1424.6,
+     -722.8
+    ],
+    [
+     -1365.3,
+     -766.0
+    ],
+    [
+     -1350.6,
+     -735.7
+    ],
+    [
+     -1409.7,
+     -693.1
+    ]
+   ],
+   "height_m": 6.4,
+   "height_how": "3 px of side at 0.47 px per metre up (camera from Hf1920), +-30 %",
+   "m_per_px_across": 2.05
+  },
+  {
+   "id": "nw_domes",
+   "kind": "dome",
+   "group": "nw",
+   "what": "two round storage domes (one blue-grey, one white)",
+   "source_px": {
+    "points": [
+     [
+      303,
+      208
+     ],
+     [
+      316,
+      212
+     ]
+    ]
+   },
+   "points": [
+    [
+     -1250.5,
+     -649.4
+    ],
+    [
+     -1220.0,
+     -625.2
+    ]
+   ],
+   "diameter_m": 20.1,
+   "height_m": 12.7,
+   "height_how": "6 px of side at 0.47 px per metre up (camera from Hf1920), +-30 %",
+   "m_per_px_across": 2.02
+  },
+  {
+   "id": "nw_depot",
+   "kind": "vehicle_rows",
+   "group": "nw",
+   "what": "vehicle depot: dark vehicles in rows in a forest clearing",
+   "source_px": {
+    "poly": [
+     [
+      462,
+      122
+     ],
+     [
+      520,
+      118
+     ],
+     [
+      528,
+      168
+     ],
+     [
+      458,
+      170
+     ]
+    ]
+   },
+   "poly": [
+    [
+     -998.2,
+     -1177.9
+    ],
+    [
+     -869.9,
+     -1198.3
+    ],
+    [
+     -820.7,
+     -859.8
+    ],
+    [
+     -967.2,
+     -856.5
+    ]
+   ],
+   "m_per_px_across": 2.27
+  },
+  {
+   "id": "n_hall",
+   "kind": "shed",
+   "group": "nw",
+   "what": "long hall with a blue-grey roof by the road",
+   "source_px": {
+    "poly": [
+     [
+      581,
+      97
+     ],
+     [
+      606,
+      106
+     ],
+     [
+      603,
+      112
+     ],
+     [
+      578,
+      103
+     ]
+    ]
+   },
+   "poly": [
+    [
+     -741.9,
+     -1346.2
+    ],
+    [
+     -679.6,
+     -1274.0
+    ],
+    [
+     -684.0,
+     -1229.9
+    ],
+    [
+     -745.8,
+     -1300.8
+    ]
+   ],
+   "height_m": 9.7,
+   "height_how": "4 px of side at 0.41 px per metre up (camera from Hf1920), +-30 %",
+   "m_per_px_across": 2.35
+  },
+  {
+   "id": "n_tanks",
+   "kind": "tank",
+   "group": "nw",
+   "what": "two small white tanks beside it",
+   "source_px": {
+    "points": [
+     [
+      563,
+      106
+     ],
+     [
+      571,
+      110
+     ]
+    ]
+   },
+   "points": [
+    [
+     -778.9,
+     -1280.5
+    ],
+    [
+     -758.3,
+     -1249.4
+    ]
+   ],
+   "diameter_m": 13.9,
+   "height_m": 9.6,
+   "height_how": "4 px of side at 0.42 px per metre up (camera from Hf1920), +-30 %",
+   "m_per_px_across": 2.32
+  },
+  {
+   "id": "ne_hall_1",
+   "kind": "barrel_hall",
+   "group": "ne",
+   "what": "largest white barrel-roofed hall",
+   "source_px": {
+    "poly": [
+     [
+      1317.0,
+      107.0
+     ],
+     [
+      1349.0,
+      107.0
+     ],
+     [
+      1349.0,
+      121.0
+     ],
+     [
+      1317.0,
+      121.0
+     ]
+    ]
+   },
+   "poly": [
+    [
+     940.8,
+     -1160.8
+    ],
+    [
+     1012.9,
+     -1156.1
+    ],
+    [
+     983.6,
+     -1057.2
+    ],
+    [
+     913.0,
+     -1061.7
+    ]
+   ],
+   "height_m": 18.9,
+   "height_how": "8 px of side at 0.42 px per metre up (camera from Hf1920), +-30 %",
+   "m_per_px_across": 2.26
+  },
+  {
+   "id": "ne_hall_2",
+   "kind": "barrel_hall",
+   "group": "ne",
+   "what": "barrel hall behind it",
+   "source_px": {
+    "poly": [
+     [
+      1349.0,
+      104.0
+     ],
+     [
+      1371.0,
+      104.0
+     ],
+     [
+      1371.0,
+      116.0
+     ],
+     [
+      1349.0,
+      116.0
+     ]
+    ]
+   },
+   "poly": [
+    [
+     1019.3,
+     -1177.9
+    ],
+    [
+     1069.0,
+     -1174.6
+    ],
+    [
+     1042.8,
+     -1088.9
+    ],
+    [
+     993.9,
+     -1092.1
+    ]
+   ],
+   "height_m": 14.2,
+   "height_how": "6 px of side at 0.42 px per metre up (camera from Hf1920), +-30 %",
+   "m_per_px_across": 2.27
+  },
+  {
+   "id": "ne_block",
+   "kind": "shed",
+   "group": "ne",
+   "what": "flat dark-roofed block joining the halls",
+   "source_px": {
+    "poly": [
+     [
+      1340.0,
+      126.0
+     ],
+     [
+      1384.0,
+      126.0
+     ],
+     [
+      1384.0,
+      136.0
+     ],
+     [
+      1340.0,
+      136.0
+     ]
+    ]
+   },
+   "poly": [
+    [
+     953.7,
+     -1024.1
+    ],
+    [
+     1050.0,
+     -1017.9
+    ],
+    [
+     1029.0,
+     -950.8
+    ],
+    [
+     934.1,
+     -956.8
+    ]
+   ],
+   "height_m": 9.2,
+   "height_how": "4 px of side at 0.43 px per metre up (camera from Hf1920), +-30 %",
+   "m_per_px_across": 2.19
+  },
+  {
+   "id": "ne_hall_3",
+   "kind": "barrel_hall",
+   "group": "ne",
+   "what": "barrel hall",
+   "source_px": {
+    "poly": [
+     [
+      1384.0,
+      122.0
+     ],
+     [
+      1410.0,
+      122.0
+     ],
+     [
+      1410.0,
+      136.0
+     ],
+     [
+      1384.0,
+      136.0
+     ]
+    ]
+   },
+   "poly": [
+    [
+     1058.6,
+     -1045.3
+    ],
+    [
+     1115.7,
+     -1041.6
+    ],
+    [
+     1085.1,
+     -947.2
+    ],
+    [
+     1029.0,
+     -950.8
+    ]
+   ],
+   "height_m": 16.2,
+   "height_how": "7 px of side at 0.43 px per metre up (camera from Hf1920), +-30 %",
+   "m_per_px_across": 2.2
+  },
+  {
+   "id": "ne_hall_4",
+   "kind": "barrel_hall",
+   "group": "ne",
+   "what": "barrel hall",
+   "source_px": {
+    "poly": [
+     [
+      1407.0,
+      126.0
+     ],
+     [
+      1433.0,
+      126.0
+     ],
+     [
+      1433.0,
+      140.0
+     ],
+     [
+      1407.0,
+      140.0
+     ]
+    ]
+   },
+   "poly": [
+    [
+     1100.3,
+     -1014.7
+    ],
+    [
+     1157.1,
+     -1011.0
+    ],
+    [
+     1125.8,
+     -917.8
+    ],
+    [
+     1070.1,
+     -921.3
+    ]
+   ],
+   "height_m": 16.1,
+   "height_how": "7 px of side at 0.43 px per metre up (camera from Hf1920), +-30 %",
+   "m_per_px_across": 2.19
+  },
+  {
+   "id": "ne_carpark",
+   "kind": "vehicle_rows",
+   "group": "ne",
+   "what": "large car park, dense rows of dark vehicles",
+   "source_px": {
+    "poly": [
+     [
+      1465,
+      128
+     ],
+     [
+      1600,
+      158
+     ],
+     [
+      1705,
+      192
+     ],
+     [
+      1700,
+      207
+     ],
+     [
+      1595,
+      190
+     ],
+     [
+      1480,
+      152
+     ]
+    ]
+   },
+   "poly": [
+    [
+     1222.2,
+     -993.0
+    ],
+    [
+     1435.0,
+     -781.4
+    ],
+    [
+     1559.9,
+     -568.8
+    ],
+    [
+     1511.8,
+     -487.2
+    ],
+    [
+     1346.6,
+     -593.4
+    ],
+    [
+     1198.7,
+     -834.6
+    ]
+   ],
+   "m_per_px_across": 2.18
+  },
+  {
+   "id": "ne_carpark_2",
+   "kind": "vehicle_rows",
+   "group": "ne",
+   "what": "a row of parked vehicles north of the pond",
+   "source_px": {
+    "poly": [
+     [
+      1228,
+      84
+     ],
+     [
+      1300,
+      88
+     ],
+     [
+      1300,
+      96
+     ],
+     [
+      1228,
+      92
+     ]
+    ]
+   },
+   "poly": [
+    [
+     781.1,
+     -1346.8
+    ],
+    [
+     941.0,
+     -1304.8
+    ],
+    [
+     924.5,
+     -1244.2
+    ],
+    [
+     766.5,
+     -1285.3
+    ]
+   ],
+   "m_per_px_across": 2.34
+  },
+  {
+   "id": "ne_shelters",
+   "kind": "shelter_rows",
+   "group": "ne",
+   "what": "rows of flat grey roofs at the car park's south edge (shelters, uncertain)",
+   "source_px": {
+    "poly": [
+     [
+      1535,
+      173
+     ],
+     [
+      1592,
+      178
+     ],
+     [
+      1600,
+      193
+     ],
+     [
+      1545,
+      191
+     ]
+    ]
+   },
+   "poly": [
+    [
+     1264.9,
+     -699.2
+    ],
+    [
+     1369.0,
+     -662.6
+    ],
+    [
+     1349.5,
+     -575.9
+    ],
+    [
+     1244.8,
+     -593.9
+    ]
+   ],
+   "m_per_px_across": 2.04
+  },
+  {
+   "id": "ne_yard",
+   "kind": "gravel",
+   "group": "ne",
+   "what": "gravel yard",
+   "source_px": {
+    "poly": [
+     [
+      1625,
+      213
+     ],
+     [
+      1700,
+      205
+     ],
+     [
+      1770,
+      215
+     ],
+     [
+      1830,
+      220
+     ],
+     [
+      1890,
+      240
+     ],
+     [
+      1890,
+      300
+     ],
+     [
+      1840,
+      295
+     ],
+     [
+      1800,
+      280
+     ],
+     [
+      1760,
+      260
+     ],
+     [
+      1700,
+      240
+     ],
+     [
+      1650,
+      232
+     ]
+    ]
+   },
+   "poly": [
+    [
+     1352.4,
+     -463.9
+    ],
+    [
+     1516.8,
+     -498.0
+    ],
+    [
+     1626.4,
+     -436.5
+    ],
+    [
+     1727.6,
+     -403.5
+    ],
+    [
+     1785.7,
+     -296.1
+    ],
+    [
+     1633.5,
+     -22.4
+    ],
+    [
+     1558.5,
+     -48.8
+    ],
+    [
+     1522.7,
+     -118.6
+    ],
+    [
+     1497.0,
+     -214.3
+    ],
+    [
+     1432.9,
+     -317.1
+    ],
+    [
+     1357.3,
+     -362.7
+    ]
+   ],
+   "m_per_px_across": 1.93
+  },
+  {
+   "id": "ne_shed",
+   "kind": "shed",
+   "group": "ne",
+   "what": "long shed with a light roof",
+   "source_px": {
+    "poly": [
+     [
+      1666,
+      213
+     ],
+     [
+      1703,
+      230
+     ],
+     [
+      1699,
+      236
+     ],
+     [
+      1662,
+      219
+     ]
+    ]
+   },
+   "poly": [
+    [
+     1431.4,
+     -459.1
+    ],
+    [
+     1461.7,
+     -366.8
+    ],
+    [
+     1440.2,
+     -337.1
+    ],
+    [
+     1409.7,
+     -428.1
+    ]
+   ],
+   "height_m": 8.3,
+   "height_how": "4 px of side at 0.48 px per metre up (camera from Hf1920), +-30 %",
+   "m_per_px_across": 1.93
+  },
+  {
+   "id": "ne_tanks",
+   "kind": "tank",
+   "group": "ne",
+   "what": "tank farm: three white tanks in a row",
+   "source_px": {
+    "points": [
+     [
+      1820,
+      262
+     ],
+     [
+      1840,
+      272
+     ],
+     [
+      1862,
+      280
+     ]
+    ]
+   },
+   "points": [
+    [
+     1600.9,
+     -198.6
+    ],
+    [
+     1612.6,
+     -150.5
+    ],
+    [
+     1632.4,
+     -112.2
+    ]
+   ],
+   "diameter_m": 28.6,
+   "height_m": 11.7,
+   "height_how": "6 px of side at 0.51 px per metre up (camera from Hf1920), +-30 %",
+   "m_per_px_across": 1.81
+  },
+  {
+   "id": "sw_vehicle_yard",
+   "kind": "vehicle_rows",
+   "group": "sw",
+   "what": "vehicle yard: many rows of vehicles or huts on curved lanes",
+   "source_px": {
+    "poly": [
+     [
+      0,
+      655
+     ],
+     [
+      70,
+      660
+     ],
+     [
+      130,
+      690
+     ],
+     [
+      160,
+      705
+     ],
+     [
+      205,
+      712
+     ],
+     [
+      208,
+      745
+     ],
+     [
+      160,
+      758
+     ],
+     [
+      0,
+      760
+     ]
+    ]
+   },
+   "poly": [
+    [
+     -1320.4,
+     928.1
+    ],
+    [
+     -1228.1,
+     943.8
+    ],
+    [
+     -1134.3,
+     1013.1
+    ],
+    [
+     -1089.2,
+     1046.4
+    ],
+    [
+     -1031.0,
+     1063.6
+    ],
+    [
+     -1011.6,
+     1129.7
+    ],
+    [
+     -1061.4,
+     1152.1
+    ],
+    [
+     -1246.8,
+     1146.9
+    ]
+   ],
+   "m_per_px_across": 1.27
+  },
+  {
+   "id": "sw_shed",
+   "kind": "shed",
+   "group": "sw",
+   "what": "long low shed at the yard's north edge",
+   "source_px": {
+    "poly": [
+     [
+      60,
+      657
+     ],
+     [
+      90,
+      667
+     ],
+     [
+      88,
+      672
+     ],
+     [
+      58,
+      662
+     ]
+    ]
+   },
+   "poly": [
+    [
+     -1242.9,
+     936.4
+    ],
+    [
+     -1198.3,
+     960.6
+    ],
+    [
+     -1197.6,
+     971.5
+    ],
+    [
+     -1241.9,
+     947.5
+    ]
+   ],
+   "height_m": 4.4,
+   "height_how": "3 px of side at 0.68 px per metre up (camera from Hf1920), +-30 %",
+   "m_per_px_across": 1.27
+  },
+  {
+   "id": "sw_building",
+   "kind": "shed",
+   "group": "sw",
+   "what": "blue-roofed building in the yard",
+   "source_px": {
+    "poly": [
+     [
+      100,
+      678
+     ],
+     [
+      126,
+      682
+     ],
+     [
+      128,
+      697
+     ],
+     [
+      102,
+      694
+     ]
+    ]
+   },
+   "poly": [
+    [
+     -1178.8,
+     985.4
+    ],
+    [
+     -1144.0,
+     995.7
+    ],
+    [
+     -1132.7,
+     1027.8
+    ],
+    [
+     -1166.3,
+     1019.9
+    ]
+   ],
+   "height_m": 7.3,
+   "height_how": "5 px of side at 0.69 px per metre up (camera from Hf1920), +-30 %",
+   "m_per_px_across": 1.24
+  },
+  {
+   "id": "sw_mast_pad",
+   "kind": "gravel",
+   "group": "sw",
+   "what": "pale pad with two masts and equipment",
+   "source_px": {
+    "poly": [
+     [
+      288,
+      655
+     ],
+     [
+      318,
+      648
+     ],
+     [
+      372,
+      684
+     ],
+     [
+      366,
+      705
+     ],
+     [
+      330,
+      708
+     ],
+     [
+      292,
+      672
+     ]
+    ]
+   },
+   "poly": [
+    [
+     -955.8,
+     946.3
+    ],
+    [
+     -920.9,
+     932.4
+    ],
+    [
+     -839.4,
+     1015.0
+    ],
+    [
+     -839.4,
+     1058.7
+    ],
+    [
+     -881.8,
+     1062.7
+    ],
+    [
+     -943.1,
+     984.2
+    ]
+   ],
+   "m_per_px_across": 1.26
+  },
+  {
+   "id": "sw_masts",
+   "kind": "mast",
+   "group": "sw",
+   "what": "two tall lattice masts on the pad",
+   "source_px": {
+    "points": [
+     [
+      343,
+      690
+     ],
+     [
+      361,
+      692
+     ]
+    ]
+   },
+   "points": [
+    [
+     -872.8,
+     1026.0
+    ],
+    [
+     -850.0,
+     1031.3
+    ]
+   ],
+   "heights_m": [
+    58.6,
+    39.5
+   ],
+   "height_how": "px of the mast from base to tip / px per metre up (camera from Hf1920), +-30 %",
+   "m_per_px_across": 1.23
+  },
+  {
+   "id": "sw_yard",
+   "kind": "gravel",
+   "group": "sw",
+   "what": "gravel apron of the hangar",
+   "source_px": {
+    "poly": [
+     [
+      230,
+      725
+     ],
+     [
+      330,
+      715
+     ],
+     [
+      372,
+      735
+     ],
+     [
+      372,
+      800
+     ],
+     [
+      220,
+      800
+     ]
+    ]
+   },
+   "poly": [
+    [
+     -994.8,
+     1091.4
+    ],
+    [
+     -879.2,
+     1077.1
+    ],
+    [
+     -822.2,
+     1119.5
+    ],
+    [
+     -802.1,
+     1241.3
+    ],
+    [
+     -973.3,
+     1233.1
+    ]
+   ],
+   "m_per_px_across": 1.2
+  },
+  {
+   "id": "sw_hangar",
+   "kind": "barrel_hall",
+   "group": "sw",
+   "what": "large white barrel-roofed hangar",
+   "source_px": {
+    "poly": [
+     [
+      272,
+      735
+     ],
+     [
+      306,
+      731
+     ],
+     [
+      320,
+      768
+     ],
+     [
+      286,
+      775
+     ]
+    ]
+   },
+   "poly": [
+    [
+     -940.5,
+     1113.8
+    ],
+    [
+     -901.8,
+     1107.8
+    ],
+    [
+     -871.7,
+     1180.0
+    ],
+    [
+     -908.2,
+     1191.1
+    ]
+   ],
+   "height_m": 17.1,
+   "height_how": "12 px of side at 0.70 px per metre up (camera from Hf1920), +-30 %",
+   "m_per_px_across": 1.19
+  },
+  {
+   "id": "sw_flat",
+   "kind": "shed",
+   "group": "sw",
+   "what": "flat-roofed building beside it, white vehicles parked in front",
+   "source_px": {
+    "poly": [
+     [
+      306,
+      758
+     ],
+     [
+      330,
+      752
+     ],
+     [
+      345,
+      780
+     ],
+     [
+      320,
+      787
+     ]
+    ]
+   },
+   "poly": [
+    [
+     -891.5,
+     1160.3
+    ],
+    [
+     -865.7,
+     1150.2
+    ],
+    [
+     -838.9,
+     1203.6
+    ],
+    [
+     -865.1,
+     1215.1
+    ]
+   ],
+   "height_m": 7.1,
+   "height_how": "5 px of side at 0.71 px per metre up (camera from Hf1920), +-30 %",
+   "m_per_px_across": 1.16
+  },
+  {
+   "id": "sw_tanks",
+   "kind": "tank",
+   "group": "sw",
+   "what": "four white tanks on the hangar's west side",
+   "source_px": {
+    "points": [
+     [
+      271,
+      740
+     ],
+     [
+      261,
+      746
+     ],
+     [
+      251,
+      757
+     ],
+     [
+      246,
+      766
+     ]
+    ]
+   },
+   "points": [
+    [
+     -939.6,
+     1123.5
+    ],
+    [
+     -948.8,
+     1134.7
+    ],
+    [
+     -955.9,
+     1155.3
+    ],
+    [
+     -957.9,
+     1172.1
+    ]
+   ],
+   "diameter_m": 12.9,
+   "height_m": 12.8,
+   "height_how": "9 px of side at 0.70 px per metre up (camera from Hf1920), +-30 %",
+   "m_per_px_across": 1.18
+  },
+  {
+   "id": "sw_domes",
+   "kind": "dome",
+   "group": "sw",
+   "what": "white domes in the west woods",
+   "source_px": {
+    "points": [
+     [
+      22,
+      550
+     ],
+     [
+      33,
+      553
+     ],
+     [
+      104,
+      550
+     ]
+    ]
+   },
+   "points": [
+    [
+     -1377.4,
+     668.9
+    ],
+    [
+     -1359.5,
+     677.8
+    ],
+    [
+     -1263.4,
+     674.8
+    ]
+   ],
+   "diameter_m": 11.1,
+   "height_m": 9.4,
+   "height_how": "6 px of side at 0.64 px per metre up (camera from Hf1920), +-30 %",
+   "m_per_px_across": 1.39
+  },
+  {
+   "id": "se_yard",
+   "kind": "gravel",
+   "group": "se",
+   "what": "large bare gravel yard (runs on past the frame edge)",
+   "source_px": {
+    "poly": [
+     [
+      1520,
+      700
+     ],
+     [
+      1560,
+      650
+     ],
+     [
+      1600,
+      615
+     ],
+     [
+      1650,
+      603
+     ],
+     [
+      1700,
+      592
+     ],
+     [
+      1750,
+      578
+     ],
+     [
+      1800,
+      572
+     ],
+     [
+      1920,
+      585
+     ],
+     [
+      1920,
+      735
+     ],
+     [
+      1520,
+      737
+     ]
+    ]
+   },
+   "poly": [
+    [
+     548.1,
+     1116.7
+    ],
+    [
+     637.2,
+     1014.7
+    ],
+    [
+     719.3,
+     939.0
+    ],
+    [
+     795.3,
+     914.3
+    ],
+    [
+     871.8,
+     891.6
+    ],
+    [
+     953.2,
+     861.1
+    ],
+    [
+     1026.4,
+     849.8
+    ],
+    [
+     1166.5,
+     889.4
+    ],
+    [
+     984.9,
+     1207.6
+    ],
+    [
+     520.9,
+     1188.9
+    ]
+   ],
+   "m_per_px_across": 1.19
+  },
+  {
+   "id": "se_hangar",
+   "kind": "barrel_hall",
+   "group": "se",
+   "what": "large white barrel-roofed hangar",
+   "source_px": {
+    "poly": [
+     [
+      1748.0,
+      665.0
+     ],
+     [
+      1798.0,
+      665.0
+     ],
+     [
+      1798.0,
+      687.0
+     ],
+     [
+      1748.0,
+      687.0
+     ]
+    ]
+   },
+   "poly": [
+    [
+     854.4,
+     1058.3
+    ],
+    [
+     915.4,
+     1061.4
+    ],
+    [
+     892.1,
+     1106.9
+    ],
+    [
+     832.2,
+     1103.9
+    ]
+   ],
+   "height_m": 14.6,
+   "height_how": "10 px of side at 0.69 px per metre up (camera from Hf1920), +-30 %",
+   "m_per_px_across": 1.22
+  },
+  {
+   "id": "se_block",
+   "kind": "shed",
+   "group": "se",
+   "what": "flat grey block in front of it, white vehicles beside",
+   "source_px": {
+    "poly": [
+     [
+      1742.0,
+      686.0
+     ],
+     [
+      1772.0,
+      686.0
+     ],
+     [
+      1772.0,
+      698.0
+     ],
+     [
+      1742.0,
+      698.0
+     ]
+    ]
+   },
+   "poly": [
+    [
+     826.0,
+     1101.5
+    ],
+    [
+     862.0,
+     1103.3
+    ],
+    [
+     849.9,
+     1127.5
+    ],
+    [
+     814.2,
+     1125.7
+    ]
+   ],
+   "height_m": 7.2,
+   "height_how": "5 px of side at 0.69 px per metre up (camera from Hf1920), +-30 %",
+   "m_per_px_across": 1.2
+  },
+  {
+   "id": "se_tanks_a",
+   "kind": "tank",
+   "group": "se",
+   "what": "three white tanks by the hangar",
+   "source_px": {
+    "points": [
+     [
+      1727,
+      690
+     ],
+     [
+      1740,
+      696
+     ],
+     [
+      1756,
+      704
+     ]
+    ]
+   },
+   "points": [
+    [
+     804.1,
+     1108.7
+    ],
+    [
+     813.8,
+     1121.6
+    ],
+    [
+     825.0,
+     1138.5
+    ]
+   ],
+   "diameter_m": 15.5,
+   "height_m": 8.6,
+   "height_how": "6 px of side at 0.69 px per metre up (camera from Hf1920), +-30 %",
+   "m_per_px_across": 1.2
+  },
+  {
+   "id": "se_tanks_b",
+   "kind": "tank",
+   "group": "se",
+   "what": "three white tanks at the yard's north side",
+   "source_px": {
+    "points": [
+     [
+      1675,
+      626
+     ],
+     [
+      1687,
+      624
+     ],
+     [
+      1698,
+      622
+     ]
+    ]
+   },
+   "points": [
+    [
+     803.6,
+     968.8
+    ],
+    [
+     820.8,
+     965.1
+    ],
+    [
+     836.9,
+     961.2
+    ]
+   ],
+   "diameter_m": 16.5,
+   "height_m": 12.0,
+   "height_how": "8 px of side at 0.67 px per metre up (camera from Hf1920), +-30 %",
+   "m_per_px_across": 1.26
+  },
+  {
+   "id": "se_building",
+   "kind": "shed",
+   "group": "se",
+   "what": "blue-grey roofed building",
+   "source_px": {
+    "poly": [
+     [
+      1710.0,
+      598.0
+     ],
+     [
+      1746.0,
+      598.0
+     ],
+     [
+      1746.0,
+      614.0
+     ],
+     [
+      1710.0,
+      614.0
+     ]
+    ]
+   },
+   "poly": [
+    [
+     878.1,
+     906.5
+    ],
+    [
+     924.6,
+     908.8
+    ],
+    [
+     906.5,
+     946.1
+    ],
+    [
+     860.6,
+     943.7
+    ]
+   ],
+   "height_m": 7.6,
+   "height_how": "5 px of side at 0.66 px per metre up (camera from Hf1920), +-30 %",
+   "m_per_px_across": 1.29
+  },
+  {
+   "id": "se_stacks",
+   "kind": "vehicle_rows",
+   "group": "se",
+   "what": "groups of dark rectangular objects in rows (vehicles or containers, uncertain)",
+   "source_px": {
+    "polys": [
+     [
+      [
+       1680.0,
+       644.0
+      ],
+      [
+       1730.0,
+       644.0
+      ],
+      [
+       1730.0,
+       660.0
+      ],
+      [
+       1680.0,
+       660.0
+      ]
+     ],
+     [
+      [
+       1820.0,
+       640.0
+      ],
+      [
+       1880.0,
+       640.0
+      ],
+      [
+       1880.0,
+       664.0
+      ],
+      [
+       1820.0,
+       664.0
+      ]
+     ],
+     [
+      [
+       1600.0,
+       691.0
+      ],
+      [
+       1690.0,
+       691.0
+      ],
+      [
+       1690.0,
+       711.0
+      ],
+      [
+       1600.0,
+       711.0
+      ]
+     ],
+     [
+      [
+       1530.0,
+       691.0
+      ],
+      [
+       1570.0,
+       691.0
+      ],
+      [
+       1570.0,
+       711.0
+      ],
+      [
+       1530.0,
+       711.0
+      ]
+     ]
+    ]
+   },
+   "polys": [
+    [
+     [
+      791.8,
+      1009.1
+     ],
+     [
+      854.0,
+      1012.2
+     ],
+     [
+      837.5,
+      1046.7
+     ],
+     [
+      776.1,
+      1043.6
+     ]
+    ],
+    [
+     [
+      970.3,
+      1009.0
+     ],
+     [
+      1044.9,
+      1012.8
+     ],
+     [
+      1016.6,
+      1064.3
+     ],
+     [
+      943.4,
+      1060.6
+     ]
+    ],
+    [
+     [
+      651.0,
+      1103.3
+     ],
+     [
+      758.8,
+      1108.6
+     ],
+     [
+      740.5,
+      1148.4
+     ],
+     [
+      634.3,
+      1143.2
+     ]
+    ],
+    [
+     [
+      567.0,
+      1099.1
+     ],
+     [
+      615.0,
+      1101.5
+     ],
+     [
+      598.9,
+      1141.5
+     ],
+     [
+      551.6,
+      1139.2
+     ]
+    ]
+   ],
+   "m_per_px_across": 1.25
+  },
+  {
+   "id": "s_bare",
+   "kind": "bare",
+   "group": "s",
+   "what": "bare earth and gravel strip along the south road",
+   "source_px": {
+    "poly": [
+     [
+      940,
+      735
+     ],
+     [
+      1300,
+      722
+     ],
+     [
+      1520,
+      725
+     ],
+     [
+      1520,
+      760
+     ],
+     [
+      1300,
+      760
+     ],
+     [
+      940,
+      775
+     ]
+    ]
+   },
+   "poly": [
+    [
+     -153.8,
+     1152.1
+    ],
+    [
+     273.4,
+     1147.5
+    ],
+    [
+     529.5,
+     1165.9
+    ],
+    [
+     504.7,
+     1231.7
+    ],
+    [
+     253.8,
+     1219.5
+    ],
+    [
+     -161.4,
+     1227.2
+    ]
+   ],
+   "m_per_px_across": 1.17
+  },
+  {
+   "id": "s_masts",
+   "kind": "mast",
+   "group": "s",
+   "what": "light masts along the south road (height not measurable: tops blur into the background)",
+   "source_px": {
+    "points": [
+     [
+      747,
+      735
+     ],
+     [
+      944,
+      719
+     ],
+     [
+      1136,
+      708
+     ]
+    ]
+   },
+   "points": [
+    [
+     -380.2,
+     1141.1
+    ],
+    [
+     -145.9,
+     1121.0
+    ],
+    [
+     85.6,
+     1110.3
+    ]
+   ],
+   "m_per_px_across": 1.18
+  }
+ ],
+ "unsized": [
+  {
+   "what": "gate depth layout",
+   "why": "The gate is the frame's farthest point and its least certain. Through Hf1920 the canopy is at 1.52 km north of Silo 1; layout.json's gate (canon_layout gate, -4.993 edges = 1.35 km) comes from the joint fit with the founders' plaque, whose own frame residual at the gate is 25 px: the 2052 frame puts it 170 m farther. Here the gate group stays where the frame shows it and surroundings.py carries the avenue on from layout's gate to the canopy. Scale near the gate disagrees between frames: frame 01 gives the lawn 100 m across, frame 02 by coach sizes (width 2.55 m, length 12 m) about 63 m; s3e09/notes.md read 7 coach lengths, 85 m. Sizes in this group are frame 01's, which is consistent with every other feature here; frame 02 gives what frame 01 cannot resolve (lane counts, canopy peaks and height, the band, coaches)."
+  },
+  {
+   "what": "barrel-hall heights",
+   "why": "end faces are 6-12 px; heights given are side extents at +-30 %, and the arch's rise cannot be told from wall height"
+  },
+  {
+   "what": "light and radio masts along the field edges and the south road",
+   "why": "tops blur into the background except the two on the south-west pad; their bases are at the points given"
+  },
+  {
+   "what": "vehicles, coaches, huts in the yards and car parks",
+   "why": "rows are resolved, single vehicles are not (one coach is 5 px); counts not given"
+  },
+  {
+   "what": "rail beyond the north-west yard",
+   "why": "past x 700 px the corridor reads as one pale road; whether the line goes on east of the gate is not visible"
+  },
+  {
+   "what": "round white pads by the gate",
+   "why": "purpose unknown; size from frame 01 only"
+  },
+  {
+   "what": "anything past the frame's left, right and bottom edges",
+   "why": "the south-east yard and the south-west vehicle yard run on past the edge; the frame gives no more"
+  },
+  {
+   "what": "fences round the yards",
+   "why": "none visible at this resolution"
+  }
+ ]
+}
