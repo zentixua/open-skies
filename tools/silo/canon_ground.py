@@ -28,9 +28,10 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ap = argparse.ArgumentParser()
 ap.add_argument("aerial"); ap.add_argument("layout"); ap.add_argument("out")
 ap.add_argument("--cell", type=int, default=4)
-ap.add_argument("--margin", type=float, default=700, help="metres beyond the outermost rings")
+ap.add_argument("--margin", type=float, default=1500, help="metres beyond the outermost rings")
 ap.add_argument("--png")
-ap.add_argument("--reach", type=float, default=420, help="classes only within this of a ring centre")
+ap.add_argument("--reach", type=float, default=420, help="water and pale ground only within this of a ring centre")
+ap.add_argument("--tree-reach", type=float, default=1500, help="trees within this of a ring centre")
 a = ap.parse_args()
 Hf = np.array(json.load(open(os.path.join(HERE, "canon", "fit.json")))["Hf1920"])
 im = cv2.imread(a.aerial)
@@ -58,7 +59,8 @@ z0, z1 = int(min(zs) - a.margin), int(max(zs) + a.margin)
 C = a.cell
 gx = np.arange(x0, x1, C) + C / 2; gz = np.arange(z0, z1, C) + C / 2
 WX, WZ = np.meshgrid(gx, gz, indexing="ij")
-out = {k: np.zeros(WX.shape, np.float32) for k in ("tree", "water", "pale")}
+out = {k: np.zeros(WX.shape, np.float32) for k in ("tree", "water", "pale", "dark")}
+darkness = np.clip((95 - Lc) / 45, 0, 1).astype(np.float32)      # 0 bright grass .. 1 the darkest canopy
 seen = np.zeros(WX.shape, bool)
 # 3 x 3 samples per cell
 c, s = math.cos(math.radians(rot)), math.sin(math.radians(rot))
@@ -73,10 +75,12 @@ for ox in (-C / 3, 0, C / 3):
         ix, iy = np.clip(px.astype(int), 0, W_ - 1), np.clip(py.astype(int), 0, H_ - 1)
         for k, m in (("tree", tree), ("water", water), ("pale", pale)):
             out[k] += np.where(ok, m[iy, ix], 0)
+        out["dark"] += np.where(ok, darkness[iy, ix] * tree[iy, ix], 0)
         seen |= ok
         n += 1
 for k in out:
     out[k] /= n
+out["dark"] = np.where(out["tree"] > 0, out["dark"] / np.maximum(out["tree"], 1e-6), 0)
 # berm shadows: thin dark arcs on each ring's berm read as trees; the frame shows no trees on the bowl floors and only
 # lone ones on the crests, so drop tree cells within the berm and bowl (r < 82) unless part of a grove reaching out
 r_min = np.full(WX.shape, 1e9)
@@ -84,8 +88,10 @@ for s_ in L["silos"]:
     r_min = np.minimum(r_min, np.hypot(WX - s_["ring"][0], WZ - s_["ring"][1]))
 out["tree"][r_min < 82] = 0
 # only the complex and its edge: beyond, the frame's hazy far forest reads as water, and Zearth's own land stays
-for k in out:
+for k in ("water", "pale"):
     out[k][r_min > a.reach] = 0
+for k in ("tree", "dark"):                     # the forest round the field: as far as the frame sees it well
+    out[k][r_min > a.tree_reach] = 0
 np.savez_compressed(a.out, **out, seen=seen, x0=x0, z0=z0, cell=C)
 print(f"grid {WX.shape} from {x0},{z0} cell {C}: tree {float((out['tree'] > 0.5).sum() * C * C) / 1e4:.1f} ha, "
       f"water {float((out['water'] > 0.5).sum() * C * C) / 1e4:.1f} ha, seen {float(seen.sum() * C * C) / 1e6:.1f} km2")

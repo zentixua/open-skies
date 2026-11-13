@@ -33,7 +33,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from volume import Volume  # noqa: E402
 
 DIM_MIN_Y = -896                 # datapack/silo_depth: min_y -896, height 1216
-FIRST = {1: "E"}                 # Silo 1's way out faces south-east, clear of the opening-day set in the north half
+FIRST = {1: "W"}                 # Silo 1's way out: world west = the frame's south-south-east at 128 degrees, clear of the
+                                 # opening-day set (event.py: north half, small tents west, the path due south)
 
 
 def log(m):
@@ -74,7 +75,9 @@ def cut_bearing(s: dict, k: int) -> float:
     where the path from the opening-day set leaves due south (event.py), turned into its frame."""
     if s["number"] != 1:
         return 0.0
-    return math.atan2(1, 0) - k * math.pi / 2
+    import event
+    sx, sz = event.to_world(0, 1)                  # the frame's south (event.set_rotation done by the Builder)
+    return math.atan2(sz, sx) - k * math.pi / 2
 
 
 # layout ------------------------------------------------------------------------------------------------------------
@@ -188,6 +191,7 @@ class Builder:
         cells, road = paths.plan(self.layout)
         one = next(s for s in self.layout["silos"] if s["number"] == 1)
         import event
+        event.set_rotation(self.layout.get("rotation_deg", 0))
         p_, apron = event.ground_paths(one["x"], one["z"])
         self.path_cells = cells | set(p_) | set(apron)
         self.road_cells = road
@@ -313,11 +317,15 @@ class Builder:
                             water=self.pond_cells() if cg else None)
         f = self.field
         inside = lambda x, z: 4 <= x - f.x0 < f.height.shape[0] - 4 and 4 <= z - f.z0 < f.height.shape[1] - 4
-        spots = [s for s in spots if inside(s[0], s[1])]     # beyond the plain's grid Zearth's own land stays
         vols = []
+        outside = [s for s in spots if not inside(s[0], s[1])]
+        spots = [s for s in spots if inside(s[0], s[1])]
         for x, z, kind in spots:
             g = self.ground_at(x, z)
             vols.append(self.tree_volume(x, g, z, tree_blocks(kind, int(h01(x, z, 9) * 1e6))))
+        if outside and cg:
+            vols += self.forest(outside, tree_blocks)
+        log(f"trees: {len(spots)} on the plain, {len(vols) - len(spots)} beyond it")
         if hero:
             hx, hz, blocks = hero
             vols.append(self.tree_volume(hx, self.ground_at(hx, hz), hz, blocks))
@@ -358,6 +366,67 @@ class Builder:
                         st.set(i, yy, kz, "minecraft:air")
             vols.append(turn_volume(st, TURNS[s["dir"]], s["x"], s["z"]))
         self.apply(vols, f"slots opened: {len(vols) // 2}")
+
+    def forest(self, spots: list, tree_blocks) -> list:
+        """The forest the 2052 aerial shows round the field, on Zearth's own ground beyond the plain: heights from the
+        golden world (trees removed), no tree where the golden already has a crown or where a town's builds stand;
+        where the aerial shows forest over one of Zearth's lakes, the lake is filled to its surface first (dirt, grass
+        on top)."""
+        from heights import read_area, MISSING
+        xs = [s[0] for s in spots]; zs = [s[1] for s in spots]
+        X0, Z0 = min(xs) - 6, min(zs) - 6
+        nx, nz = max(xs) - X0 + 7, max(zs) - Z0 + 7
+        t0 = time.time()
+        ground, water, top = read_area(self.a.golden, X0, Z0, nx, nz, min_y=-64, height=384)
+        log(f"golden heights {nx} x {nz} in {time.time() - t0:.0f}s")
+        t = np.load(self.a.terrain_for_towns, allow_pickle=True) if getattr(self.a, "terrain_for_towns", None) else None
+        # Zearth's lakes where the aerial reads closed forest (tree fraction over half, smoothed) and they are at most
+        # 12 deep are filled to their surface: the forest stands on them as the frame shows
+        from scipy.signal import convolve2d
+        cgd = np.load(self.a.canon_ground)
+        Tm = convolve2d(cgd["tree"].astype(float), np.ones((5, 5)) / 25, mode="same")
+        cx0, cz0, C = int(cgd["x0"]), int(cgd["z0"]), int(cgd["cell"])
+        II, KK = np.meshgrid(np.arange(nx) + X0, np.arange(nz) + Z0, indexing="ij")
+        ci = np.clip((II - cx0) // C, 0, Tm.shape[0] - 1); ck = np.clip((KK - cz0) // C, 0, Tm.shape[1] - 1)
+        wet = (water != MISSING) & (ground != MISSING) & (water - ground <= 12) & (Tm[ci, ck] > 0.5)
+        f = self.field
+        inplain = (II - f.x0 >= 0) & (II - f.x0 < f.height.shape[0]) & (KK - f.z0 >= 0) & (KK - f.z0 < f.height.shape[1])
+        wet &= ~inplain
+        vols = []
+        for x, z, kind in spots:
+            i, k = x - X0, z - Z0
+            g = int(ground[i, k])
+            if g == MISSING:
+                continue
+            if t is not None:
+                bx, bz = (x - int(t["x0"])) // 16, (z - int(t["z0"])) // 16
+                if 0 <= bx < t["bes"].shape[0] and 0 <= bz < t["bes"].shape[1] and t["bes"][bx, bz] >= 3:
+                    continue                   # a town or a build: Zearth's own, left alone
+            if water[i, k] != MISSING:
+                if not wet[i, k]:
+                    continue
+                g = int(water[i, k])           # on the filled lake
+            elif top[i, k] - g > 3:
+                continue                       # Zearth already has a crown here
+            vols.append(self.tree_volume(x, g, z, tree_blocks(kind, int(h01(x, z, 9) * 1e6))))
+        n_fill = int(wet.sum())
+        if n_fill:
+            for bx in range(0, nx, 16):         # one volume per 16 x 16 block of columns
+                for bz in range(0, nz, 16):
+                    m = wet[bx:bx + 16, bz:bz + 16]
+                    if not m.any():
+                        continue
+                    gb = ground[bx:bx + 16, bz:bz + 16]; ws = water[bx:bx + 16, bz:bz + 16]
+                    lo, hi = int(gb[m].min()) + 1, int(ws[m].max()) + 1
+                    v = Volume((X0 + bx, lo, Z0 + bz), (m.shape[0], hi - lo + 1, m.shape[1]))
+                    for i, k in zip(*np.nonzero(m)):
+                        for y in range(int(gb[i, k]) + 1, int(ws[i, k])):
+                            v.set(i, y - lo, k, "minecraft:dirt")
+                        v.set(i, int(ws[i, k]) - lo, k, "minecraft:grass_block[snowy=false]")
+                        v.set(i, int(ws[i, k]) + 1 - lo, k, "minecraft:air")
+                    vols.append(v)
+            log(f"Zearth's lakes filled under the forest: {n_fill} columns")
+        return vols
 
     def pond_cells(self) -> set:
         """Columns of the ponds the show's 2052 aerial has at the complex's edges (canon_ground.py, water over half
@@ -503,6 +572,7 @@ def main():
     bp.add_argument("--state", required=True)
     bp.add_argument("--number", type=int, nargs="*")
     bp.add_argument("--what", nargs="*", default=["all"], choices=["plain", "silos", "slots", "ponds", "trees", "biome", "all"])
+    bp.add_argument("--terrain-for-towns", help="site_fit terrain3.npz: block entities per chunk (Zearth's towns stay)")
     bp.add_argument("--canon-ground", help="canon_ground.py's npz: ponds and the plain's groves where the show's 2052 "
                     "aerial has them")
     a = ap.parse_args()

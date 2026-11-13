@@ -38,17 +38,45 @@ from __future__ import annotations
 
 import math
 
+import numpy as np
+
 from volume import Volume
 from silo1 import emblem
 
 NORTH = -1                     # -z is north
 
 FLOOR_R = 55                   # surface.Site.floor_r: the level floor (1:1, SPEC-1to1.md)
-# Kept clear: Silo 1's slot and camera block. Its way out faces south-east (build_offline.FIRST: "E", the silo turned
-# twice from due west, (x, z) -> (-x, -z)), so silo.py's slot and camera land here, relative to the ring centre:
+# The set is laid out in the show's frame (03: north is toward the gate) and turned into the world by the layout's
+# rotation (ROT_DEG, set by set_rotation; the complex stands at 128 degrees). Kept clear: Silo 1's slot and camera
+# shelter. Its way out is build_offline.FIRST: "W" (the silo frame unturned), which puts the slot on the frame's
+# south-south-east side, clear of the audience (north half), the small tents (west) and the path south.
 from silo import CAMERA as _CAM, EXIT_X as _EX, RAMP_X as _RX, RAMP_Z as _RZ  # noqa: E402
-PORTAL = (-_EX, -_RX[1], -(_RZ[1] + 1), -(_RZ[0] - 1))      # x0, x1, z0, z1 (curb included)
-CAMERA = (-(_CAM[1] + 1), -(_CAM[0] - 1), -(_CAM[3] + 1), -(_CAM[2] - 1))   # roof included
+_PORTAL_W = (_RX[1], _EX, _RZ[0] - 1, _RZ[1] + 1)                # world offsets about the ring centre, curb included
+_CAMERA_W = (_CAM[0] - 1, _CAM[1], _CAM[2] - 1, _CAM[3] + 1)       # roof and sloped faces included
+ROT_DEG = 0.0
+PORTAL = CAMERA = None
+
+
+def _frame_box(box, pad=1):
+    """A world-offset box about the ring centre as the frame's (x, z) bounding box."""
+    c, s_ = math.cos(math.radians(ROT_DEG)), math.sin(math.radians(ROT_DEG))
+    pts = [(x * c + z * s_, -x * s_ + z * c) for x in (box[0], box[1] + 1) for z in (box[2], box[3] + 1)]
+    return (math.floor(min(p[0] for p in pts)) - pad, math.ceil(max(p[0] for p in pts)) + pad,
+            math.floor(min(p[1] for p in pts)) - pad, math.ceil(max(p[1] for p in pts)) + pad)
+
+
+def set_rotation(deg: float) -> None:
+    global ROT_DEG, PORTAL, CAMERA
+    ROT_DEG = deg
+    PORTAL, CAMERA = _frame_box(_PORTAL_W), _frame_box(_CAMERA_W)
+
+
+def to_world(dx: float, dz: float) -> tuple[float, float]:
+    c, s_ = math.cos(math.radians(ROT_DEG)), math.sin(math.radians(ROT_DEG))
+    return dx * c - dz * s_, dx * s_ + dz * c
+
+
+set_rotation(0.0)
 RING_PATH_R = 110              # surface.Site.path_r
 
 C = (-3, -21)                  # audience centre (03), relative to the ring centre
@@ -287,7 +315,37 @@ class Event:
 
 
 def build(ring_x: int, ring_z: int, floor_y: int) -> Volume:
-    return Event(ring_x, ring_z, floor_y).build()
+    """The set in the show's frame, turned into the world by ROT_DEG (nearest-block resampling, about the ring
+    centre; block facings turned by the nearest quarter)."""
+    v = Event(ring_x, ring_z, floor_y).build()
+    if not ROT_DEG % 360:
+        return v
+    from turn import turn_state
+    ox, oy, oz = v.origin
+    nx, ny, nz = v.size
+    corners = [to_world(x - ring_x, z - ring_z) for x in (ox, ox + nx) for z in (oz, oz + nz)]
+    x0 = math.floor(min(p[0] for p in corners)) + ring_x; x1 = math.ceil(max(p[0] for p in corners)) + ring_x
+    z0 = math.floor(min(p[1] for p in corners)) + ring_z; z1 = math.ceil(max(p[1] for p in corners)) + ring_z
+    out = Volume((x0, oy, z0), (x1 - x0 + 1, ny, z1 - z0 + 1))
+    k = round(ROT_DEG / 90) % 4
+    def turn_nbt(st):                                # inline {nbt} (banners) stays as it is
+        head, brace, tail = st.partition("{")
+        return turn_state(head, k) + brace + tail
+    pal = ["<keep>"] + [turn_nbt(st) for st in v.palette[1:]]
+    remap = np.array([0] + [out.id(st) for st in pal[1:]], dtype=out.ids.dtype)
+    c, s_ = math.cos(math.radians(ROT_DEG)), math.sin(math.radians(ROT_DEG))
+    X, Z = np.meshgrid(np.arange(x0, x1 + 1) + 0.5 - ring_x, np.arange(z0, z1 + 1) + 0.5 - ring_z, indexing="ij")
+    sx = np.floor(X * c + Z * s_ + ring_x - ox).astype(int)          # frame offsets of each world column, then source
+    sz = np.floor(-X * s_ + Z * c + ring_z - oz).astype(int)
+    ok = (sx >= 0) & (sx < nx) & (sz >= 0) & (sz < nz)
+    ii, kk = np.nonzero(ok)
+    out.ids[ii, :, kk] = remap[v.ids[sx[ii, kk], :, sz[ii, kk]]]
+    for (bx, by, bz), nbt in v.block_entities.items():
+        wx, wz = to_world(ox + bx + 0.5 - ring_x, oz + bz + 0.5 - ring_z)
+        i, kk_ = math.floor(wx + ring_x) - x0, math.floor(wz + ring_z) - z0
+        if 0 <= i < out.size[0] and 0 <= kk_ < out.size[2]:
+            out.block_entities[(i, by, kk_)] = nbt
+    return out
 
 
 def ground_paths(ring_x: int, ring_z: int) -> tuple[set, set]:
@@ -299,12 +357,22 @@ def ground_paths(ring_x: int, ring_z: int) -> tuple[set, set]:
             if z <= -17 and x != C[0]:
                 continue                           # one block wide between the chair rows
             if not _in(x, z, PORTAL):
-                path.add((ring_x + x, ring_z + z))
+                path.add((x, z))
     for x in range(-25, 26):
         for z in range(RING_PATH_R - 30, RING_PATH_R + 9):
             r = math.hypot(x, z)
             if RING_PATH_R - 8 <= r <= RING_PATH_R + 8:
-                apron.add((ring_x + x, ring_z + z))
+                apron.add((x, z))
+
+    def world(cells_):
+        out = set()
+        for x, z in cells_:
+            for ax in (0.25, 0.75):                  # every world column a turned frame cell touches
+                for az in (0.25, 0.75):
+                    wx, wz = to_world(x + ax, z + az)
+                    out.add((math.floor(wx) + ring_x, math.floor(wz) + ring_z))
+        return out
+    path, apron = world(path), world(apron)
     return path - apron, apron
 
 

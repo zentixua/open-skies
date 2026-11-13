@@ -163,23 +163,43 @@ def plan(layout: dict) -> tuple[set, set]:
         for j in nums:
             if i < j and math.dist(ring[i], ring[j]) <= LINK_MAX * spacing:
                 line(cells, [on_circle(ring[i], ring[j]), on_circle(ring[j], ring[i])], 2)
+    # The founders' lines and the axis are drawn in the show's own frame (gate due north of Silo 1), turned by the
+    # layout's rotation into the world: the complex stands at 128 degrees, so "north" in the frame is not world north
+    # (13.11: the axis road met Silo 1's ring at its world-north point and left from its world-south point, two offset
+    # lines instead of one straight axis).
     one = ring[1]
-    gate = tuple(layout["gate"])
-    # axis road: gate to Silo 1's circle, Silo 1 to Silo 2
-    line(road, [gate, (one[0], one[1] - RING_PATH_R)], 3)
-    two = ring[2]
-    line(road, [(one[0], one[1] + RING_PATH_R), on_circle(two, one)], 3)
+    rot = math.radians(layout.get("rotation_deg", 0))
+    cs, sn = math.cos(rot), math.sin(rot)
+    W = lambda p: (one[0] + p[0] * cs - p[1] * sn, one[1] + p[0] * sn + p[1] * cs)      # frame metres -> world
+    C = lambda p: ((p[0] - one[0]) * cs + (p[1] - one[1]) * sn, -(p[0] - one[0]) * sn + (p[1] - one[1]) * cs)
+    lw = lambda cells_, pts, w: line(cells_, [W(p) for p in pts], w)
+    gate = C(tuple(layout["gate"]))
+    gl = math.hypot(*gate)
+    u = (gate[0] / gl, gate[1] / gl)                       # the axis, toward the gate
+    # axis road: one straight line from the gate through Silo 1's centre; north of Silo 1 it stops at the ring path
+    # (no path crosses the north berm, S3E09 03), inside the bowl the opening-day path runs on it (event.py), and south
+    # of the ring it goes on along the same line to where it meets Silo 2's ring path
+    lw(road, [gate, (u[0] * RING_PATH_R, u[1] * RING_PATH_R)], 3)
+    two = C(ring[2])
+    # the line's far intersection with Silo 2's circle, nearest Silo 1
+    bx, bz = -u[0], -u[1]
+    proj = two[0] * bx + two[1] * bz
+    d2 = RING_PATH_R ** 2 - (two[0] - proj * bx) ** 2 - (two[1] - proj * bz) ** 2
+    t_end = proj - math.sqrt(max(d2, 0.0))
+    lw(road, [(bx * RING_PATH_R, bz * RING_PATH_R), (bx * t_end, bz * t_end)], 3)
     # founders' lines
     line(cells, [on_circle(one, ring[42]), on_circle(ring[42], one)], 2)
     line(cells, [on_circle(one, ring[25]), on_circle(ring[25], one)], 2)
+    ringc = {k: C(v) for k, v in ring.items()}
+    on_c = lambda c, toward: on_circle(c, toward)
     for k, side in ((30, -1), (10, 1)):
-        a = (one[0] + side * 20, one[1] + RING_PATH_R - 4)
-        b = on_circle(ring[k], one)
-        line(cells, curve(a, (a[0] + side * 30, a[1] + 60), b), 2)
-    zc = min(ring[44][1], ring[17][1]) - RING_PATH_R - 40
+        a_ = (side * 20, RING_PATH_R - 4)
+        b_ = on_c(ringc[k], (0.0, 0.0))
+        lw(cells, curve(a_, (a_[0] + side * 30, a_[1] + 60), b_), 2)
+    zc = min(ringc[44][1], ringc[17][1]) - RING_PATH_R - 40
     for k in (44, 17):
-        top = (ring[k][0] + (20 if k == 44 else -20), ring[k][1] - RING_PATH_R + 2)
-        line(cells, [(one[0], zc)] + curve((one[0] + (top[0] - one[0]) * 0.6, zc), (top[0], zc), top, 20), 2)
+        top = (ringc[k][0] + (20 if k == 44 else -20), ringc[k][1] - RING_PATH_R + 2)
+        lw(cells, [(0.0, zc)] + curve((top[0] * 0.6, zc), (top[0], zc), top, 20), 2)
     # rosettes
     for tri in ROSETTES:
         cx = sum(ring[t][0] for t in tri) / 3
@@ -211,31 +231,46 @@ def hero(layout: dict):
     return {"x": x, "z": z, "blocks": [[*c, st] for c, st in sorted(hero_tree.blocks(out).items())]}
 
 
-def grove_trees(rings, ground: str, free, water: set, step: int = 6) -> list:
-    """Trees on a jittered 6 m grid where the aerial's tree fraction (smoothed over 3 cells) is over one half: the
-    frame's groves are closed canopies, which vanilla oak and birch crowns (5 wide) make at about this spacing.
-    Nothing inside a ring's path circle (the frame's bowls and berms carry only the crest trees)."""
+def grove_trees(rings, ground: str, free, water: set, step: int = 5) -> list:
+    """Trees where the show's 2052 aerial has groves and forest (canon_ground.py): on a jittered 5 m grid, each spot
+    planted with a chance from the aerial's tree fraction (smoothed over 3 cells) weighted by how dark the canopy
+    reads there, so solid dark masks become closed canopy and thin belts stay open. Dark oak where it reads dark, oak
+    and big oak elsewhere; spruce joins in the outer forest (beyond 600 m from any ring). Nothing inside a ring's path
+    circle (the bowls and berms carry only the crest trees)."""
     d = np.load(ground)
-    T = d["tree"].astype(float)
-    k = np.ones((3, 3)) / 9
     from scipy.signal import convolve2d
-    T = convolve2d(T, k, mode="same")
+    k3 = np.ones((3, 3)) / 9
+    T = convolve2d(d["tree"].astype(float), k3, mode="same")
+    D = convolve2d(d["dark"].astype(float), k3, mode="same") if "dark" in d else np.full(T.shape, 0.5)
+    dens = np.clip(T * (0.6 + 0.6 * D), 0, 1)
     x0, z0, C = int(d["x0"]), int(d["z0"]), int(d["cell"])
+    rx = np.array([r[0] for r in rings]); rz = np.array([r[1] for r in rings])
     out = []
     for gx in range(x0, x0 + T.shape[0] * C, step):
         for gz in range(z0, z0 + T.shape[1] * C, step):
             x, z = gx + int(h01(gx, gz, 16) * step), gz + int(h01(gx, gz, 17) * step)
             i, k_ = (x - x0) // C, (z - z0) // C
-            if not (0 <= i < T.shape[0] and 0 <= k_ < T.shape[1]) or T[i, k_] < 0.5:
+            if not (0 <= i < T.shape[0] and 0 <= k_ < T.shape[1]) or dens[i, k_] < 0.25:
                 continue
-            if min(math.hypot(x - a, z - b) for a, b in rings) < RING_PATH_R + 6:
+            if h01(gx, gz, 19) > dens[i, k_] ** 1.2:
+                continue
+            dmin = float(np.min(np.hypot(rx - x, rz - z)))
+            if dmin < RING_PATH_R + 6:
                 continue
             if any((x + dx, z + dz) in water for dx in (-2, 0, 2) for dz in (-2, 0, 2)):
                 continue
-            if not free(x, z, 4):
+            if not free(x, z, 0):
                 continue
             r = h01(gx, gz, 18)
-            out.append([x, z, "minecraft:fancy_oak" if r < 0.2 else ("minecraft:birch" if r < 0.45 else "minecraft:oak")])
+            if dmin > 600 and r < 0.3:
+                kind = "minecraft:spruce"
+            elif D[i, k_] > 0.5 and r < 0.75:
+                kind = "minecraft:dark_oak"
+            elif r < 0.85:
+                kind = "minecraft:oak"
+            else:
+                kind = "minecraft:fancy_oak"
+            out.append([x, z, kind])
     return out
 
 
@@ -251,7 +286,7 @@ def trees(layout: dict, avoid: set, keep_clear=(), ground: str | None = None, wa
             return False
         return not any((x + dx, z + dz) in avoid for dx in range(-4, 5) for dz in range(-4, 5))
     for k, (rx, rz) in enumerate(rings):
-        for j in range(int(h01(k, 1) * 2.6)):
+        for j in range(1 + int(h01(k, 1) * 1.99)):          # 1-2 on every crest (S3E09 10, 23)
             a = 2 * math.pi * h01(k, j, 2)
             x, z = int(round(rx + CREST_R * math.cos(a))), int(round(rz + CREST_R * math.sin(a)))
             if free(x, z, 12):
@@ -291,6 +326,7 @@ def main():
     rx1, rz1 = int(math.floor(one["ring"][0])), int(math.floor(one["ring"][1]))
     if a.event:
         import event
+        event.set_rotation(layout.get("rotation_deg", 0))
         p_, apron = event.ground_paths(rx1, rz1)
         cells |= set(p_) | set(apron)
     allc = sorted(cells | road)
