@@ -333,39 +333,24 @@ class Builder:
         self.mark("trees", {"count": len(spots), "hero": [hero[0], hero[1]] if hero else None})
 
     def slots(self) -> None:
-        """Open every slot to the sky: air over its columns from the bowl floor up (the site pass used to leave the
-        golden ground there; surface.py now clears it, this fixes a world built before that)."""
-        from silo import EXIT_X, RAMP_X, RAMP_Z
+        """Open every trench to the sky: air over its columns from the bowl floor up (a world built before surface.py
+        cleared them kept the golden ground there)."""
+        from silo import EXIT_X, PORTAL_X, RAMP_Z
         from tunnels import TURNS
         from turn import turn_points
         vols = []
         for s in self.layout["silos"]:
-            n = s["number"]
-            g = self.done.get(f"silo{n}", {}).get("grade")
+            g = self.done.get(f"silo{s['number']}", {}).get("grade")
             if g is None:
                 continue
-            cols = [(s["x"] + x, s["z"] + z) for x in range(RAMP_X[1] + 1, EXIT_X) for z in range(RAMP_Z[0], RAMP_Z[1] + 1)]
+            cols = [(s["x"] + x, s["z"] + z) for x in range(EXIT_X, PORTAL_X + 1) for z in range(RAMP_Z[0], RAMP_Z[1] + 1)]
             cols = turn_points(cols, TURNS[s["dir"]], s["x"], s["z"])
             xs = [c[0] for c in cols]; zs = [c[1] for c in cols]
-            top = 200
-            v = Volume((min(xs), g + 1, min(zs)), (max(xs) - min(xs) + 1, top - g, max(zs) - min(zs) + 1))
+            v = Volume((min(xs), g + 1, min(zs)), (max(xs) - min(xs) + 1, 200 - g, max(zs) - min(zs) + 1))
             for x, z in cols:
                 v.ids[x - min(xs), :, z - min(zs)] = v.id("minecraft:air")
             vols.append(v)
-            # the steps (silo.way_out's state was smooth_stone_stairs, which vanilla lacks: the game made them air)
-            from silo import STEPS
-            from turn import turn_volume
-            st = Volume((s["x"] + RAMP_X[1] + 1, g - STEPS, s["z"] + RAMP_Z[0]),
-                        (EXIT_X - RAMP_X[1], STEPS + 1, RAMP_Z[1] - RAMP_Z[0] + 1))
-            for i, x in enumerate(range(RAMP_X[1] + 1, EXIT_X + 1)):
-                ys = g - STEPS + 1 + i - (g - STEPS)          # the step's row in the volume (its top at k - 1)
-                for kz in range(st.size[2]):
-                    st.set(i, ys, kz, "minecraft:polished_andesite_stairs[facing=east,half=bottom,shape=straight,"
-                           "waterlogged=false]")
-                    for yy in range(ys + 1, st.size[1]):
-                        st.set(i, yy, kz, "minecraft:air")
-            vols.append(turn_volume(st, TURNS[s["dir"]], s["x"], s["z"]))
-        self.apply(vols, f"slots opened: {len(vols) // 2}")
+        self.apply(vols, f"slots opened: {len(vols)}")
 
     def forest(self, spots: list, tree_blocks) -> list:
         """The forest the 2052 aerial shows round the field, on Zearth's own ground beyond the plain: heights from the

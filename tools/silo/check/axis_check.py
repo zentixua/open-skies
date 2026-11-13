@@ -39,7 +39,7 @@ for s in L["silos"]:
             return None
         return float(along[m].mean()), float(across[m].mean()), int(m.sum())
 
-    slot, cam = blob(STAIR, 15, 33), blob(SLAB, 12, 24)
+    slot, cam = blob(STAIR, 33, 45), blob(SLAB, 24, 33)
     row = [f"silo {n:2d} {s['dir']}"]
     ok = True
     for nm, b in (("slot", slot), ("camera", cam)):
@@ -50,8 +50,8 @@ for s in L["silos"]:
         deg = math.degrees(math.atan2(abs(c), a))
         row.append(f"{nm} at {a:4.1f} off {c:+.1f} ({deg:.1f} deg)")
         ok &= abs(c) <= 1 and deg <= 2
-    if slot and cam and not (slot[0] - 8 <= cam[0] < slot[0]):
-        row.append("camera not right behind the stair head"); ok = False
+    if slot and cam and not (slot[0] - 12 <= cam[0] < slot[0]):
+        row.append("camera shelter not between the centre and the trench"); ok = False
     # the cut: crest heights round the ring at r 62-80, the cut's bearing vs the median
     if n == 1:
         cb = math.atan2(1, 0)

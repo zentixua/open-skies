@@ -99,7 +99,7 @@ def nearest(fx, fz, y_world):
     return pos[best[1]]
 
 
-start = nearest(EXIT_X, 0, grade + 1)
+start = nearest(EXIT_X, 0, grade + 1)          # the top step
 goal = nearest(-(sil.s.r_atrium + 2.5), 0, sil.level_y(a.levels) + oy)
 order, pred = breadth_first_order(G, start, directed=False, return_predecessors=True)
 if pred[goal] < 0 and goal != start:
@@ -147,11 +147,20 @@ for q in range(1, len(cells) - 1):
 way.append(cells[-1])
 # the surface: ring path on the cut side (frame +x) -> through the cut -> over the bowl to the pad -> round the camera
 # block to the stair head
-cam_back = CAMERA[1]
-surface = [(110, 0), (60, 0), (0, 0), (cam_back + 5, 0), (cam_back + 3, 4.5), (EXIT_X + 0.5, 4.5),
-           (EXIT_X + 0.5, 0.5)]
-if a.silo == 1:          # Silo 1's cut is where the opening-day path leaves due south: frame -z after its two turns
-    surface = [(0, -110), (0, -40), (-10, -10), (EXIT_X + 0.5, -4.5), (EXIT_X + 0.5, 0.5)]
+# the surface: ring path on the cut's side -> through the cut -> over the bowl past the camera shelter -> round the
+# trench to its open head (the steps rise outward, S3E09 07/10) -> onto the top step
+if a.silo == 1:
+    import event
+    event.set_rotation(L.get("rotation_deg", 0))
+    wx, wz = event.to_world(0, 1)                  # the frame's south: Silo 1's cut
+    cv = (wx, wz)
+    for _ in range((4 - k) % 4):                   # world -> silo frame (k quarter turns back)
+        cv = (-cv[1], cv[0])
+else:
+    cv = (1.0, 0.0)
+side = 4.5
+surface = [(110 * cv[0], 110 * cv[1]), (60 * cv[0], 60 * cv[1]), (0, 0), (CAMERA[0] + 9, side), (EXIT_X - 2, side),
+           (EXIT_X - 2, 0.5), (EXIT_X + 0.5, 0.5)]
 legs = [("surface", [(*world(x + 0.5, z + 0.5), grade + 1) for x, z in surface])]
 legs.append(("down", [(*world(x, z), y) for x, y, z in way[1:]]))
 

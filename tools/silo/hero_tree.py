@@ -93,14 +93,16 @@ def place_1to1(shaft: tuple[float, float], k: int, bank_r: float = 62.0) -> tupl
     silo's frame); the tree stands at the model's bearing from that look (HERO_TREE: about 36 degrees to the right, one
     o'clock) where that line meets the inner bank (r 62, between the floor at 55 and the crest at 77)."""
     from silo import EXIT_X, RAMP_Z
-    px, pz = EXIT_X, (RAMP_Z[0] + RAMP_Z[1]) / 2
+    # the head now looks out toward -x (the steps rise outward): work in the frame turned half round, where it looks
+    # toward +x as the model's view does, and turn the result back
+    px, pz = -EXIT_X, -(RAMP_Z[0] + RAMP_Z[1]) / 2
     lx, lz = HERO_TREE
     a = math.atan2(-lx, lz)                     # to the right of the view: +z in the silo frame
     dx, dz = math.cos(a), math.sin(a)
     b = px * dx + pz * dz
     t = -b + math.sqrt(b * b - (px * px + pz * pz - bank_r * bank_r))
-    x, z = px + t * dx, pz + t * dz
-    ox, oz = 1, 0
+    x, z = -(px + t * dx), -(pz + t * dz)
+    ox, oz = -1, 0
     for _ in range(k % 4):                      # clockwise quarter turns (turn.py): (x, z) -> (-z, x)
         x, z = -z, x
         ox, oz = -oz, ox

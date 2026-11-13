@@ -26,7 +26,7 @@ import math
 import numpy as np
 
 from heights import MISSING
-from silo import CAMERA, EXIT_X, RAMP_X, RAMP_Z, Silo
+from silo import CAMERA, EXIT_X, PORTAL_X, RAMP_Z, Silo
 from volume import Volume
 
 GRASS = "minecraft:grass_block"
@@ -149,11 +149,12 @@ class Site:
 
     # volume ----------------------------------------------------------------------------------------------------
     def slot_cells(self) -> tuple[set, set]:
-        """(open slot, curb) columns in this frame: the steps' opening and the pale curb round it."""
+        """(open trench, curb) columns in this frame: the steps' opening (head at EXIT_X, open toward the berm) and the
+        pale curb along both sides and across the closed inner end over the portal (S3E09 07)."""
         z0, z1 = RAMP_Z
-        open_ = {(x, z) for x in range(RAMP_X[1] + 1, EXIT_X) for z in range(z0, z1 + 1)}
-        curb = {(x, z) for x in range(RAMP_X[1], EXIT_X + 1) for z in (z0 - 1, z1 + 1)}
-        curb |= {(RAMP_X[1], z) for z in range(z0, z1 + 1)}
+        open_ = {(x, z) for x in range(EXIT_X, PORTAL_X + 1) for z in range(z0, z1 + 1)}
+        curb = {(x, z) for x in range(EXIT_X, PORTAL_X + 2) for z in (z0 - 1, z1 + 1)}
+        curb |= {(PORTAL_X + 1, z) for z in range(z0, z1 + 1)}
         return open_, curb
 
     def build(self) -> Volume:
@@ -193,7 +194,7 @@ class Site:
                 col[max(lo, t - 1 - oy)] = moss
             if (x, z) in curb:
                 col[t - oy] = v.id(RIM)
-                if x < EXIT_X and t + 1 - oy < H:
+                if t + 1 - oy < H:
                     # the trench's parapet stands ≈0.5 m over the lawn (S3E09 06, 07, 10); the head end stays open
                     col[t + 1 - oy] = v.id(STEP)
             elif self.paths[i, k] or self.road[i, k]:
@@ -210,12 +211,12 @@ class Site:
         return v
 
     def camera(self, v: Volume) -> None:
-        """The camera shelter (S3E09 07, 08; s3e09-notes.md) straight behind the stair head on its axis, open toward
-        the steps: a dark recessed back wall, thick light side walls with a sloped outer face, a thin roof slab
-        overhanging the front, and inside on a stepped plinth (≈0.45 m) a concrete cone (≈1.3 m wide, 1 m tall) with a
-        small brass sensor on top."""
+        """The camera shelter (S3E09 07, 08; s3e09-notes.md; review of 43c71ce) between the centre and the trench, its
+        open front facing out toward the steps: a dark back wall, light side walls, a thin roof slab overhanging the
+        front (top at 2.5 m); before it a plinth of slabs (≈0.5 m) across the whole front and a block forward, the cone
+        on it (a polished andesite block) with a brass sensor (waxed copper slab) on top at 1.5 m. 5 wide in all."""
         R, oy = self.radius, v.origin[1]
-        x0, x1, z0, z1 = CAMERA                             # x0: the open front (toward the slot, -x); x1: the back
+        x0, x1, z0, z1 = CAMERA                             # x0: the open front (toward the trench, -x); x1: the back
         g = self.grade
         put = lambda x, y, z, st: v.set(R + x, y - oy, R + z, st)
         zc = (z0 + z1) // 2
@@ -224,14 +225,12 @@ class Site:
                 put(x1, g + dy, z, DARK)                   # back wall
                 for x in range(x0, x1):
                     put(x, g + dy, z, CONCRETE if z in (z0, z1) else AIR)   # side walls, open middle
-        for x in range(x0, x1 + 1):                        # sloped outer faces of the side walls
-            put(x, g + 1, z0 - 1, "minecraft:polished_andesite_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]")
-            put(x, g + 1, z1 + 1, "minecraft:polished_andesite_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]")
         for x in range(x0 - 1, x1 + 1):                    # roof slab, overhanging the front by one
             for z in range(z0, z1 + 1):
                 put(x, g + 3, z, STEP)
-        # plinth and cone: slabs round a cone post, the sensor on top
-        for x, z in ((x0, zc - 1), (x0, zc), (x0, zc + 1), (x0 + 1, zc - 1), (x0 + 1, zc + 1)):
-            put(x, g + 1, z, STEP)
-        put(x0 + 1, g + 1, zc, "minecraft:andesite_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]")
-        put(x0 + 1, g + 2, zc, "minecraft:waxed_cut_copper_slab[type=bottom,waterlogged=false]")
+        for z in range(z0, z1 + 1):                        # the plinth across the whole front, one block forward
+            put(x0 - 1, g + 1, z, STEP)
+        for z in range(z0 + 1, z1):
+            put(x0, g + 1, z, STEP)
+        put(x0, g + 1, zc, "minecraft:polished_andesite")
+        put(x0, g + 2, zc, "minecraft:waxed_cut_copper_slab[type=bottom,waterlogged=false]")

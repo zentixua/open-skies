@@ -50,9 +50,9 @@ FLOOR_R = 55                   # surface.Site.floor_r: the level floor (1:1, SPE
 # rotation (ROT_DEG, set by set_rotation; the complex stands at 128 degrees). Kept clear: Silo 1's slot and camera
 # shelter. Its way out is build_offline.FIRST: "W" (the silo frame unturned), which puts the slot on the frame's
 # south-south-east side, clear of the audience (north half), the small tents (west) and the path south.
-from silo import CAMERA as _CAM, EXIT_X as _EX, RAMP_X as _RX, RAMP_Z as _RZ  # noqa: E402
-_PORTAL_W = (_RX[1], _EX, _RZ[0] - 1, _RZ[1] + 1)                # world offsets about the ring centre, curb included
-_CAMERA_W = (_CAM[0] - 1, _CAM[1], _CAM[2] - 1, _CAM[3] + 1)       # roof and sloped faces included
+from silo import CAMERA as _CAM, EXIT_X as _EX, PORTAL_X as _PX, RAMP_Z as _RZ  # noqa: E402
+_PORTAL_W = (_EX - 1, _PX + 1, _RZ[0] - 1, _RZ[1] + 1)             # world offsets about the ring centre, curb included
+_CAMERA_W = (_CAM[0] - 1, _CAM[1], _CAM[2], _CAM[3])               # roof and plinth included
 ROT_DEG = 0.0
 PORTAL = CAMERA = None
 

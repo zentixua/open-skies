@@ -122,21 +122,23 @@ CELLS_X = (-41, -39)                  # holding cells, interior x range, west of
 CELLS_Z = ((-38, -36), (-34, -32), (-30, -28))
 LOCK = (-47, -43)                     # airlock chamber x range on cell 3's lane
 TURN_X = (-50, -49)                   # the ramp's U-turn
-# The way up (Artem 13.11: the slot on one of the ring's axes, centred; S3E09 07: the camera block straight behind the
-# stair head). The 2052 aerial puts each bowl's block on the stub's line beyond the centre at ≈0.55 of the floor's
-# radius (six near bowls, 0.5-0.6: r ≈ 30 m), so the stair head is at r 31. Three runs, 3 wide inside: the lower ramp
-# east along LOW_Z out of the U-turn, a crossing north-to-south along CROSS_X over the cafeteria's roof onto the axis,
-# then the six steps east along the axis up to the head.
+# The way up (Artem 13.11: the slot on one of the ring's axes, centred). From the centre outward (S3E09 05, 07, 10; the
+# 2052 aerial puts the shelter at ≈0.55 of the floor's radius, r ≈ 30): the pad, the camera shelter's plain back,
+# its open front with the plinth and cone, the trench's closed end over the portal, then the steps rising OUTWARD to the
+# open head facing the berm. Underground (silo frame, the way in due west): the lower ramp east along LOW_Z out of the
+# U-turn, a crossing north-to-south along CROSS_X (over the cafeteria's roof from z -15 on) up to the portal on the
+# axis, then the six steps west up to the head.
 LOW_Z = (-23, -21)                    # lower ramp interior z
-LOW_X = (-48, -40)                    # lower ramp: from the U-turn to the crossing (level 1 -> +4)
-CROSS_X = (-39, -37)                  # crossing interior x (+4 -> +10; over level 1's ceiling from z -15 on)
-RAMP_Z = (-1, 1)                      # the landing and the slot: on the axis, centred
-RAMP_X = (-38, -37)                   # landing on the axis where the steps begin (+10)
-STEPS = 6                             # the slot's steps, one block each
-EXIT_X = RAMP_X[1] + STEPS            # the stair head, on the bowl floor: r 31
-CAMERA = (EXIT_X + 2, EXIT_X + 4, -2, 2)   # the camera shelter straight behind the stair head on the axis (S3E09 07,
-                                      # 08): x0 its open front facing down the steps, x1 its back wall, z0, z1 (5 wide,
-                                      # ≥3.4 m; 3 tall to the roof slab, 2.4-3 m; s3e09-notes.md)
+LOW_X = (-48, -35)                    # lower ramp: from the U-turn to the crossing (level 1 -> +4)
+CROSS_X = (-34, -32)                  # crossing interior x (+4 -> +10); its end at z 0 is the portal's landing, r 32-34
+RAMP_Z = (-1, 1)                      # the trench: on the axis, centred, 3 wide
+STEPS = 6                             # the trench's steps, one block each
+PORTAL_X = CROSS_X[0] - 1             # the lowest step (r 35), next to the roofed landing
+EXIT_X = PORTAL_X - STEPS + 1         # the top step, on the bowl floor at the open head: r 40
+CAMERA = (-31, -28, -2, 2)            # the camera shelter between the centre and the trench (S3E09 07, 08; r 28-31):
+                                      # x0 its open front facing out toward the steps, x1 its dark back wall, z0, z1
+                                      # (5 wide in all, ≈3.5 m outer; roof top 2.5 m; s3e09-notes.md, review 43c71ce)
+RAMP_X = (PORTAL_X, PORTAL_X)         # kept for callers: the trench's inner (closed) end
 
 
 class Silo:
@@ -1038,24 +1040,22 @@ class Silo:
         lz, cx = (LOW_Z[0] + LOW_Z[1]) // 2, (CROSS_X[0] + CROSS_X[1]) // 2
         # the centre line: (x, z, walking surface, along, kind); along is the run's axis ("x" or "z")
         line = []
-        for x in range(LOW_X[0], cx - 1):
-            line.append((x, lz, y + 4 * (x - LOW_X[0]) / (cx - 2 - LOW_X[0]), "x", "low"))
-        for z in range(lz, 0):
-            # over the cafeteria (|z| <= 15 at the crossing) the floor stays over level 1's ceiling
-            surf = y + 4 + 2 * (z - lz) / (-15 - lz) if z <= -15 else y + 6 + (top - y - 6) * (z + 15) / 14
-            line.append((cx, z, min(surf, top), "z", "up"))
-        for x in range(cx, RAMP_X[1] + 1):
-            line.append((x, 0, top, "x", "up"))
-        for x in range(RAMP_X[1] + 1, EXIT_X + 1):
-            line.append((x, 0, top + (x - RAMP_X[1]), "x", "step"))
+        for x in range(LOW_X[0], LOW_X[1] + 1):
+            line.append((x, lz, y + 4 * (x - LOW_X[0]) / (LOW_X[1] - LOW_X[0]), "x", "low"))
+        for z in range(lz, 1):
+            # over the cafeteria (|z| <= 15) the floor stays over level 1's ceiling; nearer the U-turn it may cut in
+            surf = y + 4 + 2 * (z - lz) / (-15 - lz) if z <= -15 else y + 6 + (top - y - 6) * (z + 15) / 15
+            line.append((cx, z, min(surf, top), "z", "low" if surf < y + 6 else "up"))
+        for x in range(PORTAL_X, EXIT_X - 1, -1):
+            line.append((x, 0, top + (PORTAL_X - x) + 1, "x", "step"))
         inner = {}                                       # (x, z) -> (k, half, roof, kind, along, i)
         for i, (x, z, surf, along, kind) in enumerate(line):
             q = round(surf * 2) / 2
             k = int(math.floor(q))
             half = kind != "step" and q - k >= 0.5
             roof = grade + 1 if kind == "step" else min(k + (1 if half else 0) + 3, grade - 1)
-            w = range(LOW_Z[0], LOW_Z[1] + 1) if kind == "low" else \
-                (range(CROSS_X[0], CROSS_X[1] + 1) if along == "z" else range(RAMP_Z[0], RAMP_Z[1] + 1))
+            w = range(CROSS_X[0], CROSS_X[1] + 1) if along == "z" else \
+                (range(LOW_Z[0], LOW_Z[1] + 1) if z == lz else range(RAMP_Z[0], RAMP_Z[1] + 1))
             for o in w:
                 c = (o, z) if along == "z" else (x, o)
                 if c not in inner:
@@ -1082,18 +1082,17 @@ class Silo:
             for yy in range(lo, hi + 1):
                 v.set(X_, yy, Z_, CONCRETE if (yy < k or (yy == roof and kind != "step")) else AIR)
             if kind == "step":
-                v.set(X_, k - 1, Z_, "minecraft:polished_andesite_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]")
+                v.set(X_, k - 1, Z_, "minecraft:polished_andesite_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]")
                 continue
             rib = ((z if along == "z" else x) % 2) == 0
             v.set(X_, k - 1, Z_, "minecraft:waxed_cut_copper" if rib else "minecraft:smooth_stone")
             if half:
                 v.set(X_, k, Z_, "minecraft:waxed_cut_copper_slab[type=bottom,waterlogged=false]" if rib else STOOP)
             # lights: a sea lantern in the roof over the run's middle, every third block
-            mid = (z == (LOW_Z[0] + LOW_Z[1]) // 2) if kind == "low" else \
-                (x == cx if along == "z" else z == 0)
+            mid = (x == cx) if along == "z" else (z == lz or z == 0)
             if mid and i % 3 == 1 and roof < grade:
                 v.set(X_, roof, Z_, "minecraft:sea_lantern")
-        self.exit_cells = [(x, z) for x in range(RAMP_X[1] + 1, EXIT_X + 1) for z in range(RAMP_Z[0] - 1, RAMP_Z[1] + 2)]
+        self.exit_cells = [(x, z) for x in range(EXIT_X, PORTAL_X + 1) for z in range(RAMP_Z[0] - 1, RAMP_Z[1] + 2)]
 
     def keep_clear(self, f: dict) -> set[tuple[int, int]]:
         """Cells of a flat that furniture leaves free: both ends of its doors (the template's "clear") and the first
