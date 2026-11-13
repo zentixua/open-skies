@@ -136,6 +136,20 @@ def canon_lines() -> dict:
     return json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "canon", "lines.json")))
 
 
+def gate_distance(layout: dict, u=None) -> float:
+    """Metres along the axis from Silo 1's centre to the gate canopy measured on the 2052 aerial, or to layout's gate."""
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "canon", "surroundings.json")
+    if os.path.exists(path):
+        can = next((i for i in json.load(open(path))["items"] if i["id"] == "gate_canopy"), None)
+        if can:
+            cx = sum(p_[0] for p_ in can["line"]) / len(can["line"]); cz = sum(p_[1] for p_ in can["line"]) / len(can["line"])
+            if u is None:
+                b_ = math.radians(canon_lines()["axis"]["bearing_deg"]); u = (math.sin(b_), -math.cos(b_))
+            return cx * u[0] + cz * u[1]
+    one = next(s for s in layout["silos"] if s["number"] == 1)["ring"]
+    return math.dist(one, layout["gate"])
+
+
 def tangent_arc(c1, c2, side: int, n: int = 40) -> list:
     """An arc of radius RING_PATH_R touching both ring paths (centres c1, c2) from outside, on the side given."""
     dx, dz = c2[0] - c1[0], c2[1] - c1[1]
@@ -214,8 +228,9 @@ def plan(layout: dict) -> tuple[set, set]:
     # Silo 2 stays on its canon point (11 m off the line in the frame fit; moving it would break the 10 m overlay)
     b_ = math.radians(meas["axis"]["bearing_deg"])
     u = (math.sin(b_), -math.cos(b_))                       # toward the gate
-    v_gate = M["axis_north"]["from"][1] * e
-    t_gate = v_gate / u[1]
+    # the gate end: the canopy where the 2052 frame puts it (canon/surroundings.json, 1.54 km from Silo 1; layout's
+    # gate at 1.35 km comes from the joint fit with the plaque: frame over plaque, as for Silo 2)
+    t_gate = gate_distance(layout, u)
     lw(road, [(u[0] * t_gate, u[1] * t_gate), (u[0] * RING_PATH_R, u[1] * RING_PATH_R)], 3)
     two = C(ring[2])
     bx, bz = -u[0], -u[1]

@@ -322,6 +322,9 @@ class Builder:
             (hx, hz), out = hero_tree.place_1to1((s18["x"], s18["z"]), TURNS[s18["dir"]])
             hero = (hx, hz, hero_tree.blocks(out))
         avoid = self.path_cells | self.road_cells
+        sc = os.path.join(self.a.state, "surroundings-cols.npy")
+        if os.path.exists(sc):
+            avoid = avoid | {(int(x), int(z)) for x, z in np.load(sc)}     # roads, rail, yards and buildings
         cg = self.a.canon_ground
         spots = paths.trees(self.layout, avoid, [(hero[0], hero[1])] if hero else [], ground=cg,
                             water=self.pond_cells() if cg else None)
@@ -341,6 +344,65 @@ class Builder:
             vols.append(self.tree_volume(hx, self.ground_at(hx, hz), hz, blocks))
         self.apply(vols, f"trees: {len(spots)} and Silo 18's")
         self.mark("trees", {"count": len(spots), "hero": [hero[0], hero[1]] if hero else None})
+
+    def surroundings(self) -> None:
+        """The gate, coach park, perimeter roads, railway and facility yards of the 2052 aerial (surroundings.py,
+        canon/surroundings.json) on the ground the plain and silos left; the gate group moved onto the built axis
+        (at most a few metres) and the avenue laid from Silo 1's ring path to the canopy. The footprints, dilated, go to
+        the state so the trees keep off them."""
+        import paths
+        from heights import read_area
+        from surroundings import Surroundings
+        src = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "canon", "surroundings.json")))
+        meas = paths.canon_lines()
+        b_ = math.radians(meas["axis"]["bearing_deg"]); u = (math.sin(b_), -math.cos(b_))
+        can = next(i for i in src["items"] if i["id"] == "gate_canopy")
+        cx = sum(p[0] for p in can["line"]) / len(can["line"]); cz = sum(p[1] for p in can["line"]) / len(can["line"])
+        t = cx * u[0] + cz * u[1]
+        shift = (u[0] * t - cx, u[1] * t - cz)            # canopy centre onto the built axis
+        def move(o):
+            if isinstance(o, list) and len(o) == 2 and all(isinstance(q, (int, float)) for q in o):
+                return [o[0] + shift[0], o[1] + shift[1]]
+            if isinstance(o, list):
+                return [move(q) for q in o]
+            if isinstance(o, dict):
+                return {k: (move(v) if k in ("line", "poly", "centre", "points", "at", "polygon") else v) for k, v in o.items()}
+            return o
+        for i, it in enumerate(src["items"]):
+            if it.get("group") == "gate":
+                src["items"][i] = move(it)
+        sp = os.path.join(self.a.state, "surroundings-built.json")
+        json.dump(src, open(sp, "w"))
+        lay = dict(self.layout)
+        one = next(s for s in self.layout["silos"] if s["number"] == 1)["ring"]
+        rot = math.radians(self.layout.get("rotation_deg", 0)); cs, sn = math.cos(rot), math.sin(rot)
+        r0 = paths.RING_PATH_R + 2
+        lay["gate"] = [one[0] + u[0] * r0 * cs - u[1] * r0 * sn, one[1] + u[0] * r0 * sn + u[1] * r0 * cs]
+        log(f"surroundings: gate group moved {math.hypot(*shift):.1f} m onto the axis; canopy {t:.0f} m from Silo 1")
+        f = self.field
+
+        def ground_fn(x0, z0, nx, nz):
+            """The finished plain where it lies (offline-written chunks keep the golden's heightmaps until the game
+            loads them), Zearth's golden ground beyond it."""
+            g, w, t = read_area(self.a.golden, x0, z0, nx, nz, min_y=-64, height=384)
+            ia, ka = max(0, f.x0 - x0), max(0, f.z0 - z0)
+            ib = min(nx, f.x0 + f.height.shape[0] - x0); kb = min(nz, f.z0 + f.height.shape[1] - z0)
+            if ib > ia and kb > ka:
+                fh = f.height[x0 + ia - f.x0:x0 + ib - f.x0, z0 + ka - f.z0:z0 + kb - f.z0]
+                m = fh > -9000
+                sub_g, sub_w, sub_t = g[ia:ib, ka:kb], w[ia:ib, ka:kb], t[ia:ib, ka:kb]
+                sub_g[m] = fh[m]; sub_w[m] = -9999; sub_t[m] = fh[m]
+            return g, w, t
+        S = Surroundings(lay, ground_fn=ground_fn, source=sp)
+        vols = S.volumes()
+        cols = set()
+        for v in vols:
+            ox, oy, oz = v.origin
+            for i, k in zip(*np.nonzero((v.ids != 0).any(axis=1))):
+                cols.add((ox + int(i), oz + int(k)))
+        np.save(os.path.join(self.a.state, "surroundings-cols.npy"), np.array(sorted(cols), dtype=np.int32))
+        self.apply(vols, f"surroundings: {len(vols)} volumes, {len(cols)} columns")
+        self.mark("surroundings", {"volumes": len(vols), "columns": len(cols), "gate_shift_m": round(math.hypot(*shift), 1)})
 
     def slots(self) -> None:
         """Open every trench to the sky: air over its columns from the bowl floor up (a world built before surface.py
@@ -566,7 +628,7 @@ def main():
     bp.add_argument("--world", required=True, help="the world copy to write")
     bp.add_argument("--state", required=True)
     bp.add_argument("--number", type=int, nargs="*")
-    bp.add_argument("--what", nargs="*", default=["all"], choices=["plain", "silos", "slots", "ponds", "trees", "biome", "all"])
+    bp.add_argument("--what", nargs="*", default=["all"], choices=["plain", "silos", "surroundings", "slots", "ponds", "trees", "biome", "all"])
     bp.add_argument("--terrain-for-towns", help="site_fit terrain3.npz: block entities per chunk (Zearth's towns stay)")
     bp.add_argument("--canon-ground", help="canon_ground.py's npz: ponds and the plain's groves where the show's 2052 "
                     "aerial has them")
@@ -586,6 +648,8 @@ def main():
             if not a.number and b.done.get(f"silo{s['number']}"):
                 continue
             b.silo(s)
+    if "surroundings" in what:
+        b.surroundings()
     if "slots" in what:
         b.slots()
     if what & {"ponds", "all"}:
