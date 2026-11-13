@@ -391,7 +391,10 @@ class Builder:
                 fh = f.height[x0 + ia - f.x0:x0 + ib - f.x0, z0 + ka - f.z0:z0 + kb - f.z0]
                 m = fh > -9000
                 sub_g, sub_w, sub_t = g[ia:ib, ka:kb], w[ia:ib, ka:kb], t[ia:ib, ka:kb]
-                sub_g[m] = fh[m]; sub_w[m] = -9999; sub_t[m] = fh[m]
+                # where the plain shaped the ground its own heights; where it left Zearth's ground, Zearth's crowns
+                # stay in the top (so the yards and roads clear them)
+                shaped = m & (fh != sub_g)
+                sub_g[m] = fh[m]; sub_w[shaped] = -9999; sub_t[shaped] = fh[shaped]
             return g, w, t
         S = Surroundings(lay, ground_fn=ground_fn, source=sp)
         vols = S.volumes()
@@ -403,6 +406,95 @@ class Builder:
         np.save(os.path.join(self.a.state, "surroundings-cols.npy"), np.array(sorted(cols), dtype=np.int32))
         self.apply(vols, f"surroundings: {len(vols)} volumes, {len(cols)} columns")
         self.mark("surroundings", {"volumes": len(vols), "columns": len(cols), "gate_shift_m": round(math.hypot(*shift), 1)})
+
+    def forest2(self) -> None:
+        """Second forest pass beyond the plain, toward the 2052 frame's closed canopy: Zearth's lakes of any depth
+        filled where the frame reads closed forest (tree fraction over half, smoothed; never where it reads water), and
+        trees on a 4 m jittered grid with a chance from the frame's tree fraction weighted by darkness (dens ** 0.6),
+        skipping towns, Zearth's own crowns, the surroundings' footprints and the plain."""
+        import paths
+        from heights import read_area, MISSING
+        from trees import tree_blocks
+        from scipy.signal import convolve2d
+        cgd = np.load(self.a.canon_ground)
+        T = convolve2d(cgd["tree"].astype(float), np.ones((3, 3)) / 9, mode="same")
+        D = convolve2d(cgd["dark"].astype(float), np.ones((3, 3)) / 9, mode="same")
+        Tm = convolve2d(cgd["tree"].astype(float), np.ones((5, 5)) / 25, mode="same")
+        Wm = convolve2d(cgd["water"].astype(float), np.ones((3, 3)) / 9, mode="same")
+        dens = np.clip(T * (0.6 + 0.6 * D), 0, 1)
+        cx0, cz0, C = int(cgd["x0"]), int(cgd["z0"]), int(cgd["cell"])
+        nzc = np.nonzero(dens > 0.25)
+        X0 = cx0 + int(nzc[0].min()) * C; X1 = cx0 + int(nzc[0].max() + 1) * C
+        Z0 = cz0 + int(nzc[1].min()) * C; Z1 = cz0 + int(nzc[1].max() + 1) * C
+        nx, nz = X1 - X0, Z1 - Z0
+        t0 = time.time()
+        ground, water, top = read_area(self.a.golden, X0, Z0, nx, nz, min_y=-64, height=384)
+        log(f"golden heights {nx} x {nz} in {time.time() - t0:.0f}s")
+        f = self.field
+        II, KK = np.meshgrid(np.arange(nx) + X0, np.arange(nz) + Z0, indexing="ij")
+        ci = np.clip((II - cx0) // C, 0, T.shape[0] - 1); ck = np.clip((KK - cz0) // C, 0, T.shape[1] - 1)
+        inplain = (II - f.x0 >= 0) & (II - f.x0 < f.height.shape[0]) & (KK - f.z0 >= 0) & (KK - f.z0 < f.height.shape[1])
+        sc = os.path.join(self.a.state, "surroundings-cols.npy")
+        built = np.zeros((nx, nz), bool)
+        if os.path.exists(sc):
+            for x, z in np.load(sc):
+                if X0 <= x < X1 and Z0 <= z < Z1:
+                    built[x - X0, z - Z0] = True
+        from scipy import ndimage
+        built = ndimage.binary_dilation(built, iterations=3)
+        rings = np.array([s["ring"] for s in self.layout["silos"]], float)
+        wet = (water != MISSING) & (ground != MISSING) & (water > ground) & (Tm[ci, ck] > 0.5) & (Wm[ci, ck] < 0.2) \
+            & ~inplain & ~built
+        t = np.load(self.a.terrain_for_towns, allow_pickle=True) if self.a.terrain_for_towns else None
+        vols = []
+        n_fill = int(wet.sum())
+        for bx in range(0, nx, 16):
+            for bz in range(0, nz, 16):
+                m = wet[bx:bx + 16, bz:bz + 16]
+                if not m.any():
+                    continue
+                gb = ground[bx:bx + 16, bz:bz + 16]; ws = water[bx:bx + 16, bz:bz + 16]
+                lo, hi = int(gb[m].min()) + 1, int(ws[m].max()) + 1
+                v = Volume((X0 + bx, lo, Z0 + bz), (m.shape[0], hi - lo + 1, m.shape[1]))
+                for i, k in zip(*np.nonzero(m)):
+                    v.ids[i, int(gb[i, k]) + 1 - lo:int(ws[i, k]) - lo, k] = v.id("minecraft:dirt")
+                    v.set(i, int(ws[i, k]) - lo, k, "minecraft:grass_block[snowy=false]")
+                    v.set(i, int(ws[i, k]) + 1 - lo, k, "minecraft:air")
+                vols.append(v)
+        n_tree = 0
+        step = 4
+        for gx in range(X0, X1, step):
+            for gz in range(Z0, Z1, step):
+                x, z = gx + int(paths.h01(gx, gz, 26) * step), gz + int(paths.h01(gx, gz, 27) * step)
+                i, k = x - X0, z - Z0
+                if not (0 <= i < nx and 0 <= k < nz) or inplain[i, k] or built[i, k]:
+                    continue
+                dd = dens[ci[i, k], ck[i, k]]
+                if dd < 0.25 or paths.h01(gx, gz, 28) > dd ** 0.6:
+                    continue
+                if float(np.min(np.hypot(rings[:, 0] - x, rings[:, 1] - z))) < paths.RING_PATH_R + 6:
+                    continue
+                g = int(ground[i, k])
+                if g == MISSING:
+                    continue
+                if t is not None:
+                    tbx, tbz = (x - int(t["x0"])) // 16, (z - int(t["z0"])) // 16
+                    if 0 <= tbx < t["bes"].shape[0] and 0 <= tbz < t["bes"].shape[1] and t["bes"][tbx, tbz] >= 3:
+                        continue
+                if water[i, k] != MISSING:
+                    if not wet[i, k]:
+                        continue
+                    g = int(water[i, k])
+                elif top[i, k] - g > 3:
+                    continue
+                r = paths.h01(gx, gz, 29)
+                dmin = 0
+                kind = "minecraft:spruce" if r < 0.3 else ("minecraft:dark_oak" if D[ci[i, k], ck[i, k]] > 0.5 and r < 0.75
+                                                         else ("minecraft:oak" if r < 0.9 else "minecraft:fancy_oak"))
+                vols.append(self.tree_volume(x, g, z, tree_blocks(kind, int(h01(x, z, 13) * 1e6))))
+                n_tree += 1
+        self.apply(vols, f"forest2: {n_fill} lake columns filled, {n_tree} trees")
+        self.mark("forest2", {"filled": n_fill, "trees": n_tree})
 
     def slots(self) -> None:
         """Open every trench to the sky: air over its columns from the bowl floor up (a world built before surface.py
@@ -628,7 +720,7 @@ def main():
     bp.add_argument("--world", required=True, help="the world copy to write")
     bp.add_argument("--state", required=True)
     bp.add_argument("--number", type=int, nargs="*")
-    bp.add_argument("--what", nargs="*", default=["all"], choices=["plain", "silos", "surroundings", "slots", "ponds", "trees", "biome", "all"])
+    bp.add_argument("--what", nargs="*", default=["all"], choices=["plain", "silos", "surroundings", "slots", "ponds", "trees", "forest2", "biome", "all"])
     bp.add_argument("--terrain-for-towns", help="site_fit terrain3.npz: block entities per chunk (Zearth's towns stay)")
     bp.add_argument("--canon-ground", help="canon_ground.py's npz: ponds and the plain's groves where the show's 2052 "
                     "aerial has them")
@@ -652,6 +744,8 @@ def main():
         b.surroundings()
     if "slots" in what:
         b.slots()
+    if "forest2" in what:
+        b.forest2()
     if what & {"ponds", "all"}:
         b.ponds()
     if what & {"trees", "all"}:

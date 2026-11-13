@@ -41,7 +41,7 @@ CANOPY_EDGE = 4          # frame 02: the canopy's low arches stand about 2.5 peo
 BAND_H = 2               # frame 02: the grey band beside the canopy, about a person high
 
 DIRT, GRASS, AIR = "minecraft:dirt", "minecraft:grass_block", "minecraft:air"
-SURFACE = {"gravel": "minecraft:gravel", "paved": "minecraft:gray_concrete", "bare": "minecraft:coarse_dirt",
+SURFACE = {"gravel": "minecraft:gravel", "paved": "minecraft:gray_concrete", "bare": "minecraft:gravel",
            "vehicle_rows": "minecraft:gray_concrete", "road": "minecraft:gravel", "lawn": GRASS}
 SURFACE_BY_ID = {"gate_forecourt": "minecraft:light_gray_concrete", "access_road": "minecraft:gray_concrete",
                  "sw_vehicle_yard": "minecraft:gravel"}
