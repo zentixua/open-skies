@@ -53,8 +53,9 @@ for s in L["silos"]:
     if slot and cam and not (slot[0] - 12 <= cam[0] < slot[0]):
         row.append("camera shelter not between the centre and the trench"); ok = False
     # the cut: crest heights round the ring at r 62-80, the cut's bearing vs the median
-    if n == 1:
-        cb = math.atan2(1, 0)
+    if n == 1:                                     # the frame's south, turned by the layout (event.py)
+        r_ = math.radians(L.get("rotation_deg", 0))
+        cb = math.atan2(math.cos(r_), -math.sin(r_))
     else:
         cb = math.atan2(-az, -ax)
     crest = []
