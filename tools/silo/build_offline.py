@@ -112,6 +112,16 @@ def make_layout(a) -> None:
         return hits
 
     silos = []
+    # Silo 2 on the axis (frame over plaque, 13.11): the 2052 aerial shows its centre on the axis, the hand-drawn
+    # plaque 11-17 m east of it; Artem compares the map with the aerial. It goes on the axis (through Silo 1's centre
+    # on the measured bearing, canon/lines.json) at the v the aerial measures for its centre.
+    meas = json.load(open(os.path.join(here, "canon", "lines.json")))
+    bax = math.radians(meas["axis"]["bearing_deg"])
+    v2 = meas["rings"]["2"]["centre"][1]
+    u2 = -v2 * math.tan(bax)
+    c_, s_ = math.cos(math.radians(p["rot"])), math.sin(math.radians(p["rot"]))
+    rings = list(rings)
+    rings[1] = (a.spacing * (u2 * c_ - v2 * s_), a.spacing * (u2 * s_ + v2 * c_))
     for i, (rx, rz) in enumerate(rings):
         n = i + 1
         x, z = round(ox + rx), round(oz + rz)
@@ -168,7 +178,7 @@ def make_layout(a) -> None:
            "rotation_deg": p["rot"], "silos": silos, "towns": towns,
            "source": f"canon_layout.json about Silo 1 and rotation of silo-site-1to1 placements.json pick {a.pick}"}
     res = canon_check.check(out)
-    bad = [r for r in res if r[1] > 10]
+    bad = [r for r in res if r[1] > 10 and r[0] not in canon_check.FRAME_OVER_PLAQUE]
     if bad:
         raise SystemExit(f"layout off canon: " + ", ".join(f"silo {n} {e:.0f} m" for n, e, *_ in bad))
     json.dump(out, open(a.out, "w"), indent=1)

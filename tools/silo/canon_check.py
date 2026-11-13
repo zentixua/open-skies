@@ -23,6 +23,10 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 FIT = json.load(open(os.path.join(HERE, "canon", "fit.json")))
 GROUND = {int(k): tuple(v) for k, v in FIT["ground"].items() if k.isdigit()}
 HP, HF = np.array(FIT["Hp"]), np.array(FIT["Hf"])
+# silos placed by the 2052 aerial instead of the joint fit (Artem compares the map with the aerial; the plaque is a
+# hand-drawn schematic): checked against their centre measured on the aerial (canon/lines.json) within 10 m
+FRAME_OVER_PLAQUE = {2: "on the aerial's axis, where the frame shows its centre"}
+LINES = json.load(open(os.path.join(HERE, "canon", "lines.json")))
 
 
 def to_canon(x: float, z: float, one: tuple[float, float], rot_deg: float, edge: float) -> tuple[float, float]:
@@ -56,6 +60,10 @@ def check(layout: dict, positions: dict[int, tuple[float, float]] | None = None,
             continue
         u = to_canon(*positions[n], one, rot, edge)
         out.append((n, edge * math.hypot(u[0] - g[0], u[1] - g[1]), g, u))
+    for i, (n, e_, g, u) in enumerate(out):
+        if n in FRAME_OVER_PLAQUE and u is not None:
+            m = LINES["rings"][str(n)]["centre"]
+            out[i] = (n, edge * math.hypot(u[0] - m[0], u[1] - m[1]), tuple(m), u)
     out.sort(key=lambda r: -r[1])
     return out
 
@@ -74,6 +82,8 @@ def main() -> None:
     bad = [r for r in res if r[1] > a.tol]
     for n, e, g, u in res[:8]:
         print(f"silo {n:2d}: {e:6.1f} m off canon")
+    for n, why in FRAME_OVER_PLAQUE.items():
+        print(f"silo {n}: frame over plaque ({why}): checked against the 2052 aerial's measured centre")
     print(f"{len(res) - len(bad)}/{len(res)} silos within {a.tol} m; worst {res[0][1]:.1f} m (silo {res[0][0]})")
     sys.exit(1 if bad else 0)
 
