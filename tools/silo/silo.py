@@ -261,9 +261,11 @@ class Silo:
         """Walls, open space, flats and doors behind the gallery for level n's alley pattern (shared by every level
         with the same alleys)."""
         alleys = tuple(self.alley_bays(n))
-        if alleys in self._templates:
-            return self._templates[alleys]
+        key = (alleys, n == 1)
+        if key in self._templates:
+            return self._templates[key]
         s, r = self.s, self.r
+        reserved = self.reserved(n)
         zone = self.ring(s.r_facade + 1.0, s.r_inner_wall)
         lanes = np.zeros_like(zone)
         for b in alleys:
@@ -272,7 +274,7 @@ class Silo:
         r2a, r2b = s.r_ring2[0] + 1, s.r_ring2[1] - 1
         ring1 = self.ring(r1a, r1b)
         ring2 = self.ring(r2a, r2b)
-        open_ = (lanes & self.ring(s.r_facade, r2b)) | ring1 | ring2
+        open_ = ((lanes & self.ring(s.r_facade, r2b)) | ring1 | ring2) & ~reserved
         walls = zone & ~open_
         # flats: cut the solid zone into cells by rings and radial walls
         thin = lambda r0: self.ring(r0, r0 + 1.0)
@@ -284,7 +286,7 @@ class Silo:
             a = k * TAU / s.flats_out + 0.05
             cut |= (np.abs(np.sin(self.theta - a)) * r < 0.5) & (np.cos(self.theta - a) > 0) & self.ring(s.r_ring1[1], s.r_inner_wall)
         # a wall wherever a lane borders solid ground
-        inner = walls & ~cut
+        inner = walls & ~cut & ~reserved
         # label the flats (4-connected)
         from scipy import ndimage
         lab, nlab = ndimage.label(inner)
@@ -294,40 +296,91 @@ class Silo:
             if sz < 6:
                 inner[lab == i] = False
         lab, nlab = ndimage.label(inner)
-        access = open_ | self.gallery
-        flats = []
-        for i, sl in enumerate(ndimage.find_objects(lab), 1):
-            cells = np.argwhere(lab[sl] == i) + [sl[0].start, sl[1].start]
-            door = self._door_for(cells, lab, i, access)
-            flats.append({"label": i, "cells": cells, "door": door})
+        flats = [{"label": i, "cells": np.argwhere(lab[sl] == i) + [sl[0].start, sl[1].start], "door": None,
+                  "open": False} for i, sl in enumerate(ndimage.find_objects(lab), 1)]
+        # the open space reached from the gallery; a stretch of alley cut off from it (level 1's halls cross the ring
+        # alleys) joins the graph like a flat and gets a door of its own
+        reach, nreach = ndimage.label(open_ | self.gallery)
+        main = np.bincount(reach[self.gallery & (reach > 0)]).argmax()
+        access = reach == main
+        for k in range(1, nreach + 1):
+            if k == main:
+                continue
+            i = len(flats) + 1
+            lab[reach == k] = i
+            flats.append({"label": i, "cells": np.argwhere(reach == k), "door": None, "open": True})
+        self._doors(flats, lab, access)
         t = {"walls": zone & ~inner & ~open_, "open": open_ & zone, "flats": flats, "lab": lab, "lanes": lanes,
              "ring1": ring1, "ring2": ring2}
-        self._templates[alleys] = t
+        self._templates[key] = t
         return t
 
-    def _door_for(self, cells, lab, i, access):
-        """A wall cell between the flat and an access space, square to it (walls on both sides along the wall), nearest
-        the middle of the flat's frontage."""
-        best = None
-        cx, cz = cells.mean(axis=0)
+    def reserved(self, n: int) -> np.ndarray:
+        """Columns of level n taken by its own halls, kept out of the flats and alleys: on level 1 the cafeteria with
+        its portal and passage, the sheriff's office with the cells, the airlock and the ramp's strip."""
+        out = np.zeros_like(self.core)
+        if n != 1:
+            return out
+        hx, hz, hr = HALL
+        ox, oz, orr = OFFICE
+        ex, ez = HALL_DOOR
+        z0, z1 = CELLS_Z[-1]
+        out |= self.disc(hx, hz, hr + 1.2)
+        out |= (np.abs(self.Z - hz) <= 3) & (self.X <= -int(self.s.r_facade) + 1) & (self.X >= hx)       # portal
+        out |= (np.abs(self.X - ex) <= 2) & (self.Z <= ez + 4) & (self.Z >= oz)                           # passage
+        out |= self.disc(ox, oz, orr + 1.7)
+        out |= self.rect(CELLS_X[0] - 1, ox, CELLS_Z[0][0] - 1, CELLS_Z[-1][1] + 1)
+        out |= self.rect(TURN_X[0] - 1, LOCK[1] + 1, z0 - 1, RAMP_Z[1] + 1)
+        out |= self.rect(TURN_X[0] - 1, EXIT_X, RAMP_Z[0] - 1, RAMP_Z[1] + 1)
+        return out & ~self.gallery
+
+    def _doors(self, flats: list[dict], lab: np.ndarray, access: np.ndarray) -> None:
+        """One door per flat, chosen so every flat is reached: the flats and the open space (gallery, alleys) are a
+        graph, a door through a wall is an edge, and the doors are a spanning tree grown from the open space (Prim).
+        A flat's best door opens straight onto the open space through a straight wall (walls on both sides along it)
+        near the middle of its frontage; where diagonal walls step, the door goes through a corner or through two
+        wall cells; a flat with no frontage at all opens into a neighbouring flat that already has its way out."""
         n = lab.shape[0]
-        for x, z in cells:
-            for dx, dz, facing in ((1, 0, "east"), (-1, 0, "west"), (0, 1, "south"), (0, -1, "north")):
-                wx, wz = x + dx, z + dz
-                ox, oz = x + 2 * dx, z + 2 * dz
-                if not (0 <= ox < n and 0 <= oz < n):
-                    continue
-                if lab[wx, wz] != 0 or not access[ox, oz] or access[wx, wz]:
-                    continue
-                sx, sz = -dz, dx                                    # along the wall
-                if lab[wx + sx, wz + sz] != 0 or lab[wx - sx, wz - sz] != 0:
-                    continue
-                if access[wx + sx, wz + sz] or access[wx - sx, wz - sz]:
-                    continue
-                d = (x - cx) ** 2 + (z - cz) ** 2
-                if best is None or d < best[0]:
-                    best = (d, (int(wx), int(wz)), facing, (int(x), int(z)), (int(ox), int(oz)))
-        return best[1:] if best else None
+        wall = (lab == 0) & ~access
+        cands: dict[int, list] = {f["label"]: [] for f in flats}
+        for f in flats:
+            i = f["label"]
+            cx, cz = f["cells"].mean(axis=0)
+            for x, z in f["cells"]:
+                for dx, dz, facing in ((1, 0, "east"), (-1, 0, "west"), (0, 1, "south"), (0, -1, "north")):
+                    run = []
+                    for k in (1, 2, 3):
+                        wx, wz = x + k * dx, z + k * dz
+                        if not (0 <= wx < n and 0 <= wz < n):
+                            break
+                        if wall[wx, wz]:
+                            run.append((int(wx), int(wz)))
+                            continue
+                        if not run:
+                            break
+                        to = 0 if access[wx, wz] else int(lab[wx, wz])
+                        if to == i:
+                            break
+                        sx, sz = -dz, dx                            # along the wall, beside the first door cell
+                        w0x, w0z = run[0]
+                        square = all(wall[w0x + a * sx, w0z + a * sz] for a in (1, -1))
+                        rank = (0 if to == 0 else 3) + (0 if len(run) == 1 and square else 1 if len(run) == 1 else 2)
+                        d = (x - cx) ** 2 + (z - cz) ** 2
+                        cands[i].append((rank, d, to, run, facing, (int(x), int(z)), (int(wx), int(wz))))
+                        break
+        done = {0}
+        todo = {f["label"]: f for f in flats}
+        while todo:
+            best = None
+            for i in todo:
+                for c in cands[i]:
+                    if c[2] in done and (best is None or c[:2] < best[1][:2]):
+                        best = (i, c)
+            if best is None:
+                break                                               # walled in for good: walk.py reports it
+            i, (rank, d, to, run, facing, inside, outside) = best
+            todo.pop(i)["door"] = (run[0], facing, inside, outside, run[1:])
+            done.add(i)
 
     # build ----------------------------------------------------------------------------------------------------------
     def build(self) -> Volume:
@@ -382,7 +435,7 @@ class Silo:
         v.mask(y, y, self.ring(s.r_atrium, s.r_atrium + 1.0) & ~self.columns, PARAPET)
         v.mask(y + s.pitch - 2, y + s.pitch - 2, self.columns, lamp)
         # landing ring: parapets on both edges, open toward the flight where it lands and at the bridges
-        v.mask(y, y, self.ring(s.r_stair_wall, s.r_stair_wall + 1.0) & (self.off(self.stair_angle(n)) > math.radians(28)), PARAPET)
+        v.mask(y, y, self.ring(s.r_stair_wall, s.r_stair_wall + 1.0) & ~self.stair_gate(n), PARAPET)
         v.mask(y, y, self.ring(s.r_landing - 1.0, s.r_landing), PARAPET)
         for a in self.bridge_angles(n):
             self.bridge(y, a)
@@ -399,6 +452,12 @@ class Silo:
 
     def stair_angle(self, n: int) -> float:
         return (n * GOLDEN) % TAU
+
+    def stair_gate(self, n: int) -> np.ndarray:
+        """Where level n's landing opens onto the flight: the 30 degrees after the stair angle, where the flight runs
+        down from the landing's floor. Before the stair angle the flight is a whole turn (4.3 blocks) lower: closed."""
+        d = ((self.theta - self.stair_angle(n) + math.pi) % TAU) - math.pi
+        return (d >= 0) & (d < math.radians(30))
 
     def bridge(self, y: int, a: float) -> None:
         s, v = self.s, self.v
@@ -531,21 +590,38 @@ class Silo:
         dress = dressing_for(n)
         poor = region(n) == "deep"
         for f in t["flats"]:
+            if f["open"]:                                       # a cut-off stretch of alley: only its door
+                if f["door"]:
+                    self.flat_door(y, f["door"], wall_state)
+                continue
             cells = f["cells"]
             cx, cz = cells.mean(axis=0)
             k = int(np.argmin(((cells - [cx, cz]) ** 2).sum(axis=1)))
             lx, lz = cells[k]
             v.set(int(lx), y + self.s.pitch - 2, int(lz), lamp)
             if f["door"]:
-                (wx, wz), facing, inside, outside = f["door"]
-                if self.r[wx, wz] >= self.s.r_facade + 1.0:     # facade doors come from the facade itself
-                    self.steel_door(y, [(wx, wz)], facing)
-                    if v.get(wx, y + 2, wz) == AIR:
-                        v.set(wx, y + 2, wz, wall_state)
+                self.flat_door(y, f["door"], wall_state, cells)
             if dress in ("residential", "admin") and not (n in ROOM_LEVELS):
                 self.home(n, y, f, poor)
             elif n > 1 and dress not in ("residential", "admin"):
                 self.store(n, y, f)
+
+    def flat_door(self, y: int, door: tuple, wall_state: str, cells: np.ndarray | None = None) -> None:
+        """A flat's way out (template()._doors). Through the facade the facade's own door serves, if one of the
+        bay's doors opens into this flat; otherwise this one is cut."""
+        v = self.v
+        (wx, wz), facing, inside, outside, through = door
+        if self.r[wx, wz] < self.s.r_facade + 1.0 and cells is not None:
+            for x, z in cells:
+                for dx, dz in DIRS.values():
+                    if (v.get(int(x) + dx, y, int(z) + dz) or "").startswith("minecraft:iron_door"):
+                        return
+        for tx, tz in through:                                  # the rest of a thick (stepped) wall: a short passage
+            for dy in (0, 1):
+                v.set(tx, y + dy, tz, AIR)
+        self.steel_door(y, [(wx, wz)], facing)
+        if v.get(wx, y + 2, wz) == AIR:
+            v.set(wx, y + 2, wz, wall_state)
 
     def home(self, n: int, y: int, f: dict, poor: bool) -> None:
         v = self.v
@@ -681,6 +757,7 @@ class Silo:
         top_idx = self.level_y(1) + s.pitch - 2
         v.mask(y_bottom, top_idx, self.core, CONCRETE)
         a1 = GOLDEN % TAU
+        gates: dict[int, np.ndarray] = {}
         for m, solid in ((self.flight, True), (self.stair_wall, False)):
             xs, zs = np.nonzero(m)
             for x, z in zip(xs, zs):
@@ -696,11 +773,13 @@ class Silo:
                         else:
                             v.set(x, int(math.floor(q)), z, STEEL_SLAB_B)
                     else:
-                        yb = int(math.floor(surf))
-                        # the parapet stands on the helix, open where the flight meets a level's landing
+                        # the parapet stands on the helix at the flight's own tread height, open where the flight
+                        # meets a level's landing (stair_gate); there its base is the floor between landing and flight
+                        yb = int(math.floor(q))
                         lvl = (y1 - yb) / s.pitch
-                        if abs(lvl - round(lvl)) * s.pitch > 0.6 or self.off((round(lvl) + 1) * GOLDEN % TAU)[x, z] > math.radians(28):
-                            v.set(x, yb - 1, z, CONCRETE)
+                        v.set(x, yb - 1, z, CONCRETE)
+                        n = int(round(lvl)) + 1
+                        if abs(lvl - round(lvl)) * s.pitch > 0.6 or not gates.setdefault(n, self.stair_gate(n))[x, z]:
                             v.set(x, yb, z, PARAPET)
                     t += 1
 
@@ -741,9 +820,13 @@ class Silo:
 
     # level 1 --------------------------------------------------------------------------------------------------------
     def level_one(self) -> None:
+        """Rooms first, then the openings between them: a later room's wall must never close an earlier doorway."""
+        self.openings = []
         self.cafeteria()
         self.sheriff()
         self.way_out()
+        for carve in self.openings:
+            carve()
 
     def disc(self, cx: float, cz: float, r: float) -> np.ndarray:
         return np.hypot(self.X - cx, self.Z - cz) < r
@@ -799,13 +882,18 @@ class Silo:
         # the second entrance, north-east, and its passage to the sheriff's office (passing under the ramp)
         ex, ez = HALL_DOOR
         ox, oz, orr = OFFICE
-        pas = (np.abs(self.X - ex) <= 1) & (self.Z <= ez) & (self.Z >= oz + orr - 1) & (d >= hr - 1.0)
+        # it runs from inside the panelling to inside the office's round wall; carved in level_one() after every room
+        # of level 1 stands, so neither the hall's panelling nor the office's wall ring closes it again
+        pas = (np.abs(self.X - ex) <= 1) & (self.Z <= ez + 4) & (self.Z >= oz + orr - 1) & (d >= hr - 1.0)
         sides = (np.abs(self.X - ex) == 2) & (self.Z <= ez) & (self.Z >= oz + orr) & (d >= hr + 1.0)
-        v.mask(y - 1, y + 3, sides | (pas & (d >= hr + 1.2)), CONCRETE)
-        v.mask(y, y + 2, pas, AIR)
-        v.mask(y - 1, y - 1, pas & (d >= hr), "minecraft:polished_andesite")
-        v.mask(fl, fl, pas & (d < hr), STOOP)
-        v.mask(y + 3, y + 3, pas & (self.X == ex) & (self.Z % 4 == 0) & (d >= hr + 1.2), "minecraft:sea_lantern")
+
+        def passage() -> None:
+            v.mask(y - 1, y + 3, sides | (pas & (d >= hr + 1.2)), CONCRETE)
+            v.mask(y, y + 2, pas, AIR)
+            v.mask(y - 1, y - 1, pas & (d >= hr), "minecraft:polished_andesite")
+            v.mask(fl, fl, pas & (d < hr), STOOP)
+            v.mask(y + 3, y + 3, pas & (self.X == ex) & (self.Z % 4 == 0) & (d >= hr + 1.2), "minecraft:sea_lantern")
+        self.openings.append(passage)
         # the serving counter on the arc between the two entrances
         door_a = math.atan2(ez - hz, ex - hx) % TAU
         counter = hall & (np.abs(d - (hr - 2.5)) < 0.5) & (ang > door_a + 0.2) & (ang < TAU - 0.2)
