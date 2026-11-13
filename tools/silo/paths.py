@@ -34,6 +34,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 RING_PATH_R = 110         # surface.Site.path_r: the ring path, Ø≈220 (SPEC 1)
 PATH_W = 3                # surface.Site.path_half: 3 wide, two people side by side (S3E09 05)
 FLOOR_R = 55              # surface.Site.floor_r
+STUB_END = 24             # the stub's pad, metres from the centre on the cut's side (2052 aerial: about half the floor)
 LINK_MAX = 1.08           # flower neighbours: centres within this many ring spacings
 ROSETTES = [(49, 48, 43), (31, 30, 29), (32, 33, 29), (35, 29, 34), (19, 20, 14), (12, 7, 11), (13, 7, 8)]
 ROSETTE_R = 41          # S3E09 aerial: ~50 m across at the old 156 m spacing, scaled to 270 like the layout
@@ -142,21 +143,20 @@ def plan(layout: dict) -> tuple[set, set]:
         n = int(2 * math.pi * RING_PATH_R * 2)
         line(cells, [(c[0] + RING_PATH_R * math.cos(a), c[1] + RING_PATH_R * math.sin(a))
                      for a in np.linspace(0, 2 * math.pi, n)], PATH_W)
-    # stubs, one straight line per ring (the 2052 frame, S3E09 05): from the circle through the berm's cut (opposite the
-    # slot) over the bowl's centre to a rounded pad ≈1.5 path widths across, short of the camera block's back; the
-    # block hides the stair head beyond it (05), which faces the other way (07)
-    from silo import CAMERA
+    # stubs, one straight line per ring (the 2052 aerial, S3E09 05): from the circle through the berm's cut (opposite
+    # the slot) into the bowl, ending in a rounded pad ≈1.5 path widths across about halfway to the centre; the camera
+    # shelter and the stair head stand on the same line beyond the centre (aerial: ≈0.55 of the floor's radius)
     for k, c in ring.items():
         if k == 1:
             continue                    # Silo 1: the path runs due south from the opening-day set (event.py)
         dx, dz = BEARING[bearing[k]]
-        end = -CAMERA[1] - 5            # metres from the centre toward the slot's side where the pad's middle stands
-        line(cells, [(c[0] + end * dx, c[1] + end * dz), (c[0] - RING_PATH_R * dx, c[1] - RING_PATH_R * dz)], PATH_W)
+        end = STUB_END
+        line(cells, [(c[0] - end * dx, c[1] - end * dz), (c[0] - RING_PATH_R * dx, c[1] - RING_PATH_R * dz)], PATH_W)
         pr = 1.5 * PATH_W / 2 + 0.5
         for a in range(-3, 4):
             for b in range(-3, 4):
                 if math.hypot(a, b) <= pr:
-                    cells.add((int(math.floor(c[0] + end * dx + a + 0.5)), int(math.floor(c[1] + end * dz + b + 0.5))))
+                    cells.add((int(math.floor(c[0] - end * dx + a + 0.5)), int(math.floor(c[1] - end * dz + b + 0.5))))
     # links inside flowers
     nums = sorted(ring)
     for i in nums:

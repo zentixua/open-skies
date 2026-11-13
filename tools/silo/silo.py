@@ -122,19 +122,21 @@ CELLS_X = (-41, -39)                  # holding cells, interior x range, west of
 CELLS_Z = ((-38, -36), (-34, -32), (-30, -28))
 LOCK = (-47, -43)                     # airlock chamber x range on cell 3's lane
 TURN_X = (-50, -49)                   # the ramp's U-turn
-# The way up (Artem 13.11: the slot sits on one of the ring's axes, centred, the camera straight behind it). Three
-# runs, 3 wide inside: the lower ramp east along LOW_Z out of the U-turn, a crossing north-to-south along CROSS_X over
-# the cafeteria's roof onto the axis, and the upper ramp east along the axis to the steps of the slot.
+# The way up (Artem 13.11: the slot on one of the ring's axes, centred; S3E09 07: the camera block straight behind the
+# stair head). The 2052 aerial puts each bowl's block on the stub's line beyond the centre at ≈0.55 of the floor's
+# radius (six near bowls, 0.5-0.6: r ≈ 30 m), so the stair head is at r 31. Three runs, 3 wide inside: the lower ramp
+# east along LOW_Z out of the U-turn, a crossing north-to-south along CROSS_X over the cafeteria's roof onto the axis,
+# then the six steps east along the axis up to the head.
 LOW_Z = (-23, -21)                    # lower ramp interior z
-LOW_X = (-48, -36)                    # lower ramp: from the U-turn to the crossing (level 1 -> +6)
-CROSS_X = (-36, -34)                  # crossing interior x (+6 -> +8; its floor stays over level 1's ceiling)
-RAMP_Z = (-1, 1)                      # the upper ramp and the slot: on the axis, centred
-RAMP_X = (-34, -28)                   # upper ramp: from the crossing to where the steps begin (+8 -> +10)
+LOW_X = (-48, -40)                    # lower ramp: from the U-turn to the crossing (level 1 -> +4)
+CROSS_X = (-39, -37)                  # crossing interior x (+4 -> +10; over level 1's ceiling from z -15 on)
+RAMP_Z = (-1, 1)                      # the landing and the slot: on the axis, centred
+RAMP_X = (-38, -37)                   # landing on the axis where the steps begin (+10)
 STEPS = 6                             # the slot's steps, one block each
-EXIT_X = RAMP_X[1] + STEPS            # last step, on the bowl floor: r 22, under half the bowl's radius (27)
-CAMERA = (EXIT_X + 2, EXIT_X + 3, -2, 2)   # the camera block straight behind the stair head on the axis, facing down
-                                      # the steps (S3E09 07): x0 (its face, toward the slot), x1 (back), z0, z1
-                                      # (≈4.4 x 2.4 m); from the cut one sees its back with the stair hidden (05)
+EXIT_X = RAMP_X[1] + STEPS            # the stair head, on the bowl floor: r 31
+CAMERA = (EXIT_X + 2, EXIT_X + 4, -2, 2)   # the camera shelter straight behind the stair head on the axis (S3E09 07,
+                                      # 08): x0 its open front facing down the steps, x1 its back wall, z0, z1 (5 wide,
+                                      # ≥3.4 m; 3 tall to the roof slab, 2.4-3 m; s3e09-notes.md)
 
 
 class Silo:
@@ -1036,12 +1038,14 @@ class Silo:
         lz, cx = (LOW_Z[0] + LOW_Z[1]) // 2, (CROSS_X[0] + CROSS_X[1]) // 2
         # the centre line: (x, z, walking surface, along, kind); along is the run's axis ("x" or "z")
         line = []
-        for x in range(LOW_X[0], cx):
-            line.append((x, lz, y + 6 * (x - LOW_X[0]) / (cx - LOW_X[0]), "x", "low"))
+        for x in range(LOW_X[0], cx - 1):
+            line.append((x, lz, y + 4 * (x - LOW_X[0]) / (cx - 2 - LOW_X[0]), "x", "low"))
         for z in range(lz, 0):
-            line.append((cx, z, y + 6 + 2 * (z - lz) / (0 - lz), "z", "up"))
+            # over the cafeteria (|z| <= 15 at the crossing) the floor stays over level 1's ceiling
+            surf = y + 4 + 2 * (z - lz) / (-15 - lz) if z <= -15 else y + 6 + (top - y - 6) * (z + 15) / 14
+            line.append((cx, z, min(surf, top), "z", "up"))
         for x in range(cx, RAMP_X[1] + 1):
-            line.append((x, 0, y + 8 + (top - y - 8) * (x - cx) / (RAMP_X[1] - cx), "x", "up"))
+            line.append((x, 0, top, "x", "up"))
         for x in range(RAMP_X[1] + 1, EXIT_X + 1):
             line.append((x, 0, top + (x - RAMP_X[1]), "x", "step"))
         inner = {}                                       # (x, z) -> (k, half, roof, kind, along, i)

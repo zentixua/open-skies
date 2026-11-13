@@ -193,6 +193,9 @@ class Site:
                 col[max(lo, t - 1 - oy)] = moss
             if (x, z) in curb:
                 col[t - oy] = v.id(RIM)
+                if x < EXIT_X and t + 1 - oy < H:
+                    # the trench's parapet stands ≈0.5 m over the lawn (S3E09 06, 07, 10); the head end stays open
+                    col[t + 1 - oy] = v.id(STEP)
             elif self.paths[i, k] or self.road[i, k]:
                 col[t - oy] = path
             else:
@@ -207,26 +210,28 @@ class Site:
         return v
 
     def camera(self, v: Volume) -> None:
-        """The camera block (S3E09 07, 08) straight behind the stair head on its axis, facing down the steps: two light
-        concrete piers, a dark recessed back wall, a thin roof slab over them; in the recess a truncated cone carrying
-        the sensor (Artem 13.11: behind the way in, not beside it)."""
+        """The camera shelter (S3E09 07, 08; s3e09-notes.md) straight behind the stair head on its axis, open toward
+        the steps: a dark recessed back wall, thick light side walls with a sloped outer face, a thin roof slab
+        overhanging the front, and inside on a stepped plinth (≈0.45 m) a concrete cone (≈1.3 m wide, 1 m tall) with a
+        small brass sensor on top."""
         R, oy = self.radius, v.origin[1]
-        x0, x1, z0, z1 = CAMERA                             # x0 is the face toward the slot (-x), x1 the back
+        x0, x1, z0, z1 = CAMERA                             # x0: the open front (toward the slot, -x); x1: the back
         g = self.grade
         put = lambda x, y, z, st: v.set(R + x, y - oy, R + z, st)
-        for z in range(z0, z1 + 1):
-            for x in (x0, x1):
-                pier = z in (z0, z1)
-                for dy in (1, 2):
-                    if pier:
-                        put(x, g + dy, z, CONCRETE)
-                    elif x == x1:
-                        put(x, g + dy, z, DARK)
-                    else:
-                        put(x, g + dy, z, AIR)
         zc = (z0 + z1) // 2
-        put(x0, g + 1, zc, "minecraft:andesite_wall")
-        put(x0, g + 2, zc, "minecraft:observer[facing=west,powered=false]")
-        for x in range(x0 - 1, x1 + 2):
-            for z in range(z0 - 1, z1 + 2):
+        for dy in (1, 2):
+            for z in range(z0, z1 + 1):
+                put(x1, g + dy, z, DARK)                   # back wall
+                for x in range(x0, x1):
+                    put(x, g + dy, z, CONCRETE if z in (z0, z1) else AIR)   # side walls, open middle
+        for x in range(x0, x1 + 1):                        # sloped outer faces of the side walls
+            put(x, g + 1, z0 - 1, "minecraft:polished_andesite_stairs[facing=south,half=bottom,shape=straight,waterlogged=false]")
+            put(x, g + 1, z1 + 1, "minecraft:polished_andesite_stairs[facing=north,half=bottom,shape=straight,waterlogged=false]")
+        for x in range(x0 - 1, x1 + 1):                    # roof slab, overhanging the front by one
+            for z in range(z0, z1 + 1):
                 put(x, g + 3, z, STEP)
+        # plinth and cone: slabs round a cone post, the sensor on top
+        for x, z in ((x0, zc - 1), (x0, zc), (x0, zc + 1), (x0 + 1, zc - 1), (x0 + 1, zc + 1)):
+            put(x, g + 1, z, STEP)
+        put(x0 + 1, g + 1, zc, "minecraft:andesite_wall[east=none,north=none,south=none,up=true,waterlogged=false,west=none]")
+        put(x0 + 1, g + 2, zc, "minecraft:waxed_cut_copper_slab[type=bottom,waterlogged=false]")
