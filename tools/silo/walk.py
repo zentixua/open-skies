@@ -171,14 +171,14 @@ class Walk:
                 # a jump (more than a step): the low side's column needs room for the head at the high feet
                 jump = ok & (d > 0.6)
                 if jump.any():
-                    hi = np.maximum(fa, fb)
-                    head = np.floor(hi + 1.8 - 1e-4).astype(np.int64)        # cell index of the head
                     xa, ya, za = np.nonzero(jump)
+                    hi = np.maximum(fa[xa, ya, za], fb[xa, ya, za])
+                    head = np.floor(hi + 1.8 - 1e-4).astype(np.int64)        # cell index of the head
                     xa_ = xa + a[0].start; ya_ = ya + a[1].start; za_ = za + a[2].start
                     low_is_a = fa[xa, ya, za] < fb[xa, ya, za]
                     lx = np.where(low_is_a, xa_, xa_ + dx)
                     lz = np.where(low_is_a, za_, za_ + dz)
-                    hy = np.clip(head[xa, ya, za], 0, H - 1)
+                    hy = np.clip(head, 0, H - 1)
                     good = free[lx, hy, lz]
                     bad = ~good
                     ok[xa[bad], ya[bad], za[bad]] = False
@@ -302,7 +302,7 @@ def level_of(silo, y: int):
     top = silo.level_y(1)
     if y >= top + p:
         return "above"
-    n = (top - y) // p + 1 if y < top else 1
+    n = (top - y + p - 1) // p + 1 if y < top else 1
     from silo import LEVELS
     if n > LEVELS:
         return "below"

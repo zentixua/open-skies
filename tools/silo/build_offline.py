@@ -433,6 +433,18 @@ class Builder:
         self.mark("biome", n)
 
 
+def walk_gate() -> None:
+    """No silo goes into a world unless a person can walk every room of it from the surface (walk.py): Silo 1 and
+    the regular silo (2-50 build the same volume)."""
+    import walk
+    for n in (1, 2):
+        r = walk.check(n)
+        bad = r["components"] or r["doors_without_plates"] or [k for k, ok in r["targets"].items() if not ok]
+        if bad:
+            sys.exit(f"walk.py: silo {n} has unreachable places or one-way doors; run `python3 walk.py --silo {n}`")
+        print(f"walk.py: silo {n} walkable", flush=True)
+
+
 def main():
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -460,6 +472,7 @@ def main():
     if what & {"plain", "all"}:
         b.plain()
     if what & {"silos", "all"}:
+        walk_gate()
         for s in b.layout["silos"]:
             if a.number and s["number"] not in a.number:
                 continue

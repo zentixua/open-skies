@@ -396,6 +396,19 @@ class Silo:
             i, (rank, d, to, run, facing, inside, outside) = best
             todo.pop(i)["door"] = (run[0], facing, inside, outside, run[1:])
             done.add(i)
+        # furniture keeps clear of both ends of every door, including the doors of flats that open into this one
+        by_label = {f["label"]: f for f in flats}
+        for f in flats:
+            f.setdefault("clear", set())
+        for f in flats:
+            if f["door"] is None:
+                continue
+            inside, outside = f["door"][2], f["door"][3]
+            around = lambda c: {(c[0] + a, c[1] + b) for a in (-1, 0, 1) for b in (-1, 0, 1)}
+            f["clear"] |= around(inside)
+            to = int(lab[outside])
+            if to in by_label:
+                by_label[to]["clear"] |= around(outside)
 
     # build ----------------------------------------------------------------------------------------------------------
     def build(self) -> Volume:
@@ -413,6 +426,7 @@ class Silo:
         self.generator_hall()
         self.digger_void()
         self.specials()
+        self.door_plates()
         import connect
         connect.tidy(v)
         connect.connect(v)
@@ -659,10 +673,10 @@ class Silo:
             return
         cellset = set(cells)
         door = f["door"]
-        near_door = set()
+        near_door = self.keep_clear(f)
         if door:
             ix, iz = door[2]
-            near_door = {(ix + a, iz + b) for a in (-1, 0, 1) for b in (-1, 0, 1)}
+            near_door |= {(ix + a, iz + b) for a in (-1, 0, 1) for b in (-1, 0, 1)}
         def wall_n(c):
             return sum((c[0] + dx, c[1] + dz) not in cellset for dx, dz in ((1, 0), (-1, 0), (0, 1), (0, -1)))
         free = [c for c in cells if c not in near_door and v.get(c[0], y, c[1]) == AIR]
@@ -730,10 +744,10 @@ class Silo:
         cells = [tuple(map(int, c)) for c in f["cells"]]
         cellset = set(cells)
         door = f["door"]
-        near = set()
+        near = self.keep_clear(f)
         if door:
             ix, iz = door[2]
-            near = {(ix + a, iz + b) for a in (-1, 0, 1) for b in (-1, 0, 1)}
+            near |= {(ix + a, iz + b) for a in (-1, 0, 1) for b in (-1, 0, 1)}
         for i, c in enumerate(cells):
             if c in near or i % 3:
                 continue
@@ -1076,6 +1090,31 @@ class Silo:
             if mid and i % 3 == 1 and roof < grade:
                 v.set(X_, roof, Z_, "minecraft:sea_lantern")
         self.exit_cells = [(x, z) for x in range(RAMP_X[1] + 1, EXIT_X + 1) for z in range(RAMP_Z[0] - 1, RAMP_Z[1] + 2)]
+
+    def keep_clear(self, f: dict) -> set[tuple[int, int]]:
+        """Cells of a flat that furniture leaves free: both ends of its doors (the template's "clear") and the first
+        cell behind a facade door that opens into it."""
+        out = set(f.get("clear", ()))
+        for x, z in getattr(self, "facade_entries", ()):
+            out |= {(x + a, z + b) for a in (-1, 0, 1) for b in (-1, 0, 1)}
+        return out
+
+    def door_plates(self) -> None:
+        """Every iron door that leads through (open on both sides) gets its heavy plate on each side where the floor
+        is free: a hall carved after the levels (Silo 1's cryo halls, the farms) must not leave a door that opens
+        only one way."""
+        v = self.v
+        for i, st in enumerate(list(v.palette)):
+            if not st.startswith("minecraft:iron_door") or "half=lower" not in st:
+                continue
+            fx, fz = DIRS[st.split("facing=")[1].split(",")[0].rstrip("]")]
+            for x, y, z in zip(*np.nonzero(v.ids == i)):
+                ends = [(x + k * fx, z + k * fz) for k in (1, -1)]
+                if not all(v.get(px, y, pz) in (AIR, PLATE) for px, pz in ends):
+                    continue                                   # a sealed hatch, or something stands there
+                for px, pz in ends:
+                    if v.get(px, y, pz) == AIR and v.get(px, y - 1, pz) not in (None, AIR):
+                        v.set(px, y, pz, PLATE)
 
     def walk_ignore(self) -> list[tuple[int, int, int, int, int, int]]:
         """Boxes (silo frame x, row index, z; inclusive) whose unreachable standing places walk.py does not report:

@@ -123,6 +123,7 @@ class Silo1(Silo):
         self.generator_hall()
         self.digger_void()
         self.specials()
+        self.door_plates()
         import connect                          # panes, bars and wall parapets join up; orphan halves go
         connect.tidy(v)
         connect.connect(v)
@@ -180,8 +181,10 @@ class Silo1(Silo):
             super().home(n, y, f, False)
             return
         if n in OPS or n == LEADERS or n == OPERATOR:
-            if len(cells) > 6:
-                c = cells[len(cells) // 2]
+            clear = self.keep_clear(f)
+            free = [c for c in cells if c not in clear]
+            if len(cells) > 6 and free:
+                c = free[len(free) // 2]
                 v.set(c[0], y, c[1], TABLE)
                 v.set(c[0], y + 1, c[1], GLASS_BLUE)
             return
@@ -199,10 +202,12 @@ class Silo1(Silo):
         landing, the car parked at level 1."""
         s, v = self.s, self.v
         r_car, r_wall = 2.5, s.r_stair_wall
-        y_floor = self.level_y(LEVELS) - 1
+        y_floor = self.yi(self.gen_floor_rel) - 1            # the shaft runs on down to the generator hall floor
         top = self.level_y(1) + s.pitch - 2
         v.mask(y_floor, top, self.ring(r_car, r_wall), WALL)
         v.mask(y_floor + 1, top, self.r < r_car, AIR)
+        # the shaft under the parked car is closed on every level (lift doors shut): nobody is meant to stand in it
+        self.walk_ignore_boxes.append((-3, y_floor, -3, 3, self.level_y(1) - 2, 3))
         v.mask(y_floor, y_floor, self.r < r_car, base.FLOOR_DEEP)
         for n in range(1, LEVELS + 1):
             y = self.level_y(n)
@@ -221,7 +226,8 @@ class Silo1(Silo):
         v.mask(y1 + 4, y1 + 4, self.r < r_car, WALL)
 
     def service_ladder(self) -> None:
-        """Not canon: a ladder down the lift's outer wall, through a hatch in each level's landing."""
+        """Not canon: a ladder down the lift's outer wall, through a hatch in each level's landing, to the generator
+        hall floor (the only way below level 144: the lift car is parked at level 1)."""
         s, v = self.s, self.v
         a = math.radians(LADDER_DEG)
         c, sn = math.cos(a), math.sin(a)
@@ -234,7 +240,7 @@ class Silo1(Silo):
         while math.hypot(k * step[0], k * step[1]) < s.r_stair_wall:
             k += 1
         lx, lz = self.R + k * step[0], self.R + k * step[1]
-        bottom = self.level_y(LEVELS) - 1
+        bottom = self.yi(self.gen_floor_rel)                  # on down the shaft into the generator hall
         for y in range(bottom, self.level_y(1) + 1):
             v.set(lx, y, lz, f"minecraft:ladder[facing={facing},waterlogged=false]")
 
@@ -344,8 +350,9 @@ class Silo1(Silo):
         sx = ox + 7
         w, h = len(OPS_SCREEN[0]), len(OPS_SCREEN)
         z0, y0 = oz - w // 2, lo + 2
-        v.box(sx + 1, y0 - 1, z0 - 1, ox + 10, y0 + h, z0 + w, WALL)
+        v.box(sx + 1, y0 - 1, z0 - 1, ox + 10, hi, z0 + w, WALL)        # up to the ceiling: no ledge behind it
         v.box(sx, y0 - 1, z0 - 1, sx, y0 + h, z0 + w, INK)
+        v.box(sx, y0 + h + 1, z0 - 1, sx, hi, z0 + w, WALL)
         for j, row in enumerate(OPS_SCREEN):
             for i, ch in enumerate(row):
                 v.set(sx, y0 + h - 1 - j, z0 + i, "minecraft:" + MOSAIC[ch])
@@ -452,7 +459,7 @@ class Silo1(Silo):
                 v.set(x + 1, yl, z, "minecraft:polished_deepslate")
                 v.set(x, yl + 1, z, GLASS_BLUE)
                 v.set(x + 1, yl + 1, z, GLASS_BLUE)
-        face = self.ring(s.r_inner_wall - 1, s.r_inner_wall)
+        face = self.ring(s.r_inner_wall, s.r_inner_wall + 1)            # flush in the shell: no ledge to stand on
         slot = face & (np.mod(self.theta * s.r_inner_wall, 4) < 2.5)
         for yy in (yl + 3, yl + 6):
             v.mask(yy, yy, slot, WARM)
