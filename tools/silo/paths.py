@@ -132,6 +132,37 @@ def on_circle(c, toward, r=RING_PATH_R):
     return (c[0] + r * dx / L, c[1] + r * dz / L)
 
 
+def canon_lines() -> dict:
+    return json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "canon", "lines.json")))
+
+
+def tangent_arc(c1, c2, side: int, n: int = 40) -> list:
+    """An arc of radius RING_PATH_R touching both ring paths (centres c1, c2) from outside, on the side given."""
+    dx, dz = c2[0] - c1[0], c2[1] - c1[1]
+    D = math.hypot(dx, dz)
+    rho = RING_PATH_R
+    h = math.sqrt(max((RING_PATH_R + rho) ** 2 - (D / 2) ** 2, 0.0))
+    mx, mz = (c1[0] + c2[0]) / 2, (c1[1] + c2[1]) / 2
+    px, pz = mx - side * dz / D * h, mz + side * dx / D * h
+    t1 = (px + (c1[0] - px) * rho / (RING_PATH_R + rho), pz + (c1[1] - pz) * rho / (RING_PATH_R + rho))
+    t2 = (px + (c2[0] - px) * rho / (RING_PATH_R + rho), pz + (c2[1] - pz) * rho / (RING_PATH_R + rho))
+    a1, a2 = math.atan2(t1[1] - pz, t1[0] - px), math.atan2(t2[1] - pz, t2[0] - px)
+    da = (a2 - a1 + math.pi) % (2 * math.pi) - math.pi
+    return [(px + rho * math.cos(a1 + da * i / n), pz + rho * math.sin(a1 + da * i / n)) for i in range(n + 1)]
+
+
+def rosette_trees(layout: dict) -> list:
+    """[(x, z, r)]: the measured rosettes whose disc is trees (canon/lines.json), in world metres."""
+    one = next(s for s in layout["silos"] if s["number"] == 1)["ring"]
+    rot = math.radians(layout.get("rotation_deg", 0)); cs, sn = math.cos(rot), math.sin(rot); e = layout["spacing"]
+    out = []
+    for ro in canon_lines()["rosettes"]:
+        if "tree" in ro["kind"]:
+            u, v = ro["centre"][0] * e, ro["centre"][1] * e
+            out.append((one[0] + u * cs - v * sn, one[1] + u * sn + v * cs, ro["outer_r_m"] - 4))
+    return out
+
+
 def plan(layout: dict) -> tuple[set, set]:
     """(path cells, axis road cells) in world x, z."""
     ring = {s["number"]: tuple(s["ring"]) for s in layout["silos"] if not s.get("unplaced")}
@@ -157,57 +188,71 @@ def plan(layout: dict) -> tuple[set, set]:
             for b in range(-3, 4):
                 if math.hypot(a, b) <= pr:
                     cells.add((int(math.floor(c[0] - end * dx + a + 0.5)), int(math.floor(c[1] - end * dz + b + 0.5))))
-    # links inside flowers
+    # links between neighbours: no straight connector on any centre line in the 2052 aerial (canon/lines.json, 82
+    # pairs); neighbours join by short arcs tangent to both ring paths. Here an arc of the ring path's own radius,
+    # touching both circles from outside, on the side a hash picks
     nums = sorted(ring)
     for i in nums:
         for j in nums:
             if i < j and math.dist(ring[i], ring[j]) <= LINK_MAX * spacing:
-                line(cells, [on_circle(ring[i], ring[j]), on_circle(ring[j], ring[i])], 2)
-    # The founders' lines and the axis are drawn in the show's own frame (gate due north of Silo 1), turned by the
-    # layout's rotation into the world: the complex stands at 128 degrees, so "north" in the frame is not world north
-    # (13.11: the axis road met Silo 1's ring at its world-north point and left from its world-south point, two offset
-    # lines instead of one straight axis).
+                line(cells, tangent_arc(ring[i], ring[j], 1 if h01(i, j, 31) < 0.5 else -1), 2)
+    # The axis, the founders' lines and the north cross are drawn in the show's own frame (gate due north of Silo 1)
+    # from their measurement on the 2052 aerial (canon/lines.json, canon_lines.py: homography error 6 m rms, 12 max)
+    # and turned into the world by the layout's rotation (128 degrees: "north" in the frame is not world north).
     one = ring[1]
     rot = math.radians(layout.get("rotation_deg", 0))
     cs, sn = math.cos(rot), math.sin(rot)
     W = lambda p: (one[0] + p[0] * cs - p[1] * sn, one[1] + p[0] * sn + p[1] * cs)      # frame metres -> world
     C = lambda p: ((p[0] - one[0]) * cs + (p[1] - one[1]) * sn, -(p[0] - one[0]) * sn + (p[1] - one[1]) * cs)
     lw = lambda cells_, pts, w: line(cells_, [W(p) for p in pts], w)
-    gate = C(tuple(layout["gate"]))
-    gl = math.hypot(*gate)
-    u = (gate[0] / gl, gate[1] / gl)                       # the axis, toward the gate
-    # axis road: one straight line from the gate through Silo 1's centre; north of Silo 1 it stops at the ring path
-    # (no path crosses the north berm, S3E09 03), inside the bowl the opening-day path runs on it (event.py), and south
-    # of the ring it goes on along the same line to where it meets Silo 2's ring path
-    lw(road, [gate, (u[0] * RING_PATH_R, u[1] * RING_PATH_R)], 3)
+    meas = canon_lines()
+    e = spacing
+    M = {l["name"]: l for l in meas["lines"]}
+    U = lambda p: (p[0] * e, p[1] * e)                     # canon units -> frame metres
+    # the axis: one straight line through Silo 1's centre on the measured bearing (0.25 deg off the frame's north;
+    # its halves agree within 0.08 deg), from the gate end of the measured path to where it meets Silo 2's ring path.
+    # Silo 2 stays on its canon point (11 m off the line in the frame fit; moving it would break the 10 m overlay)
+    b_ = math.radians(meas["axis"]["bearing_deg"])
+    u = (math.sin(b_), -math.cos(b_))                       # toward the gate
+    v_gate = M["axis_north"]["from"][1] * e
+    t_gate = v_gate / u[1]
+    lw(road, [(u[0] * t_gate, u[1] * t_gate), (u[0] * RING_PATH_R, u[1] * RING_PATH_R)], 3)
     two = C(ring[2])
-    # the line's far intersection with Silo 2's circle, nearest Silo 1
     bx, bz = -u[0], -u[1]
     proj = two[0] * bx + two[1] * bz
     d2 = RING_PATH_R ** 2 - (two[0] - proj * bx) ** 2 - (two[1] - proj * bz) ** 2
     t_end = proj - math.sqrt(max(d2, 0.0))
     lw(road, [(bx * RING_PATH_R, bz * RING_PATH_R), (bx * t_end, bz * t_end)], 3)
-    # founders' lines
-    line(cells, [on_circle(one, ring[42]), on_circle(ring[42], one)], 2)
-    line(cells, [on_circle(one, ring[25]), on_circle(ring[25], one)], 2)
     ringc = {k: C(v) for k, v in ring.items()}
-    on_c = lambda c, toward: on_circle(c, toward)
+    # founders' lines W (to 42) and E (to 25): measured, straight from Silo 1's ring path, then onto the far circle
+    for nm, k in (("founders_west", 42), ("founders_east", 25)):
+        a_, b2 = U(M[nm]["from"]), U(M[nm]["to"])
+        tip = on_circle(ringc[k], b2)
+        lw(cells, [a_, b2] + curve(b2, (b2[0] + (b2[0] - a_[0]) * 0.05, b2[1] + (b2[1] - a_[1]) * 0.05), tip, 12), 2)
+    # 1 -> 30 and 1 -> 10: S-bends from Silo 1's south ring path (not lines in the frame)
     for k, side in ((30, -1), (10, 1)):
         a_ = (side * 20, RING_PATH_R - 4)
-        b_ = on_c(ringc[k], (0.0, 0.0))
-        lw(cells, curve(a_, (a_[0] + side * 30, a_[1] + 60), b_), 2)
-    zc = min(ringc[44][1], ringc[17][1]) - RING_PATH_R - 40
-    for k in (44, 17):
-        top = (ringc[k][0] + (20 if k == 44 else -20), ringc[k][1] - RING_PATH_R + 2)
-        lw(cells, [(0.0, zc)] + curve((top[0] * 0.6, zc), (top[0], zc), top, 20), 2)
-    # rosettes
-    for tri in ROSETTES:
-        cx = sum(ring[t][0] for t in tri) / 3
-        cz = sum(ring[t][1] for t in tri) / 3
-        for r, gap in ((ROSETTE_R, -1.0), (ROSETTE_R - 5, 0.0), (ROSETTE_R - 9, math.pi), (ROSETTE_R - 13, 0.0), (ROSETTE_R - 17, math.pi)):
-            pts = [(cx + r * math.cos(a), cz + r * math.sin(a)) for a in np.linspace(gap + 0.35 * (gap >= 0), gap + 2 * math.pi - 0.35 * (gap >= 0), int(r * 8))]
+        b_c = on_circle(ringc[k], (0.0, 0.0))
+        lw(cells, curve(a_, (a_[0] + side * 30, a_[1] + 60), b_c), 2)
+    # the north cross: straight at the measured v, its ends curving onto the 44 and 17 ring paths
+    nc = M["north_cross"]
+    pa, pb = U(nc["from"]), U(nc["to"])
+    lw(cells, [pa, pb], 2)
+    for end, k in ((pa, 44), (pb, 17)):
+        tip = on_circle(ringc[k], end)
+        lw(cells, curve(end, (end[0], (end[1] + tip[1]) / 2), tip, 16), 2)
+    # rosettes: the nine of the 2052 aerial at their measured centres and sizes (canon/lines.json): concentric ones
+    # with their rings, a plain one, and circles with trees inside (the trees: rosette_trees)
+    for ro in meas["rosettes"]:
+        c0 = W(U(ro["centre"]))
+        R0 = ro["outer_r_m"]
+        radii = sorted(set([round(r, 1) for r in (ro.get("ring_radii_m_angle_mean") or [])] + [R0])) \
+            if "concentric" in ro["kind"] else [R0]
+        for r in radii:
+            pts = [(c0[0] + r * math.cos(t), c0[1] + r * math.sin(t)) for t in np.linspace(0, 2 * math.pi, int(r * 8))]
             line(cells, pts, 2)
-        stamp(cells, cx, cz, 3)
+        if "concentric" in ro["kind"]:
+            stamp(cells, c0[0], c0[1], 3)
     return cells - road, road
 
 
@@ -292,6 +337,14 @@ def trees(layout: dict, avoid: set, keep_clear=(), ground: str | None = None, wa
             if free(x, z, 12):
                 out.append([x, z, "minecraft:fancy_oak" if h01(k, j, 3) < 0.3 else "minecraft:oak"])
                 taken.append((x, z))
+    # rosettes whose disc the 2052 aerial shows as trees (canon/lines.json): a dense grove inside the circle path
+    for rx, rz, r in rosette_trees(layout):
+        for gx in range(int(rx - r), int(rx + r) + 1, 4):
+            for gz in range(int(rz - r), int(rz + r) + 1, 4):
+                x, z = gx + int(h01(gx, gz, 41) * 3), gz + int(h01(gx, gz, 42) * 3)
+                if math.hypot(x - rx, z - rz) <= r - 2 and free(x, z, 0):
+                    out.append([x, z, "minecraft:dark_oak" if h01(gx, gz, 43) < 0.6 else "minecraft:oak"])
+                    taken.append((x, z))
     if ground:
         return out + grove_trees(rings, ground, free, water or set())
     xs = [r[0] for r in rings]; zs = [r[1] for r in rings]
