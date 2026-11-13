@@ -1,0 +1,1 @@
+removed {'hostile': 11, 'item': 11, 'in a shaft': 357, 'buried': 1146} {'sheep': 317, 'pig': 301, 'chicken': 271, 'cow': 233, 'wolf': 106, 'fox': 63, 'turtle': 57, 'horse': 33, 'rabbit': 33, 'chest_minecart': 24, 'frog': 18, 'villager': 16, 'bat': 14, 'item': 11, 'drowned': 10, 'donkey': 8, 'cat': 6, 'iron_golem': 2, 'witch': 1, 'elder_guardian': 1}
