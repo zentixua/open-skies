@@ -122,11 +122,7 @@ class Silo1(Silo):
         self.level_one()
         self.generator_hall()
         self.digger_void()
-        self.operations_room()
-        self.operator_room()
-        self.leaders()
-        for upper, lower in CRYO:
-            self.cryo_hall(upper, lower, wake=(upper, lower) == CRYO[0])
+        self.specials()
         import connect                          # panes, bars and wall parapets join up; orphan halves go
         connect.tidy(v)
         connect.connect(v)
@@ -136,6 +132,14 @@ class Silo1(Silo):
         void_top = self.yi(self.void_top_rel)
         self.lights = lighting.light_up(v, lambda y: 3 if y < void_top else 12)
         return v
+
+    def specials(self) -> None:
+        """Silo 1's own halls instead of the canon special levels of the other silos."""
+        self.operations_room()
+        self.operator_room()
+        self.leaders()
+        for upper, lower in CRYO:
+            self.cryo_hall(upper, lower, wake=(upper, lower) == CRYO[0])
 
     # helpers -----------------------------------------------------------------------------------------------------
     def lateral(self, a: float) -> tuple[np.ndarray, np.ndarray]:

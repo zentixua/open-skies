@@ -262,11 +262,11 @@ class Silo:
         """Walls, open space, flats and doors behind the gallery for level n's alley pattern (shared by every level
         with the same alleys)."""
         alleys = tuple(self.alley_bays(n))
-        key = (alleys, n == 1)
+        reserved = self.reserved(n)
+        key = (alleys, n if reserved.any() else 0)
         if key in self._templates:
             return self._templates[key]
         s, r = self.s, self.r
-        reserved = self.reserved(n)
         zone = self.ring(s.r_facade + 1.0, s.r_inner_wall)
         lanes = np.zeros_like(zone)
         for b in alleys:
@@ -311,29 +311,42 @@ class Silo:
             lab[reach == k] = i
             flats.append({"label": i, "cells": np.argwhere(reach == k), "door": None, "open": True})
         self._doors(flats, lab, access)
+        # a flat the tree cannot reach (a sliver boxed in by level 1's halls) is not left as a sealed void: solid wall
+        for f in flats:
+            if f["door"] is None:
+                inner[tuple(f["cells"].T)] = False
+                open_[tuple(f["cells"].T)] = False
+        flats = [f for f in flats if f["door"] is not None]
         t = {"walls": zone & ~inner & ~open_, "open": open_ & zone, "flats": flats, "lab": lab, "lanes": lanes,
              "ring1": ring1, "ring2": ring2}
         self._templates[key] = t
         return t
 
     def reserved(self, n: int) -> np.ndarray:
-        """Columns of level n taken by its own halls, kept out of the flats and alleys: on level 1 the cafeteria with
-        its portal and passage, the sheriff's office with the cells, the airlock and the ramp's strip."""
-        out = np.zeros_like(self.core)
-        if n != 1:
-            return out
-        hx, hz, hr = HALL
-        ox, oz, orr = OFFICE
-        ex, ez = HALL_DOOR
-        z0, z1 = CELLS_Z[-1]
-        out |= self.disc(hx, hz, hr + 1.2)
-        out |= (np.abs(self.Z - hz) <= 3) & (self.X <= -int(self.s.r_facade) + 1) & (self.X >= hx)       # portal
-        out |= (np.abs(self.X - ex) <= 2) & (self.Z <= ez + 4) & (self.Z >= oz)                           # passage
-        out |= self.disc(ox, oz, orr + 1.7)
-        out |= self.rect(CELLS_X[0] - 1, ox, CELLS_Z[0][0] - 1, CELLS_Z[-1][1] + 1)
-        out |= self.rect(TURN_X[0] - 1, LOCK[1] + 1, z0 - 1, RAMP_Z[1] + 1)
-        out |= self.rect(TURN_X[0] - 1, EXIT_X, RAMP_Z[0] - 1, RAMP_Z[1] + 1)
-        return out & ~self.gallery
+        """Columns of level n its own halls take (level 1's cafeteria, sheriff's office, cells, airlock and lower
+        ramp; the special levels' rooms), kept out of the flats and alleys so no flat or alley is left cut off behind
+        a hall's wall. Found by drawing the halls once on an empty volume and noting where they write in the level's
+        two walking rows."""
+        if not hasattr(self, "_footprints"):
+            real = self.v
+            self.v = Volume(real.origin, real.size)
+            try:
+                self.level_one()
+                self.specials()
+                ids = self.v.ids
+                self._footprints = {}
+                for k in range(1, LEVELS + 1):
+                    y = self.level_y(k)
+                    self._footprints[k] = (ids[:, y:y + 2, :] != 0).any(axis=1)
+            finally:
+                self.v = real
+        return self._footprints[n] & self.ring(self.s.r_facade + 1.0, self.s.r_inner_wall)
+
+    def specials(self) -> None:
+        """The canon special levels' rooms (levels.Furnisher), drawn over the finished levels."""
+        from levels import Furnisher
+        Furnisher(self).all()
+
 
     def _doors(self, flats: list[dict], lab: np.ndarray, access: np.ndarray) -> None:
         """One door per flat, chosen so every flat is reached: the flats and the open space (gallery, alleys) are a
@@ -398,8 +411,7 @@ class Silo:
         self.level_one()
         self.generator_hall()
         self.digger_void()
-        from levels import Furnisher
-        Furnisher(self).all()
+        self.specials()
         import connect
         connect.tidy(v)
         connect.connect(v)
@@ -494,6 +506,7 @@ class Silo:
     def facades(self, n: int, y: int, t: dict, wall_state: str, lamp: str) -> None:
         s, v = self.s, self.v
         alleys = set(self.alley_bays(n))
+        self.facade_entries: set[tuple[int, int]] = set()     # first cell behind each facade door (flat_door)
         for b in range(s.bays):
             if b in alleys:
                 self.alley_portal(y, b)
@@ -566,7 +579,17 @@ class Silo:
                 v.set(cells[ci][0], y + row, cells[ci][1], st)
         for cols in doors:
             a = sum(cells[ci][3] for ci in cols) / len(cols)
-            self.steel_door(y, [(cells[ci][0], cells[ci][1]) for ci in cols], self.facing_radial(a + math.pi))
+            facing = self.facing_radial(a + math.pi)
+            fx, fz = DIRS[facing]
+            # where the round facade steps, it is two cells thick along the door's axis: open the cell behind too
+            for ci in cols:
+                bx, bz = cells[ci][0] - fx, cells[ci][1] - fz
+                if self.facade_ring[bx, bz]:
+                    v.set(bx, y, bz, AIR)
+                    v.set(bx, y + 1, bz, AIR)
+                    bx, bz = bx - fx, bz - fz
+                self.facade_entries.add((int(bx), int(bz)))
+            self.steel_door(y, [(cells[ci][0], cells[ci][1]) for ci in cols], facing)
         for u in spec.get("lamps", ()):
             ci = min(range(len(us)), key=lambda i: abs(us[i] - u))
             for row in (2, 3, 1):
@@ -613,10 +636,8 @@ class Silo:
         v = self.v
         (wx, wz), facing, inside, outside, through = door
         if self.r[wx, wz] < self.s.r_facade + 1.0 and cells is not None:
-            for x, z in cells:
-                for dx, dz in DIRS.values():
-                    if (v.get(int(x) + dx, y, int(z) + dz) or "").startswith("minecraft:iron_door"):
-                        return
+            if any((int(x), int(z)) in self.facade_entries for x, z in cells):
+                return
         for tx, tz in through:                                  # the rest of a thick (stepped) wall: a short passage
             for dy in (0, 1):
                 v.set(tx, y + dy, tz, AIR)

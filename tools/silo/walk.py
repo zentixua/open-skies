@@ -130,11 +130,6 @@ class Walk:
         m2 = free & up1 & ~part & ((support & ((lift == 0) | up2)) | (c == CLIMB))
         feet[m2] = np.broadcast_to(ys, self.shape)[m2] + lift[m2]
         self.on_wall = m2 & (below_c == TALL) & (c != CLIMB)
-        # under a roof: something solid within four rows over the head (a room, not the top of a pillar in the dome)
-        roof = np.zeros_like(free)
-        for k in range(2, 6):
-            roof[:, :-k, :] |= ~free[:, k:, :]
-        self.roofed = roof
         self.feet = feet
         self.node = ~np.isnan(feet)
         self.climb = c == CLIMB
@@ -237,11 +232,25 @@ def report(silo, walk: Walk, min_nodes: int = 4, verbose: bool = True) -> dict:
     un = ~reach
     if un.any():
         sizes = np.bincount(lab[un], minlength=n)
-        # a part where every node stands on the top of a wall or fence, or has open sky over it (the top of a pillar
-        # under the dome), is not a room
-        floor = ~walk.on_wall.ravel()[idx] & walk.roofed.ravel()[idx]
-        sizes_floor = np.bincount(lab[un & floor], minlength=n)
-        for comp in np.flatnonzero((sizes >= min_nodes) & (sizes_floor > 0)):
+        # A sealed room has walls round it; the top of a tank, a pillar or a parapet has only drops at its edges.
+        # Edges: a node's neighbour column that holds no node of the same part within a row. It is a wall when the
+        # body does not fit there at the node's height, else a drop. Parts with no wall edge are tops, not rooms.
+        walls = np.zeros(n, np.int64)
+        um = un & (sizes[lab] >= min_nodes)
+        ux, uy, uz, ul = xs[um], ys[um], zs[um], lab[um]
+        flat = np.full(walk.node.size, -1, np.int64)
+        flat[idx] = lab
+        lab3 = flat.reshape(walk.shape)
+        for dx, dz in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            nx, nz = np.clip(ux + dx, 0, X - 1), np.clip(uz + dz, 0, Z - 1)
+            same = np.zeros(ux.size, bool)
+            for dy in (-1, 0, 1):
+                same |= lab3[nx, np.clip(uy + dy, 0, H - 1), nz] == ul
+            fits = walk.free[nx, uy, nz] & walk.free[nx, np.clip(uy + 1, 0, H - 1), nz]
+            np.add.at(walls, ul[~same & ~fits], 1)
+        # and a part standing only on the tops of walls and fences (parapets) is no room either
+        floor = np.bincount(lab[un & ~walk.on_wall.ravel()[idx]], minlength=n)
+        for comp in np.flatnonzero((sizes >= min_nodes) & (walls > 0) & (floor > 0)):
             m = lab == comp
             cx, cy, cz = xs[m], ys[m], zs[m]
             x0, z0 = cx.mean() - silo.R, cz.mean() - silo.R
