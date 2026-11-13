@@ -252,7 +252,8 @@ class Field:
                 up = max(up, int(ws[a, b]))        # the water above the new ground goes
             if up > t:
                 col[t + 1 - lo:up + 1 - lo] = air
-            if paths and (self.x0 + i + a, self.z0 + k + b) in paths and not filled[a, b]:
+            # also on a filled lake: the fill is lawn now, and the lines of the show cross where the lakes were
+            if paths and (self.x0 + i + a, self.z0 + k + b) in paths:
                 col[t - lo] = path
                 if t + 1 - lo < col.shape[0]:
                     col[t + 1 - lo] = air
