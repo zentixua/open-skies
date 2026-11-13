@@ -1,0 +1,8 @@
+iron doors taken out for the bot (it does not press plates): 326
+surface: 7 waypoints
+  reached [3209.0, 67.8, -2799.0]
+down: 62 waypoints
+  ladder: down to y 35.3 (route 35)
+  reached [3226.5, 34.0, -2799.5]
+silo 1: PASS, from the ring path to level 4's gallery (y 34.0)
+iron doors put back: 326

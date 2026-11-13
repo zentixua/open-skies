@@ -1,0 +1,5 @@
+ok   axis_north     worst   5.7 m, median  5.0 m over 60 samples
+ok   axis_south     worst   5.7 m, median  5.0 m over 60 samples
+ok   founders_west  worst   0.0 m, median  0.0 m over 60 samples
+ok   founders_east  worst   0.0 m, median  0.0 m over 60 samples
+ok   north_cross    worst   0.0 m, median  0.0 m over 60 samples

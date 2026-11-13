@@ -1,0 +1,1 @@
+open plain 2.17 km2: 55835 step edges, 25746 per km2 (an edge every 39 m2)
