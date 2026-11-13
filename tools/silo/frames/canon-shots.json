@@ -1,0 +1,102 @@
+{
+ "server": "152.53.87.3:25567",
+ "player": "NukeCam",
+ "shots": [
+  {
+   "file": "01-complex-aerial.png",
+   "pos": "3716.5 170 2348.5 180 20",
+   "time_of_day": 3000,
+   "subject": "S3E09 aerial of the complex: the whole flower layout, the gate and parking at the top, forest round the field"
+  },
+  {
+   "file": "02-silo1-aerial.png",
+   "pos": "3716.5 128 1978.5 -180.0 24.4",
+   "time_of_day": 3000,
+   "subject": "aerial zoom on Silo 1: the bowl with the tents, the path south across the berm"
+  },
+  {
+   "file": "03-silo18-drone.png",
+   "pos": "3870.5 105 1607.5 116.1 39.0",
+   "time_of_day": 3000,
+   "subject": "drone into Silo 18's bowl: the mown floor, the pale path to the stair pad, the camera block at the berm foot"
+  },
+  {
+   "file": "04-silo18-ramp-rim.png",
+   "pos": "3836.5 66 1585.5 90 12",
+   "time_of_day": 3000,
+   "subject": "Silo 18 ramp rim: lawn 3 m behind the stair slot's end, looking along the slot; curbs flush with the lawn, berm behind"
+  },
+  {
+   "file": "05-silo18-camera-stair.png",
+   "pos": "3846.5 66 1585.5 90 5",
+   "time_of_day": 3000,
+   "subject": "Silo 18 bowl in front of the stair head facing it: stair opening, camera block behind it, berm crest"
+  },
+  {
+   "file": "06-silo18-ramp-tunnel.png",
+   "pos": "3798.5 56.2 1585.5 -90 -12",
+   "time_of_day": 3000,
+   "subject": "inside Silo 18's roofed ramp looking up and out: ribbed walls, the open trench and the sky"
+  },
+  {
+   "file": "07-silo18-tree.png",
+   "pos": "3817.5 66 1585.5 -80 0",
+   "time_of_day": 3000,
+   "subject": "S3E09 frame 10: from behind Silo 18's stair head by the camera block, looking out along the ramp: stair head in front, the berm, the tree on the berm slope right of centre"
+  },
+  {
+   "file": "08-silo1-stage.png",
+   "pos": "3713.5 67 1840.5 180 3",
+   "time_of_day": 3000,
+   "subject": "Silo 1 stage front, eye height in the aisle among the chairs on the stage axis"
+  },
+  {
+   "file": "09-silo1-tents.png",
+   "pos": "3738.5 66 1846.5 132.8 -0.6",
+   "time_of_day": 3000,
+   "subject": "Silo 1 bowl beside the tents and chairs, the berm slope behind"
+  },
+  {
+   "file": "10-silo1-path-city.png",
+   "pos": "3716.5 68 1770.5 180 0",
+   "time_of_day": 3000,
+   "subject": "on the pale path north of Silo 1 looking north, the Zearth city on the horizon"
+  },
+  {
+   "file": "11-silo18-berm.png",
+   "pos": "3825.5 70 1543.0 -15 6",
+   "time_of_day": 3000,
+   "subject": "on Silo 18's berm crest, r 42 from its ring (crest top y 69, 2 over the plain), eye height, looking back across the waved banks into the bowl"
+  },
+  {
+   "file": "12-plain.png",
+   "pos": "3770.5 68 1716.5 -150.3 0.3",
+   "time_of_day": 3000,
+   "subject": "eye height on the plain between rings: young trees, berms"
+  },
+  {
+   "file": "13-silo1-mushroom-view.png",
+   "pos": "3716.5 120 1915.5 180 12",
+   "time_of_day": 12300,
+   "subject": "S3E09 mushroom view: high over Silo 1's south side looking north across the complex to the open horizon"
+  },
+  {
+   "file": "14-silo1-north-berm.png",
+   "pos": "3716.5 70 1806.5 180 2",
+   "time_of_day": 12300,
+   "subject": "Silo 1 north berm crest at eye height looking north"
+  },
+  {
+   "file": "15-silo1-level1.png",
+   "pos": "3772.5 50 1848.5 -90 0",
+   "time_of_day": 6000,
+   "subject": "Silo 1 level 1 from the ramp tunnel's end"
+  },
+  {
+   "file": "16-silo18-home.png",
+   "pos": "3677.5 -5 1582.5 90 15",
+   "time_of_day": 6000,
+   "subject": "inside a furnished home on Silo 18 residential level 12"
+  }
+ ]
+}
