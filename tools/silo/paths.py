@@ -205,9 +205,39 @@ def hero(layout: dict):
     return {"x": x, "z": z, "blocks": [[*c, st] for c, st in sorted(hero_tree.blocks(out).items())]}
 
 
-def trees(layout: dict, avoid: set, keep_clear=()) -> list:
-    """Tree spots: 0-2 on each berm crest (S3E09 10: a round-crowned tree on the crest, another nearby) and young
-    trees scattered over the plain (05, 28), never on a path, a bowl floor or an earlier tree's crown."""
+def grove_trees(rings, ground: str, free, water: set, step: int = 6) -> list:
+    """Trees on a jittered 6 m grid where the aerial's tree fraction (smoothed over 3 cells) is over one half: the
+    frame's groves are closed canopies, which vanilla oak and birch crowns (5 wide) make at about this spacing.
+    Nothing inside a ring's path circle (the frame's bowls and berms carry only the crest trees)."""
+    d = np.load(ground)
+    T = d["tree"].astype(float)
+    k = np.ones((3, 3)) / 9
+    from scipy.signal import convolve2d
+    T = convolve2d(T, k, mode="same")
+    x0, z0, C = int(d["x0"]), int(d["z0"]), int(d["cell"])
+    out = []
+    for gx in range(x0, x0 + T.shape[0] * C, step):
+        for gz in range(z0, z0 + T.shape[1] * C, step):
+            x, z = gx + int(h01(gx, gz, 16) * step), gz + int(h01(gx, gz, 17) * step)
+            i, k_ = (x - x0) // C, (z - z0) // C
+            if not (0 <= i < T.shape[0] and 0 <= k_ < T.shape[1]) or T[i, k_] < 0.5:
+                continue
+            if min(math.hypot(x - a, z - b) for a, b in rings) < RING_PATH_R + 6:
+                continue
+            if any((x + dx, z + dz) in water for dx in (-2, 0, 2) for dz in (-2, 0, 2)):
+                continue
+            if not free(x, z, 4):
+                continue
+            r = h01(gx, gz, 18)
+            out.append([x, z, "minecraft:fancy_oak" if r < 0.2 else ("minecraft:birch" if r < 0.45 else "minecraft:oak")])
+    return out
+
+
+def trees(layout: dict, avoid: set, keep_clear=(), ground: str | None = None, water: set | None = None) -> list:
+    """Tree spots: 0-2 on each berm crest (S3E09 10: a round-crowned tree on the crest, another nearby), then the
+    plain's trees: with ground (canon_ground.py's npz) the groves and belts where the show's 2052 aerial has them,
+    otherwise young trees scattered over the plain (05, 28); never on a path, a pond, a bowl floor or an earlier tree's
+    crown."""
     rings = [s_["ring"] for s_ in layout["silos"] if "ring" in s_]
     out, taken = [], list(keep_clear)
     def free(x, z, r):
@@ -221,6 +251,8 @@ def trees(layout: dict, avoid: set, keep_clear=()) -> list:
             if free(x, z, 12):
                 out.append([x, z, "minecraft:fancy_oak" if h01(k, j, 3) < 0.3 else "minecraft:oak"])
                 taken.append((x, z))
+    if ground:
+        return out + grove_trees(rings, ground, free, water or set())
     xs = [r[0] for r in rings]; zs = [r[1] for r in rings]
     G = 40
     for gx in range(int(min(xs)) - 200, int(max(xs)) + 200, G):

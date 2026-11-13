@@ -308,7 +308,9 @@ class Builder:
             (hx, hz), out = hero_tree.place_1to1((s18["x"], s18["z"]), TURNS[s18["dir"]])
             hero = (hx, hz, hero_tree.blocks(out))
         avoid = self.path_cells | self.road_cells
-        spots = paths.trees(self.layout, avoid, [(hero[0], hero[1])] if hero else [])
+        cg = self.a.canon_ground
+        spots = paths.trees(self.layout, avoid, [(hero[0], hero[1])] if hero else [], ground=cg,
+                            water=self.pond_cells() if cg else None)
         vols = []
         for x, z, kind in spots:
             g = self.ground_at(x, z)
@@ -318,6 +320,69 @@ class Builder:
             vols.append(self.tree_volume(hx, self.ground_at(hx, hz), hz, blocks))
         self.apply(vols, f"trees: {len(spots)} and Silo 18's")
         self.mark("trees", {"count": len(spots), "hero": [hero[0], hero[1]] if hero else None})
+
+    def pond_cells(self) -> set:
+        """Columns of the ponds the show's 2052 aerial has at the complex's edges (canon_ground.py, water over half
+        of a 4 m cell, smoothed), never within a ring's path circle or on a path."""
+        if hasattr(self, "_ponds"):
+            return self._ponds
+        from scipy.signal import convolve2d
+        import paths
+        d = np.load(self.a.canon_ground)
+        W = convolve2d(d["water"].astype(float), np.ones((3, 3)) / 9, mode="same")
+        x0, z0, C = int(d["x0"]), int(d["z0"]), int(d["cell"])
+        rings = [s["ring"] for s in self.layout["silos"]]
+        avoid = self.path_cells | self.road_cells
+        out = set()
+        for i, k in zip(*np.nonzero(W >= 0.5)):
+            cx, cz = x0 + i * C, z0 + k * C
+            if min(math.hypot(cx - a, cz - b) for a, b in rings) < paths.RING_PATH_R + 10:
+                continue
+            for dx in range(C):
+                for dz in range(C):
+                    c = (cx + dx, cz + dz)
+                    if not any((c[0] + a, c[1] + b) in avoid for a in (-2, 0, 2) for b in (-2, 0, 2)):
+                        out.add(c)
+        self._ponds = out
+        return out
+
+    def ponds(self) -> None:
+        """Dig the ponds: each connected pond's surface 1 under its lowest bank column, 2-3 deep, a clay bed."""
+        if not self.a.canon_ground:
+            return
+        from scipy import ndimage
+        cells = self.pond_cells()
+        if not cells:
+            return
+        xs = [c[0] for c in cells]; zs = [c[1] for c in cells]
+        X0, Z0 = min(xs), min(zs)
+        m = np.zeros((max(xs) - X0 + 1, max(zs) - Z0 + 1), bool)
+        for x, z in cells:
+            m[x - X0, z - Z0] = True
+        lab, n = ndimage.label(m)
+        depth = ndimage.distance_transform_edt(m)
+        vols = []
+        for p in range(1, n + 1):
+            ii, kk = np.nonzero(lab == p)
+            if len(ii) < 30:
+                continue
+            g = np.array([self.ground_at(X0 + i, Z0 + k) for i, k in zip(ii, kk)])
+            level = int(g.min()) - 1
+            top = int(g.max())
+            bx, bz = X0 + ii.min(), Z0 + kk.min()
+            v = Volume((bx, level - 4, bz), (ii.max() - ii.min() + 1, top - level + 6, kk.max() - kk.min() + 1))
+            for i, k, gg in zip(ii, kk, g):
+                dd = min(3, 1 + int(depth[i, k] // 3))       # 2 at the bank, 3-4 in the middle
+                li, lk = i - ii.min(), k - kk.min()
+                bed = level - dd
+                v.set(li, bed - (level - 4), lk, "minecraft:clay")
+                for y in range(bed + 1, level + 1):
+                    v.set(li, y - (level - 4), lk, "minecraft:water[level=0]")
+                for y in range(level + 1, gg + 2):
+                    v.set(li, y - (level - 4), lk, "minecraft:air")
+            vols.append(v)
+        self.apply(vols, f"ponds: {len(vols)}, {len(cells)} columns")
+        self.mark("ponds", {"count": len(vols), "columns": len(cells)})
 
     @staticmethod
     def tree_volume(x: int, ground: int, z: int, blocks: dict) -> Volume:
@@ -383,7 +448,9 @@ def main():
     bp.add_argument("--world", required=True, help="the world copy to write")
     bp.add_argument("--state", required=True)
     bp.add_argument("--number", type=int, nargs="*")
-    bp.add_argument("--what", nargs="*", default=["all"], choices=["plain", "silos", "trees", "biome", "all"])
+    bp.add_argument("--what", nargs="*", default=["all"], choices=["plain", "silos", "ponds", "trees", "biome", "all"])
+    bp.add_argument("--canon-ground", help="canon_ground.py's npz: ponds and the plain's groves where the show's 2052 "
+                    "aerial has them")
     a = ap.parse_args()
     if a.cmd == "layout":
         make_layout(a)
@@ -399,6 +466,8 @@ def main():
             if not a.number and b.done.get(f"silo{s['number']}"):
                 continue
             b.silo(s)
+    if what & {"ponds", "all"}:
+        b.ponds()
     if what & {"trees", "all"}:
         b.trees()
     if what & {"biome", "all"}:
