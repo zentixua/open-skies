@@ -1,0 +1,6 @@
+iron doors taken out for the bot (it does not press plates): 408
+surface: 7 waypoints
+  reached [3490.9, 70.0, -2350.0]
+down: 76 waypoints
+  STUCK at [3498.7, 55.4, -2351.6] going to 3501.5,-2350.5 (leg down waypoint 31): {'program': 39, 'state': 'done', 'steps_done': 1, 'steps': 1, 'results': [{'do': 'walk_to', 'reached': False, 'reason': 'the bot died', 'distance_left': 2.6, 'pos': [3499.0, 55.4, -2351.5], 'ticks': 0
+iron doors put back: 408

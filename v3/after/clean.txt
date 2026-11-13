@@ -1,0 +1,26 @@
+villager buried 3103 70 -3568 golden 68 new 70
+villager buried 3097 70 -3572 golden 68 new 70
+villager buried 3105 70 -3571 golden 68 new 70
+cat buried 3102 70 -3568 golden 67 new 70
+villager buried 3129 64 -3545 golden 66 new 70
+villager in a shaft 3095 68 -3626 golden 70 new 69
+villager buried 3969 63 -2130 golden 61 new 70
+cat buried 3976 63 -2130 golden 61 new 70
+villager buried 3970 63 -2134 golden 61 new 70
+villager buried 3975 63 -2134 golden 61 new 70
+cat buried 3971 63 -2128 golden 61 new 70
+iron_golem buried 3974 63 -2128 golden 61 new 70
+villager in a shaft 3936 75 -2610 golden 78 new 69
+villager in a shaft 3924 71 -2615 golden 74 new 69
+villager in a shaft 3919 74 -2598 golden 77 new 69
+villager in a shaft 3949 73 -2585 golden 76 new 69
+iron_golem in a shaft 3968 74 -2581 golden 89 new 69
+cat in a shaft 3967 75 -2578 golden 72 new 69
+villager in a shaft 3967 74 -2577 golden 72 new 69
+cat in a shaft 3966 75 -2580 golden 88 new 69
+cat in a shaft 3963 75 -2583 golden 93 new 69
+villager in a shaft 3967 74 -2583 golden 93 new 69
+villager in a shaft 3945 74 -2575 golden 77 new 69
+villager in a shaft 4009 106 -2574 golden 109 new 69
+sheep buried 4002 63 -3645 golden 62 new 71
+removed {'hostile': 61, 'item': 5, 'in a shaft': 375, 'buried': 1151} {'sheep': 317, 'pig': 301, 'chicken': 275, 'cow': 234, 'wolf': 106, 'fox': 63, 'turtle': 57, 'horse': 33, 'rabbit': 33, 'chest_minecart': 24, 'zombie': 22, 'creeper': 19, 'frog': 18, 'skeleton': 16, 'villager': 16, 'spider': 13, 'drowned': 12, 'donkey': 8, 'cat': 6, 'item': 5}
