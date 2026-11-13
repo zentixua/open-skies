@@ -21,7 +21,7 @@ names = list(d["names"])
 L = json.load(open(sys.argv[2]))
 P = {int(k): v for k, v in json.load(open(sys.argv[3])).items()}
 CARD = {"W": (-1, 0), "N": (0, -1), "E": (1, 0), "S": (0, 1)}
-STAIR = {i for i, n in enumerate(names) if n.endswith("smooth_stone_stairs")}
+STAIR = {i for i, n in enumerate(names) if n.endswith("polished_andesite_stairs")}
 SLAB = {i for i, n in enumerate(names) if n.endswith("smooth_stone_slab")}
 fails = []
 for s in L["silos"]:
