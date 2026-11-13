@@ -191,6 +191,10 @@ class Builder:
         f = silo.facing_radial(math.radians(15) + rot)
         for dy, half in ((4, "lower"), (5, "upper")):
             self.put(hx, yf + dy, hz, f"minecraft:iron_door[facing={f},half={half},hinge=left,open=false,powered=false]")
+        fdx, fdz = {"east": (1, 0), "west": (-1, 0), "south": (0, 1), "north": (0, -1)}[f]
+        for k in (1, -1):                                              # plates on the deck and inside, as every door
+            if self.get(hx + k * fdx, yf + 4, hz + k * fdz) == AIR:
+                self.put(hx + k * fdx, yf + 4, hz + k * fdz, "minecraft:heavy_weighted_pressure_plate[power=0]")
         wa = math.radians(15) + rot
         ca, sa = math.cos(wa), math.sin(wa)
         lat = (self.X - mx) * -sa + (self.Z - mz) * ca

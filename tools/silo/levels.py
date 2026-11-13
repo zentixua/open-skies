@@ -292,7 +292,8 @@ class Furnisher:
         self.blk(42, 1, 1, "minecraft:black_concrete")
         self.blk(42, 1, 2, "minecraft:waxed_copper_grate")
         self.blk(40, 0, 1, stairs("east"))
-        self.box(32, 32, 0, 1, 0, 1, AIR)
+        # the room's box (from d 31) takes the offices' last row: the way in goes through it to the door at d 32
+        self.box(31, 32, 0, 1, 0, 1, AIR)
         self.door(32, 0, "west", width=2, hinge="right")
 
     def watcher(self, n: int) -> None:
@@ -603,3 +604,7 @@ class Furnisher:
         for i, (x, z) in enumerate(zip(xs, zs)):
             for dy in range(0, 2 + (i % 2)):
                 v.set(x, y + dy, z, junk[(i * 3 + dy) % len(junk)])
+        # the pile is meant to bar the way: walk.py does not ask anyone to stand on top of it
+        R = silo.R
+        silo.walk_ignore_boxes.append((int(xs.min()) - R, y - 1, int(zs.min()) - R, int(xs.max()) - R, y + 4,
+                                       int(zs.max()) - R))

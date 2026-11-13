@@ -78,7 +78,7 @@ def classify(state: str) -> tuple[int, float]:
     if name in PARTIAL_H:
         h = PARTIAL_H[name]
         return (FULL, 1.0) if h >= 1.0 else (PARTIAL, h)
-    if any(name == k or name.endswith("_" + k) or name.endswith(k) for k in NO_COLLISION):
+    if any(name == k or name.endswith("_" + k) for k in NO_COLLISION):
         return NONE, 0.0
     if any(k in name for k in THIN_NAMES):
         return THIN, 1.0
@@ -200,7 +200,7 @@ class Walk:
         return idx, lab, n
 
     def doors_without_plates(self) -> list[tuple[int, int, int]]:
-        """Iron doors (lower halves) with no pressure plate, button or lever in front of or behind them."""
+        """Iron doors (lower halves) between two open cells with no pressure plate, button or lever on one side."""
         out = []
         X, H, Z = self.shape
         for i, st in enumerate(self.palette):
@@ -209,6 +209,9 @@ class Walk:
             facing = st.split("facing=")[1].split(",")[0].rstrip("]")
             fx, fz = {"east": (1, 0), "west": (-1, 0), "south": (0, 1), "north": (0, -1)}[facing]
             for x, y, z in zip(*np.nonzero(self.ids == i)):
+                ends = [(x + k * fx, z + k * fz) for k in (1, -1)]
+                if not all(0 <= px < X and 0 <= pz < Z and self.free[px, y, pz] for px, pz in ends):
+                    continue                     # a door with a wall behind it is a sealed hatch, not a way through
                 sides = []
                 for k in (1, -1):
                     hit = False
@@ -245,8 +248,8 @@ def report(silo, walk: Walk, min_nodes: int = 4, verbose: bool = True) -> dict:
     if un.any():
         sizes = np.bincount(lab[un], minlength=n)
         # A sealed room has walls round it; the top of a tank, a pillar or a parapet has only drops at its edges.
-        # Edges: a node's neighbour column that holds no node of the same part within a row. It is a wall when the
-        # body does not fit there at the node's height, else a drop. Parts with no wall edge are tops, not rooms.
+        # Edges: a node's neighbour column that holds no node of the same part within a row. It is a wall when a
+        # block stands there at the node's feet, else a drop. Parts with no wall edge are tops, not rooms.
         walls = np.zeros(n, np.int64)
         um = un & (sizes[lab] >= min_nodes)
         ux, uy, uz, ul = xs[um], ys[um], zs[um], lab[um]
@@ -258,7 +261,7 @@ def report(silo, walk: Walk, min_nodes: int = 4, verbose: bool = True) -> dict:
             same = np.zeros(ux.size, bool)
             for dy in (-1, 0, 1):
                 same |= lab3[nx, np.clip(uy + dy, 0, H - 1), nz] == ul
-            fits = walk.free[nx, uy, nz] & walk.free[nx, np.clip(uy + 1, 0, H - 1), nz]
+            fits = walk.free[nx, uy, nz]                     # a wall stands at the feet, a lamp overhead is none
             np.add.at(walls, ul[~same & ~fits], 1)
         # and a part standing only on the tops of walls and fences (parapets) or with nothing over it is no room either
         floor = np.bincount(lab[un & ~walk.on_wall.ravel()[idx] & walk.roofed.ravel()[idx]], minlength=n)
@@ -269,6 +272,10 @@ def report(silo, walk: Walk, min_nodes: int = 4, verbose: bool = True) -> dict:
             cx, cy, cz = xs[m], ys[m], zs[m]
             x0, z0 = cx.mean() - silo.R, cz.mean() - silo.R
             y = int(np.median(cy))
+            if any(x0_ <= cx.min() - silo.R and cx.max() - silo.R <= x1_ and y0_ <= cy.min() and cy.max() <= y1_
+                   and z0_ <= cz.min() - silo.R and cz.max() - silo.R <= z1_
+                   for x0_, y0_, z0_, x1_, y1_, z1_ in getattr(silo, "walk_ignore", lambda: [])()):
+                continue
             # The digger void is a cavern with the model's machine in it: its ledges, legs and cage are sculpture,
             # listed but not failed. What a person uses there is checked by target below.
             (out["cavern"] if cy.max() < cavern_top else out["components"]).append({

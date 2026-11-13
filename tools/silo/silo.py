@@ -162,6 +162,7 @@ class Silo:
         self.r = np.hypot(self.X, self.Z)
         self.theta = np.mod(np.arctan2(self.Z, self.X), TAU)
         self.col_step = TAU / s.columns
+        self.walk_ignore_boxes: list[tuple[int, int, int, int, int, int]] = []
         self._plan()
 
     # coordinates -------------------------------------------------------------------------------------------------
@@ -1075,6 +1076,11 @@ class Silo:
             if mid and i % 3 == 1 and roof < grade:
                 v.set(X_, roof, Z_, "minecraft:sea_lantern")
         self.exit_cells = [(x, z) for x in range(RAMP_X[1] + 1, EXIT_X + 1) for z in range(RAMP_Z[0] - 1, RAMP_Z[1] + 2)]
+
+    def walk_ignore(self) -> list[tuple[int, int, int, int, int, int]]:
+        """Boxes (silo frame x, row index, z; inclusive) whose unreachable standing places walk.py does not report:
+        things built to bar the way, like the barricade on level 130."""
+        return list(getattr(self, "walk_ignore_boxes", []))
 
     def walk_targets(self) -> dict[str, tuple[int, int, int]]:
         """Places walk.py requires reachable that its room check does not cover (silo frame x, row index, z)."""
