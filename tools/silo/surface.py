@@ -201,11 +201,11 @@ class Site:
         return v
 
     def camera(self, v: Volume) -> None:
-        """The camera block (S3E09 07, 08) straight behind the slot on its axis, facing along the steps: two light
+        """The camera block (S3E09 07, 08) straight behind the stair head on its axis, facing down the steps: two light
         concrete piers, a dark recessed back wall, a thin roof slab over them; in the recess a truncated cone carrying
         the sensor (Artem 13.11: behind the way in, not beside it)."""
         R, oy = self.radius, v.origin[1]
-        x0, x1, z0, z1 = CAMERA                             # x1 is the face toward the slot (+x), x0 the back
+        x0, x1, z0, z1 = CAMERA                             # x0 is the face toward the slot (-x), x1 the back
         g = self.grade
         put = lambda x, y, z, st: v.set(R + x, y - oy, R + z, st)
         for z in range(z0, z1 + 1):
@@ -214,13 +214,13 @@ class Site:
                 for dy in (1, 2):
                     if pier:
                         put(x, g + dy, z, CONCRETE)
-                    elif x == x0:
+                    elif x == x1:
                         put(x, g + dy, z, DARK)
                     else:
                         put(x, g + dy, z, AIR)
         zc = (z0 + z1) // 2
-        put(x1, g + 1, zc, "minecraft:andesite_wall")
-        put(x1, g + 2, zc, "minecraft:observer[facing=east,powered=false]")
+        put(x0, g + 1, zc, "minecraft:andesite_wall")
+        put(x0, g + 2, zc, "minecraft:observer[facing=west,powered=false]")
         for x in range(x0 - 1, x1 + 2):
             for z in range(z0 - 1, z1 + 2):
                 put(x, g + 3, z, STEP)

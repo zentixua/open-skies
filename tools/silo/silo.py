@@ -132,8 +132,9 @@ RAMP_Z = (-1, 1)                      # the upper ramp and the slot: on the axis
 RAMP_X = (-34, -28)                   # upper ramp: from the crossing to where the steps begin (+8 -> +10)
 STEPS = 6                             # the slot's steps, one block each
 EXIT_X = RAMP_X[1] + STEPS            # last step, on the bowl floor: r 22, under half the bowl's radius (27)
-CAMERA = (-31, -30, -2, 2)            # the camera block straight behind the slot on the axis, facing it: x0, x1 (its
-                                      # depth, face at x1), z0, z1 (≈4.4 x 2.4 m, S3E09 07)
+CAMERA = (EXIT_X + 2, EXIT_X + 3, -2, 2)   # the camera block straight behind the stair head on the axis, facing down
+                                      # the steps (S3E09 07): x0 (its face, toward the slot), x1 (back), z0, z1
+                                      # (≈4.4 x 2.4 m); from the cut one sees its back with the stair hidden (05)
 
 
 class Silo:

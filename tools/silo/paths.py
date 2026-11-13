@@ -142,15 +142,21 @@ def plan(layout: dict) -> tuple[set, set]:
         n = int(2 * math.pi * RING_PATH_R * 2)
         line(cells, [(c[0] + RING_PATH_R * math.cos(a), c[1] + RING_PATH_R * math.sin(a))
                      for a in np.linspace(0, 2 * math.pi, n)], PATH_W)
-    # stubs, one straight line per ring (the 2052 frame): from the head of the slot (on the dir side, silo.EXIT_X)
-    # over the bowl's centre and through the berm's cut on the opposite side out to the circle
-    from silo import EXIT_X
+    # stubs, one straight line per ring (the 2052 frame, S3E09 05): from the circle through the berm's cut (opposite the
+    # slot) over the bowl's centre to a rounded pad ≈1.5 path widths across, short of the camera block's back; the
+    # block hides the stair head beyond it (05), which faces the other way (07)
+    from silo import CAMERA
     for k, c in ring.items():
         if k == 1:
             continue                    # Silo 1: the path runs due south from the opening-day set (event.py)
         dx, dz = BEARING[bearing[k]]
-        head = -EXIT_X - 1
-        line(cells, [(c[0] + head * dx, c[1] + head * dz), (c[0] - RING_PATH_R * dx, c[1] - RING_PATH_R * dz)], PATH_W)
+        end = -CAMERA[1] - 5            # metres from the centre toward the slot's side where the pad's middle stands
+        line(cells, [(c[0] + end * dx, c[1] + end * dz), (c[0] - RING_PATH_R * dx, c[1] - RING_PATH_R * dz)], PATH_W)
+        pr = 1.5 * PATH_W / 2 + 0.5
+        for a in range(-3, 4):
+            for b in range(-3, 4):
+                if math.hypot(a, b) <= pr:
+                    cells.add((int(math.floor(c[0] + end * dx + a + 0.5)), int(math.floor(c[1] + end * dz + b + 0.5))))
     # links inside flowers
     nums = sorted(ring)
     for i in nums:

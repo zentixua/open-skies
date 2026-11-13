@@ -30,6 +30,7 @@ import canon_check  # noqa: E402
 ap = argparse.ArgumentParser()
 ap.add_argument("scan"); ap.add_argument("layout"); ap.add_argument("out")
 ap.add_argument("--plaque"); ap.add_argument("--frame")
+ap.add_argument("--aerial", help="aerial2052-1920.jpg: the same camera at full width (canon/fit.json Hf1920)")
 ap.add_argument("--min-cover", type=float, default=0.5, help="share of a 110 m circle that must be path")
 a = ap.parse_args()
 os.makedirs(a.out, exist_ok=True)
@@ -158,4 +159,6 @@ if a.plaque:
     overlay(a.plaque, canon_check.HP, "plaque.png")
 if a.frame:
     overlay(a.frame, canon_check.HF, "frame2052.png", side="frame2052-side.png")
+if a.aerial:
+    overlay(a.aerial, np.array(canon_check.FIT["Hf1920"]), "aerial2052.png", side="aerial2052-side.png")
 sys.exit(1 if bad else 0)
