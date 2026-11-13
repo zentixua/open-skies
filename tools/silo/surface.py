@@ -201,27 +201,26 @@ class Site:
         return v
 
     def camera(self, v: Volume) -> None:
-        """The camera block (S3E09 07, 08) beside the slot, looking over the steps: two light concrete piers, a dark
-        recessed back wall, a thin roof slab over them; in the recess a truncated cone carrying the sensor."""
+        """The camera block (S3E09 07, 08) straight behind the slot on its axis, facing along the steps: two light
+        concrete piers, a dark recessed back wall, a thin roof slab over them; in the recess a truncated cone carrying
+        the sensor (Artem 13.11: behind the way in, not beside it)."""
         R, oy = self.radius, v.origin[1]
-        x0, x1, z0, z1 = CAMERA
+        x0, x1, z0, z1 = CAMERA                             # x1 is the face toward the slot (+x), x0 the back
         g = self.grade
         put = lambda x, y, z, st: v.set(R + x, y - oy, R + z, st)
-        face = z1 if RAMP_Z[0] > z1 else z0                 # the side toward the slot
-        back = z0 if face == z1 else z1
-        toward = "south" if face > back else "north"        # the sensor looks over the steps
-        for x in range(x0, x1 + 1):
-            for z in (z0, z1):
-                pier = x in (x0, x1)
+        for z in range(z0, z1 + 1):
+            for x in (x0, x1):
+                pier = z in (z0, z1)
                 for dy in (1, 2):
                     if pier:
                         put(x, g + dy, z, CONCRETE)
-                    elif z == back:
+                    elif x == x0:
                         put(x, g + dy, z, DARK)
                     else:
                         put(x, g + dy, z, AIR)
-        put(x0 + 1, g + 1, face, "minecraft:andesite_wall")
-        put(x0 + 1, g + 2, face, f"minecraft:observer[facing={toward},powered=false]")
+        zc = (z0 + z1) // 2
+        put(x1, g + 1, zc, "minecraft:andesite_wall")
+        put(x1, g + 2, zc, "minecraft:observer[facing=east,powered=false]")
         for x in range(x0 - 1, x1 + 2):
-            for z in range(min(z0, z1) - 1, max(z0, z1) + 2):
+            for z in range(z0 - 1, z1 + 2):
                 put(x, g + 3, z, STEP)

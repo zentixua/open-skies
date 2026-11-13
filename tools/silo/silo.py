@@ -122,11 +122,18 @@ CELLS_X = (-41, -39)                  # holding cells, interior x range, west of
 CELLS_Z = ((-38, -36), (-34, -32), (-30, -28))
 LOCK = (-47, -43)                     # airlock chamber x range on cell 3's lane
 TURN_X = (-50, -49)                   # the ramp's U-turn
-RAMP_Z = (-23, -21)                   # ramp interior z (3 wide)
-RAMP_X = (-48, -23)                   # ribbed ramp: x where it leaves the U-turn (level 1) and where the steps begin
+# The way up (Artem 13.11: the slot sits on one of the ring's axes, centred, the camera straight behind it). Three
+# runs, 3 wide inside: the lower ramp east along LOW_Z out of the U-turn, a crossing north-to-south along CROSS_X over
+# the cafeteria's roof onto the axis, and the upper ramp east along the axis to the steps of the slot.
+LOW_Z = (-23, -21)                    # lower ramp interior z
+LOW_X = (-48, -36)                    # lower ramp: from the U-turn to the crossing (level 1 -> +6)
+CROSS_X = (-36, -34)                  # crossing interior x (+6 -> +8; its floor stays over level 1's ceiling)
+RAMP_Z = (-1, 1)                      # the upper ramp and the slot: on the axis, centred
+RAMP_X = (-34, -28)                   # upper ramp: from the crossing to where the steps begin (+8 -> +10)
 STEPS = 6                             # the slot's steps, one block each
-EXIT_X = RAMP_X[1] + STEPS            # last step, on the bowl floor: r ≈ 28, half the bowl's radius
-CAMERA = (-22, -19, -26, -25)         # the camera block beside the slot: x0, x1, z0, z1 (≈4.4 x 2.4 m, S3E09 07)
+EXIT_X = RAMP_X[1] + STEPS            # last step, on the bowl floor: r 22, under half the bowl's radius (27)
+CAMERA = (-31, -30, -2, 2)            # the camera block straight behind the slot on the axis, facing it: x0, x1 (its
+                                      # depth, face at x1), z0, z1 (≈4.4 x 2.4 m, S3E09 07)
 
 
 class Silo:
@@ -878,15 +885,15 @@ class Silo:
     def way_out(self) -> None:
         """Holding cell 3 -> the airlock (a thick door ≈2.4 m at each end, BFDG 46:23; "these two big sliding doors
         each weigh 25 tons", S3E09: here each is a pair of iron leaves in a steel frame) -> a U-turn -> the ribbed ramp
-        climbing toward the centre over the level-1 rooms -> a slot with steps opening on the bowl floor at about
-        half its radius (SPEC 5, S1E02 #25/#27, S3E09 #77). The slot's curb and the camera block are surface.py's."""
+        (LOW, CROSS, then up the axis) -> a slot with steps on the ring's axis, opening on the bowl floor inside half
+        its radius (SPEC 5, S1E02 #25/#27, S3E09 #77). The slot's curb and the camera block are surface.py's."""
         v = self.v
         y = self.level_y(1)
         grade = self.yi(0)                               # the bowl floor's top block; its walking surface is grade + 1
         z0, z1 = CELLS_Z[-1]
         lock = self.rect(LOCK[0], LOCK[1], z0, z1)
-        turn = self.rect(TURN_X[0], TURN_X[1], z0, RAMP_Z[1])
-        v.mask(y - 1, y + 4, self.rect(TURN_X[0] - 1, LOCK[1] + 1, z0 - 1, RAMP_Z[1] + 1), CONCRETE)
+        turn = self.rect(TURN_X[0], TURN_X[1], z0, LOW_Z[1])
+        v.mask(y - 1, y + 4, self.rect(TURN_X[0] - 1, LOCK[1] + 1, z0 - 1, LOW_Z[1] + 1), CONCRETE)
         v.mask(y, y + 2, lock | turn, AIR)
         v.mask(y - 1, y - 1, lock | turn, "minecraft:polished_andesite")
         v.mask(y + 3, y + 3, lock & ((self.X % 2) == 0) & (self.Z == (z0 + z1) // 2), "minecraft:sea_lantern")
@@ -895,37 +902,65 @@ class Silo:
             v.mask(y - 1, y + 3, self.rect(dx, dx, z0 - 1, z1 + 1), "minecraft:iron_block")
             v.mask(y, y + 1, self.rect(dx, dx, z0 + 1, z1), AIR)
             self.steel_door(y, [self.at(dx, z0 + 1), self.at(dx, z0 + 2)], "west")
-        # the ramp, ribbed (a copper rib every other block across the floor), then the steps up the open slot
-        rx0, rx1 = RAMP_X
-        rise = (grade + 1 - y) - STEPS
-        for x in range(rx0, EXIT_X + 1):
-            if x <= rx1:
-                surf = y + (x - rx0) * rise / (rx1 - rx0)
-            else:
-                surf = y + rise + (x - rx1)
+        ceil1 = y + self.s.pitch - 1                     # level 1's ceiling row: the upper runs never dig below it
+        top = grade + 1 - STEPS                          # walking surface where the steps begin
+        lz, cx = (LOW_Z[0] + LOW_Z[1]) // 2, (CROSS_X[0] + CROSS_X[1]) // 2
+        # the centre line: (x, z, walking surface, along, kind); along is the run's axis ("x" or "z")
+        line = []
+        for x in range(LOW_X[0], cx):
+            line.append((x, lz, y + 6 * (x - LOW_X[0]) / (cx - LOW_X[0]), "x", "low"))
+        for z in range(lz, 0):
+            line.append((cx, z, y + 6 + 2 * (z - lz) / (0 - lz), "z", "up"))
+        for x in range(cx, RAMP_X[1] + 1):
+            line.append((x, 0, y + 8 + (top - y - 8) * (x - cx) / (RAMP_X[1] - cx), "x", "up"))
+        for x in range(RAMP_X[1] + 1, EXIT_X + 1):
+            line.append((x, 0, top + (x - RAMP_X[1]), "x", "step"))
+        inner = {}                                       # (x, z) -> (k, half, roof, kind, along, i)
+        for i, (x, z, surf, along, kind) in enumerate(line):
             q = round(surf * 2) / 2
             k = int(math.floor(q))
-            half = q - k >= 0.5
-            roof = min(k + (1 if half else 0) + 3, grade - 1)
-            for z in range(RAMP_Z[0] - 1, RAMP_Z[1] + 2):
-                X_, Z_ = self.at(x, z)
-                edge = z in (RAMP_Z[0] - 1, RAMP_Z[1] + 1)
-                lo = max(y - 1, k - 3)
-                hi = grade if x > rx1 else roof
-                for yy in range(lo, hi + 1):
-                    v.set(X_, yy, Z_, CONCRETE if (edge or yy < k or (yy == roof and x <= rx1)) else AIR)
-                if edge:
-                    if x <= rx1 and (x - rx0) % 3 == 1 and roof - k >= 3:
-                        v.set(X_, k + 1, Z_, "minecraft:end_rod[facing=up]")
-                    continue
-                if x > rx1:
-                    v.set(X_, k - 1, Z_, "minecraft:smooth_stone_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]")
-                    continue
-                rib = (x % 2) == 0
-                v.set(X_, k - 1, Z_, "minecraft:waxed_cut_copper" if rib else "minecraft:smooth_stone")
-                if half:
-                    v.set(X_, k, Z_, "minecraft:waxed_cut_copper_slab[type=bottom,waterlogged=false]" if rib else STOOP)
-        self.exit_cells = [(x, z) for x in range(rx1 + 1, EXIT_X + 1) for z in range(RAMP_Z[0] - 1, RAMP_Z[1] + 2)]
+            half = kind != "step" and q - k >= 0.5
+            roof = grade + 1 if kind == "step" else min(k + (1 if half else 0) + 3, grade - 1)
+            w = range(LOW_Z[0], LOW_Z[1] + 1) if kind == "low" else \
+                (range(CROSS_X[0], CROSS_X[1] + 1) if along == "z" else range(RAMP_Z[0], RAMP_Z[1] + 1))
+            for o in w:
+                c = (o, z) if along == "z" else (x, o)
+                if c not in inner:
+                    inner[c] = (k, half, roof, kind, along, i)
+        walls = {}
+        for (x, z), (k, half, roof, kind, along, i) in inner.items():
+            for dx in (-1, 0, 1):
+                for dz in (-1, 0, 1):
+                    c = (x + dx, z + dz)
+                    if c in inner or c[0] < LOW_X[0]:            # the west end opens into the U-turn
+                        continue
+                    lo = max(y - 1, k - 3) if kind == "low" else max(ceil1, k - 3)
+                    hi = grade if kind == "step" else roof
+                    o = walls.get(c)
+                    walls[c] = (min(lo, o[0]), max(hi, o[1])) if o else (lo, hi)
+        for (x, z), (lo, hi) in walls.items():
+            X_, Z_ = self.at(x, z)
+            for yy in range(lo, hi + 1):
+                v.set(X_, yy, Z_, CONCRETE)
+        for (x, z), (k, half, roof, kind, along, i) in inner.items():
+            X_, Z_ = self.at(x, z)
+            lo = max(y - 1, k - 3) if kind == "low" else max(ceil1, k - 3)
+            hi = grade if kind == "step" else roof
+            for yy in range(lo, hi + 1):
+                v.set(X_, yy, Z_, CONCRETE if (yy < k or (yy == roof and kind != "step")) else AIR)
+            if kind == "step":
+                v.set(X_, k - 1, Z_, "minecraft:smooth_stone_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]")
+                continue
+            rib = ((z if along == "z" else x) % 2) == 0
+            v.set(X_, k - 1, Z_, "minecraft:waxed_cut_copper" if rib else "minecraft:smooth_stone")
+            if half:
+                v.set(X_, k, Z_, "minecraft:waxed_cut_copper_slab[type=bottom,waterlogged=false]" if rib else STOOP)
+            # lights: a sea lantern in the roof over the run's middle, every third block
+            mid = (z == (LOW_Z[0] + LOW_Z[1]) // 2) if kind == "low" else \
+                (x == cx if along == "z" else z == 0)
+            if mid and i % 3 == 1 and roof < grade:
+                v.set(X_, roof, Z_, "minecraft:sea_lantern")
+        self.exit_cells = [(x, z) for x in range(RAMP_X[1] + 1, EXIT_X + 1) for z in range(RAMP_Z[0] - 1, RAMP_Z[1] + 2)]
 
     def generator_hall(self) -> None:
         """The generator hall below level 144 (machines.Builder, from the model)."""

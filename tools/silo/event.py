@@ -45,9 +45,10 @@ NORTH = -1                     # -z is north
 
 FLOOR_R = 55                   # surface.Site.floor_r: the level floor (1:1, SPEC-1to1.md)
 # Kept clear: Silo 1's slot and camera block. Its way out faces south-east (build_offline.FIRST: "E", the silo turned
-# twice from due west), so silo.py's slot (x -23..-17, z -24..-20) and camera (x -22..-19, z -26..-25, roof +-1) land at:
-PORTAL = (17, 23, 20, 24)      # x0, x1, z0, z1 relative to the ring centre (the shaft axis)
-CAMERA = (18, 23, 24, 27)
+# twice from due west, (x, z) -> (-x, -z)), so silo.py's slot and camera land here, relative to the ring centre:
+from silo import CAMERA as _CAM, EXIT_X as _EX, RAMP_X as _RX, RAMP_Z as _RZ  # noqa: E402
+PORTAL = (-_EX, -_RX[1], -(_RZ[1] + 1), -(_RZ[0] - 1))      # x0, x1, z0, z1 (curb included)
+CAMERA = (-(_CAM[1] + 1), -(_CAM[0] - 1), -(_CAM[3] + 1), -(_CAM[2] - 1))   # roof included
 RING_PATH_R = 110              # surface.Site.path_r
 
 C = (-3, -21)                  # audience centre (03), relative to the ring centre
