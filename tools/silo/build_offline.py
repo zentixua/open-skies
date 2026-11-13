@@ -48,6 +48,35 @@ def h01(*v) -> float:
     return (h & 0xFFFF) / 65535.0
 
 
+CARD = {"W": (-1, 0), "N": (0, -1), "E": (1, 0), "S": (0, 1)}
+GROUPS = [(2, 6), (7, 13), (14, 21), (22, 28), (29, 35), (36, 42), (43, 50)]   # founders' plaque hubs
+
+
+def faces_group(silos: list, s: dict, bearing: float, margin: float = math.radians(30)) -> bool:
+    """Would a berm cut at this world bearing (atan2(dz, dx)) open toward another silo of the same group? Through a
+    cut the camera of 17 saw 16 (12.11 line-of-sight check), which the show rules out ("the six other silos in their
+    group" could see fugitives only once they were on the berm, S3E10)."""
+    n = s["number"]
+    grp = next((g for g in GROUPS if g[0] <= n <= g[1]), None)
+    if not grp:
+        return False
+    for o in silos:
+        if o is s or not grp[0] <= o["number"] <= grp[1]:
+            continue
+        b = math.atan2(o["z"] - s["z"], o["x"] - s["x"])
+        if abs((b - bearing + math.pi) % (2 * math.pi) - math.pi) < margin:
+            return True
+    return False
+
+
+def cut_bearing(s: dict, k: int) -> float:
+    """The berm cut's bearing in the silo's own frame (way in due west): opposite the slot, due east; Silo 1's is
+    where the path from the opening-day set leaves due south (event.py), turned into its frame."""
+    if s["number"] != 1:
+        return 0.0
+    return math.atan2(1, 0) - k * math.pi / 2
+
+
 # layout ------------------------------------------------------------------------------------------------------------
 
 def make_layout(a) -> None:
@@ -89,8 +118,32 @@ def make_layout(a) -> None:
         conflict = "buried structure" if buried(x, z) else ""
         if conflict:
             log(f"silo {n} at {x},{z}: buried structure within 64 m of the shaft (kept on canon)")
-        d = FIRST.get(n) or "WNES"[int(h01(n, 11) * 4) % 4]
-        silos.append({"number": n, "x": x, "z": z, "dir": d, "ring": [x, z], "conflict": conflict})
+        silos.append({"number": n, "x": x, "z": z, "ring": [x, z], "conflict": conflict})
+    # each ring's axis (S3E09 aerials, the 2052 frame): outer ring path -> stub -> the berm's one cut -> path over the
+    # bowl -> the slot's head -> the slot -> the camera block behind it. dir is the side the slot lies on (the way in,
+    # silo.py's due west); the cut is on the opposite side. Each ring its own side (hash order), the first of the four
+    # whose cut does not open toward a silo of the same group (the berm hides them from each other).
+    for s_ in silos:
+        n = s_["number"]
+        if n in FIRST:
+            s_["dir"] = FIRST[n]
+            continue
+        start = int(h01(n, 11) * 4) % 4
+        for j in range(4):
+            d = "WNES"[(start + j) % 4]
+            dx, dz = CARD[d]
+            if not faces_group(silos, s_, math.atan2(-dz, -dx)):
+                break
+        else:
+            # a flower's hub: its group all round; the cut goes where the nearest of them is farthest off its bearing
+            def clear(d):
+                dx, dz = CARD[d]
+                b = math.atan2(-dz, -dx)
+                return min(abs((math.atan2(o["z"] - s_["z"], o["x"] - s_["x"]) - b + math.pi) % (2 * math.pi) - math.pi)
+                           for o in silos if o is not s_ and math.dist((o["x"], o["z"]), (s_["x"], s_["z"])) < 1.5 * a.spacing)
+            d = max("WNES", key=clear)
+            log(f"silo {n}: every cut faces a neighbour; {d}, {math.degrees(clear(d)):.0f} degrees off the nearest")
+        s_["dir"] = d
     one = silos[0]
     rot = math.radians(p["rot"])
     cs, sn = math.cos(rot), math.sin(rot)
@@ -215,9 +268,7 @@ class Builder:
         paths_g = turn_grid(self.grid(self.path_cells, x, z, R), -k)
         road_g = turn_grid(self.grid(self.road_cells, x, z, R), -k)
         others = [turn_points([(o["x"], o["z"])], -k, x, z)[0] for o in self.layout["silos"] if o is not s]
-        gap_b = math.pi if h01(n, 2) < 0.5 else None
-        if gap_b is not None and self.gap_faces_group(s, gap_b + k * math.pi / 2):
-            gap_b = None                     # the berm hides the silos of a group from each other (layout-facts.md)
+        gap_b = cut_bearing(s, k)            # every ring has its one cut (the 2052 frame, S3E09 aerials)
         site = Site(silo, *grids, neighbours=others, paths=paths_g, road=road_g, gap_bearing=gap_b, wobble=n != 1)
         svol = turn_volume(site.build(), k, x, z)
         self.heights[n] = (x - R, z - R, turn_grid(site.T, k), turn_grid(site.zone, k))
@@ -229,24 +280,6 @@ class Builder:
         self.apply(vols, f"silo {n}")
         self.mark(f"silo{n}", {"grade": grade, "dir": s["dir"], "bore": bore is not None, "gap": gap_b is not None,
                                "lights": list(silo.lights), "bottom": vol.origin[1]})
-
-    GROUPS = [(2, 6), (7, 13), (14, 21), (22, 28), (29, 35), (36, 42), (43, 50)]   # founders' plaque hubs
-
-    def gap_faces_group(self, s: dict, bearing: float, margin: float = math.radians(30)) -> bool:
-        """Would a berm gap at this world bearing (atan2(dz, dx)) open toward another silo of the same group? Through
-        a gap the camera of 17 saw 16 (12.11 line-of-sight check), which the show rules out ("the six other silos in
-        their group" could see fugitives only once they were on the berm, S3E10)."""
-        n = s["number"]
-        grp = next((g for g in self.GROUPS if g[0] <= n <= g[1]), None)
-        if not grp:
-            return False
-        for o in self.layout["silos"]:
-            if o is s or not grp[0] <= o["number"] <= grp[1]:
-                continue
-            b = math.atan2(o["z"] - s["z"], o["x"] - s["x"])
-            if abs((b - bearing + math.pi) % (2 * math.pi) - math.pi) < margin:
-                return True
-        return False
 
     def field_height(self, x: int, z: int) -> int:
         """Plain level round a shaft: the mean plain height within 34 of the axis (build_live.grade_of)."""

@@ -142,12 +142,15 @@ def plan(layout: dict) -> tuple[set, set]:
         n = int(2 * math.pi * RING_PATH_R * 2)
         line(cells, [(c[0] + RING_PATH_R * math.cos(a), c[1] + RING_PATH_R * math.sin(a))
                      for a in np.linspace(0, 2 * math.pi, n)], PATH_W)
-    # stubs: out of the ramp, from the floor's edge to the circle
+    # stubs, one straight line per ring (the 2052 frame): from the head of the slot (on the dir side, silo.EXIT_X)
+    # over the bowl's centre and through the berm's cut on the opposite side out to the circle
+    from silo import EXIT_X
     for k, c in ring.items():
         if k == 1:
             continue                    # Silo 1: the path runs due south from the opening-day set (event.py)
         dx, dz = BEARING[bearing[k]]
-        line(cells, [(c[0] + FLOOR_R * dx, c[1] + FLOOR_R * dz), (c[0] + RING_PATH_R * dx, c[1] + RING_PATH_R * dz)], 2)
+        head = -EXIT_X - 1
+        line(cells, [(c[0] + head * dx, c[1] + head * dz), (c[0] - RING_PATH_R * dx, c[1] - RING_PATH_R * dz)], PATH_W)
     # links inside flowers
     nums = sorted(ring)
     for i in nums:
