@@ -157,10 +157,11 @@ def hex_layout(n: int, spacing: float, rot: float) -> list[tuple[float, float]]:
     return [(x * c - z * s, x * s + z * c) for x, z in pts]
 
 
-def canon_layout(path: str, rot: float) -> tuple[list[tuple[float, float]], float]:
-    """The show's layout (canon_layout.json, Silo 1 first, then 2..50), in metres, turned by rot from gate-north."""
+def canon_layout(path: str, rot: float, edge: float | None = None) -> tuple[list[tuple[float, float]], float]:
+    """The show's layout (canon_layout.json, Silo 1 first, then 2..50): ring centres in metres relative to Silo 1's
+    ring, turned by rot from gate-north. edge overrides the file's edge_m (the 1:1 complex uses 270)."""
     c = json.load(open(path))
-    e = c["edge_m"]
+    e = edge or c["edge_m"]
     pts = [tuple(c["silos"][str(n)]) for n in range(1, 51)]
     cs, sn = math.cos(rot), math.sin(rot)
     return [(e * (x * cs - z * sn), e * (x * sn + z * cs)) for x, z in pts], e
@@ -224,6 +225,9 @@ def main():
                     "shafts and tunnels, which at spacing 200 holds best near 30 (112 m and more)")
     ap.add_argument("--canon", help="canon_layout.json: the show's layout instead of a hex grid; silos are never "
                     "shifted, conflicts only cost (a rotation that avoids them wins)")
+    ap.add_argument("--one-to-one", action="store_true", help="with --canon: the 1:1 complex, silos at the ring "
+                    "centres (no tunnels)")
+    ap.add_argument("--edge", type=float, help="with --canon: flower edge in metres instead of canon_layout's edge_m")
     ap.add_argument("--min-y", type=int, default=-64); ap.add_argument("--height", type=int, default=384)
     ap.add_argument("--berm", type=float, default=70, help="radius that must be dry and gentle")
     ap.add_argument("--clear", type=float, default=200, help="radius free of surface builds (the plain reaches this far)")
@@ -279,7 +283,12 @@ def main():
     canon_dirs = {}
 
     def make(rot_deg):
-        """Shaft positions relative to Silo 1's shaft (Silo 1 first)."""
+        """Positions relative to Silo 1 (Silo 1 first). --one-to-one: ring centres (the 1:1 silo has its shaft at the
+        ring centre). Otherwise the old design's shafts, REACH off each ring along its tunnel bearing; never feed
+        those to a 1:1 layout (13.11: 33 of 50 silos stood 159-231 m off canon that way)."""
+        if a.canon and a.one_to_one:
+            rings = canon_layout(a.canon, math.radians(rot_deg), a.edge)[0]
+            return [(x - rings[0][0], z - rings[0][1]) for x, z in rings]
         if a.canon:
             from tunnels import DIRS, REACH, assign, shafts
             rings = canon_layout(a.canon, math.radians(rot_deg))[0]
@@ -333,7 +342,14 @@ def main():
         sx, sz = int(round(cx + px)), int(round(cz + pz))
         gx, gz = (sx - x0) // STEP, (sz - z0) // STEP
         silos.append({"number": i + 1, "x": sx, "z": sz, "surface": int(surf[gx, gz]), "water_here": bool(water[gx, gz])})
-    if a.canon:
+    if a.canon and a.one_to_one:
+        for s_ in silos:
+            s_["ring"] = [s_["x"], s_["z"]]
+        c = json.load(open(a.canon)); e = a.edge or c["edge_m"]
+        cs, sn = math.cos(math.radians(rot_deg)), math.sin(math.radians(rot_deg))
+        gx_, gz_ = c["gate"]
+        gate = [round(cx + e * (gx_ * cs - gz_ * sn)), round(cz + e * (gx_ * sn + gz_ * cs))]
+    elif a.canon:
         from tunnels import DIRS, REACH
         dirs = canon_dirs[rot_deg][0]
         for s_, d in zip(silos, dirs):
@@ -344,6 +360,7 @@ def main():
         gx_, gz_ = c["gate"]
         gate = [round(ring1[0] + c["edge_m"] * (gx_ * cs - gz_ * sn)), round(ring1[1] + c["edge_m"] * (gx_ * sn + gz_ * cs))]
         print(f"gate at {gate[0]},{gate[1]}; worst tunnel clearance {canon_dirs[rot_deg][1]:.1f} m", file=sys.stderr)
+    if a.canon:
         for s_ in silos:
             bx, bz = (s_["x"] - x0) // 16, (s_["z"] - z0) // 16
             if burmap[bx, bz] or bemap[bx, bz] > a.max_builds:
@@ -358,7 +375,7 @@ def main():
         tx, tz = x0 + i * 16 + 8, z0 + k * 16 + 8
         if min(xs_) - 500 <= tx <= max(xs_) + 500 and min(zs_) - 500 <= tz <= max(zs_) + 500:
             towns.append([int(tx), int(tz)])
-    json.dump({"spacing": canon_layout(a.canon, 0)[1] if a.canon else a.spacing, "canon": bool(a.canon),
+    json.dump({"spacing": canon_layout(a.canon, 0, a.edge)[1] if a.canon else a.spacing, "canon": bool(a.canon),
                **({"gate": gate} if a.canon else {}), "centre": [cx, cz], "rotation_deg": rot_deg, "candidates": best, "silos": silos,
                "towns": towns},
               open(os.path.join(a.out, "layout.json"), "w"), indent=1)

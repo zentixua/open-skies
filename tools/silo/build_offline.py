@@ -51,20 +51,46 @@ def h01(*v) -> float:
 # layout ------------------------------------------------------------------------------------------------------------
 
 def make_layout(a) -> None:
-    """layout.json for one placement of silo_site's search (branch silo-site-1to1): shafts, shifts applied, a bearing
-    for each silo's way out (each ring its own side, SPEC 1), the gate on the canon axis, Zearth's towns to keep."""
+    """layout.json for the 1:1 complex: ring centres straight from the show's layout (canon_layout.json) at edge
+    --spacing, turned by the pick's rotation about the pick's Silo 1. Only Silo 1 and the rotation come from
+    silo_site's search (branch silo-site-1to1): its other points are the old design's shafts, REACH off each ring
+    along a tunnel bearing, and taking them as rings put 33 of 50 silos 159-231 m off canon (13.11). Rings never
+    move; one over a buried structure is listed as a conflict. canon_check fails the layout if any silo
+    ends up more than 10 m off the show."""
+    from site_fit import canon_layout
+    import canon_check
     picks = json.load(open(a.placements))
     p = picks[a.pick - 1]
-    canon = json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "canon_layout.json")))
+    here = os.path.dirname(os.path.abspath(__file__))
+    canon = json.load(open(os.path.join(here, "canon_layout.json")))
+    s1 = next(s for s in p["silos"] if s["n"] == 1)
+    ox, oz = s1["x"], s1["z"]
+    rings = canon_layout(os.path.join(here, "canon_layout.json"), math.radians(p["rot"]), a.spacing)[0]
+    t = np.load(a.terrain, allow_pickle=True)
+    x0, z0, bes, under = int(t["x0"]), int(t["z0"]), t["bes"], t["bes_under"]
+
+    def buried(x, z, r=64):
+        """Chunks with a buried structure (>= 5 block entities under the ground) within r of the shaft."""
+        hits = []
+        for cx in range(int((x - r - x0) // 16), int((x + r - x0) // 16) + 1):
+            for cz in range(int((z - r - z0) // 16), int((z + r - z0) // 16) + 1):
+                if 0 <= cx < under.shape[0] and 0 <= cz < under.shape[1] and under[cx, cz] >= 5 and \
+                        math.hypot(x0 + cx * 16 + 8 - x, z0 + cz * 16 + 8 - z) <= r + 8:
+                    hits.append((cx, cz))
+        return hits
+
     silos = []
-    for s in p["silos"]:
-        x, z = s["x"], s["z"]
-        if s.get("shift"):
-            x, z = x + s["shift"][0], z + s["shift"][1]
-        n = s["n"]
+    for i, (rx, rz) in enumerate(rings):
+        n = i + 1
+        x, z = round(ox + rx), round(oz + rz)
+        # the shaft (outer wall 60 m) replaces what it cuts; a move far enough to clear a buried structure (16-72 m
+        # on Zearth) would break the show's layout, which is what the player sees, so the ring stays and the
+        # conflict is listed
+        conflict = "buried structure" if buried(x, z) else ""
+        if conflict:
+            log(f"silo {n} at {x},{z}: buried structure within 64 m of the shaft (kept on canon)")
         d = FIRST.get(n) or "WNES"[int(h01(n, 11) * 4) % 4]
-        silos.append({"number": n, "x": x, "z": z, "dir": d, "ring": [x, z], "water_here": s.get("water", False),
-                      "conflict": s.get("conflict", "")})
+        silos.append({"number": n, "x": x, "z": z, "dir": d, "ring": [x, z], "conflict": conflict})
     one = silos[0]
     rot = math.radians(p["rot"])
     cs, sn = math.cos(rot), math.sin(rot)
@@ -84,7 +110,11 @@ def make_layout(a) -> None:
         towns.append([int(tx), int(tz)])
     out = {"spacing": a.spacing, "canon": True, "scale": "1:1", "gate": gate, "centre": p["centre"],
            "rotation_deg": p["rot"], "silos": silos, "towns": towns,
-           "source": f"silo-site-1to1 placements.json pick {a.pick}"}
+           "source": f"canon_layout.json about Silo 1 and rotation of silo-site-1to1 placements.json pick {a.pick}"}
+    res = canon_check.check(out)
+    bad = [r for r in res if r[1] > 10]
+    if bad:
+        raise SystemExit(f"layout off canon: " + ", ".join(f"silo {n} {e:.0f} m" for n, e, *_ in bad))
     json.dump(out, open(a.out, "w"), indent=1)
     log(f"{a.out}: {len(silos)} silos, gate {gate}, {len(towns)} town chunks kept")
 
