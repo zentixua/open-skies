@@ -73,6 +73,7 @@ cd pack && packwiz mr export      # → Open Skies-<версия>.mrpack
 | авиация и оружие | Immersive Aircraft, Man of Many Planes, Vic's Point Blank (+ GeckoLib), Point Blank Aeronautics compat, Do a Barrel Roll (полёт на элитрах с креном, + Forgified Fabric API) |
 | картинка и камера | шейдерпаки Photon, Solas, Complementary Unbound, BSL, MakeUp Ultra Fast (на выбор, ниже), Euphoria Patches (дополнение к Complementary), Aeronautics Camera Sync, 3D Skin Layers, Not Enough Animations, Ok Zoomer (зум, ниже) |
 | мир вокруг | Subtle Effects (мелкие частицы и звуки: искры огня, дым горящих мобов, рябь, листья; + Fzzy Config, Kotlin for Forge; стоит и на сервере, ниже), Particle Rain (дождь, снег и пыльные бури частицами), AmbientSounds (звуки природы по биому, высоте и времени; + CreativeCore), LambDynamicLights (свет от факела в руке, горящих мобов и снарядов), Contraption Lights (свет фонарей на аппаратах Create и кораблях Sable падает на мир), Sound Physics Remastered (эхо в помещениях и глушение звука стенами для звуков мира), Burnt (огонь прогорает: обугленные дома и деревья, обрушение горящих построек) |
+| камеры и экраны | Vista (+ Moonlight Lib): телевизоры из блоков показывают живую картинку с камеры-видоискателя (ниже) |
 | мультиплеер и удобство | Essential, TrueUUID (вход на сервер, ниже), LAN Server Properties (временно, ниже), JEI (+ MezzConfig), Jade, Jade Sable Compat, Xaero's Minimap и World Map (+ MapSyncer: готовый снимок всей карты с сервера), Create – Xaero's map, GraveStone и его патч для Sable, Mouse Tweaks, No Chat Reports |
 | запись (по выбору) | Flashback, Flashback NeoForge Fixed, Sinytra Connector |
 | клавиши | Default Options (+ Balm): раскладка сборки (ниже) |
@@ -185,6 +186,12 @@ Reimagined удалить руками — на следующем запуск�
   (торец в 3 см). Отсечение граней блоков выключено: оно отвечает за `Block.shouldRenderFace` в его начале и перебивает
   правку Aeronautics, по которой грань у левитита рисуется (`levitite/BlockMixin`), а даёт оно меньше вершин видеокарте,
   которая в замере была занята на 34 %, пока поток отрисовки стоял на 100 %.
+- `config/vista-common.toml` — значения Vista 5.6.9 по умолчанию, кроме двух в `[television]`: `max_connected_size = 24`
+  (предел мода; по умолчанию 8) и `square_aspect_ratio = false` — телевизоры собираются в прямоугольник, а не только
+  в квадрат. Так собирается широкий экран столовой бункера на сервере Silo (25567): живая картинка с камеры на
+  поверхности. Настройку сервера Moonlight Lib присылает игрокам сам. Цена — второй проход отрисовки мира с камеры,
+  только пока экран включён и рядом: до 10 кадров в секунду, дальность 64 блока, не больше ~17 мс на кадр (значения
+  мода по умолчанию). С Iris мод предупреждает о худшей картинке экрана.
 - `config/defaultoptions/keybindings.txt` — раскладка клавиш сборки (ниже).
 - `config/subtle_effects/general.toml` — значения Subtle Effects 1.15.1 по умолчанию, кроме `particleRenderDistance = 32`
   (его предел, 512 блоков; по умолчанию 5 чанков). Отсечение частиц у мода включено и прячет почти все частицы дальше
@@ -293,6 +300,7 @@ Default Options — только у игроков. Его библиотека 
 
 | версия | мод | что изменилось |
 |---|---|---|
+| 0.1.61 | 3.13.0 | Vista (+ Moonlight Lib): экраны с живой картинкой с камеры, широкие экраны из телевизоров. Ставится и на сервер. Обновление автоматическое. |
 | 0.1.60 | 3.13.0 | Incoming 3.13.0 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.13.0.md)). Обновление автоматическое. |
 | 0.1.59 | 3.12.1 | Incoming 3.12.1 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.12.1.md)). Обновление автоматическое. |
 | 0.1.58 | 3.12.0 | Incoming 3.12.0 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.12.0.md)). Обновление автоматическое. |

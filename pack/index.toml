@@ -41,6 +41,10 @@ file = "config/subtle_effects/general.toml"
 hash = "5513e33f046e07449bca4b189e22a1883b39b637231a8da923e13ea5e1a20585"
 
 [[files]]
+file = "config/vista-common.toml"
+hash = "8a4fa5d521964de60b53c3e01a41e12fdec91d58eda06d2540b64b4a41586603"
+
+[[files]]
 file = "mods/3dskinlayers.pw.toml"
 hash = "2dc498bd8a43a8e02fc9d08fe5846ac17f6eabbecbf38ae39aa7b1f23fe100b0"
 metafile = true
@@ -301,6 +305,11 @@ hash = "ef65836e005bd42a0f40df30a94eba1ad7ee5ed3194b11eafbeadc64edb44252"
 metafile = true
 
 [[files]]
+file = "mods/moonlight.pw.toml"
+hash = "b14b3d7f88512f23bccca8e2f133e52e84307679b6eba4e818ce13e8f87e503d"
+metafile = true
+
+[[files]]
 file = "mods/moreculling.pw.toml"
 hash = "3dbd3f33fcf6f9d98eefbcc1973ab9a749942da531cedd9b0df7e67534ea6065"
 metafile = true
@@ -393,6 +402,11 @@ metafile = true
 [[files]]
 file = "mods/vics-point-blank.pw.toml"
 hash = "4b11f8fdedd3b99842f6d9d99334955c2aafebe6a8d7f4d4e2521b74c07e01d9"
+metafile = true
+
+[[files]]
+file = "mods/vista_tv.pw.toml"
+hash = "d9c213a9e9600dd34c5bc5ff744b0cb526c5a8e76990d47775221a1ea2f88877"
 metafile = true
 
 [[files]]
