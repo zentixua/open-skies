@@ -3,6 +3,9 @@ an existing complex's region files without rebuilding it: per silo, level 1 and 
 disc, rows from level 1's floor to under the lawn) from a fresh Silo build, and the bowl-floor columns of the old and
 new trench, camera shelter and the stub path from a fresh Site build. Server stopped.
 
+The patched chunks are left unlit (isLightOn = 0, see regions.py): start the server and run check/relight.py on it
+before LSS/MapSyncer serve them or the world is saved as a golden, or far LODs draw every patched bowl black.
+
   uv run --with numpy --with scipy --with nbtlib patch_v6.py --layout L --golden G --world W --state S [--number N ..]
 """
 from __future__ import annotations
@@ -84,6 +87,7 @@ def main():
         vols = [turn_volume(p, k, x, z) for p in parts]
         b.apply(vols, f"silo {n} v6 ({s['dir']}, built {time.time() - t0:.0f}s)")
         bo.log(f"silo {n}: done")
+    bo.log("patched chunks are unlit: start the server and run check/relight.py before LSS/MapSyncer or a golden save")
 
 
 if __name__ == "__main__":
