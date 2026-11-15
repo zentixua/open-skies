@@ -18,7 +18,7 @@ levels in a 12.2 m stage). 144 levels; the open atrium ends at the top in a coff
 
 Local frame: x, z centred on the silo axis (index R), y index 0 at the bottom of the digger void. World y of an
 index is origin_y + index. Level n (1..144) has its walking surface at Y1 - 6 * (n - 1). Level 1's specials (the
-cafeteria, the sheriff's office, the holding cells, the airlock and the ramp) are laid out with the way in due west;
+cafeteria, the sheriff's office, the holding cells, the airlock and the tunnel) are laid out with the way in due west;
 build_live turns the finished volume to the silo's own side.
 
 Interiors from the explorethesilo.com model: bay facades (bays.py), the canon rooms (levels.py), the generator hall,
@@ -111,34 +111,34 @@ CHAIN = "minecraft:chain[axis=y,waterlogged=false]"
 DIRS = {"east": (1, 0), "west": (-1, 0), "south": (0, 1), "north": (0, -1)}
 OPP = {"east": "west", "west": "east", "south": "north", "north": "south"}
 
-# Level 1 and the way in, silo frame with the way in due west (x east, z south). Positions are ours: no frame or
-# plan shows how the cafeteria, the sheriff's office and the airlock sit on level 1 (SPEC 8); the sizes are the
-# show's: the hall Ø≈28 with a 5 m ceiling (BFDG t2375s), the airlock door ≈2.4 (t2756s), the ramp 30-50 long
-# climbing toward the centre to a slot at 0-1/2 of the bowl's radius (SPEC 5).
-HALL = (-40, 0, 14)                   # cafeteria centre x, z and radius (inside of its wall)
-HALL_DOOR = (-30, -10)                # its second entrance (north-east), toward the sheriff's office
-OFFICE = (-28, -32, 6)                # the sheriff's office, round: centre x, z, radius
-CELLS_X = (-41, -39)                  # holding cells, interior x range, west of the office's vestibule
-CELLS_Z = ((-38, -36), (-34, -32), (-30, -28))
-LOCK = (-47, -43)                     # airlock chamber x range on cell 3's lane
-TURN_X = (-50, -49)                   # the ramp's U-turn
-# The way up (Artem 13.11: the slot on one of the ring's axes, centred). From the centre outward (S3E09 05, 07, 10; the
-# 2052 aerial puts the shelter at ≈0.55 of the floor's radius, r ≈ 30): the pad, the camera shelter's plain back,
-# its open front with the plinth and cone, the trench's closed end over the portal, then the steps rising OUTWARD to the
-# open head facing the berm. Underground (silo frame, the way in due west): the lower ramp east along LOW_Z out of the
-# U-turn, a crossing north-to-south along CROSS_X (over the cafeteria's roof from z -15 on) up to the portal on the
-# axis, then the six steps west up to the head.
-LOW_Z = (-23, -21)                    # lower ramp interior z
-LOW_X = (-48, -35)                    # lower ramp: from the U-turn to the crossing (level 1 -> +4)
-CROSS_X = (-34, -32)                  # crossing interior x (+4 -> +10); its end at z 0 is the portal's landing, r 32-34
-RAMP_Z = (-1, 1)                      # the trench: on the axis, centred, 3 wide
-STEPS = 6                             # the trench's steps, one block each
-PORTAL_X = CROSS_X[0] - 1             # the lowest step (r 35), next to the roofed landing
-EXIT_X = PORTAL_X - STEPS + 1         # the top step, on the bowl floor at the open head: r 40
-CAMERA = (-31, -28, -2, 2)            # the camera shelter between the centre and the trench (S3E09 07, 08; r 28-31):
-                                      # x0 its open front facing out toward the steps, x1 its dark back wall, z0, z1
-                                      # (5 wide in all, ≈3.5 m outer; roof top 2.5 m; s3e09-notes.md, review 43c71ce)
-RAMP_X = (PORTAL_X, PORTAL_X)         # kept for callers: the trench's inner (closed) end
+# Level 1 and the way in, silo frame with the way in due west (x east, z south). The rooms' relative positions are
+# ours: no frame or plan shows how the cafeteria, the sheriff's office and the holding cells sit on level 1 (SPEC 8).
+# Canon: the airlock is behind holding cell 3, the office is reached through the cafeteria, and the way out is one
+# straight tunnel (S1E02 #25, #27; S1E10 #22; S3E09 #77). So the tunnel runs on the ring's axis from the stair head
+# straight down and out to the round vault door; behind it the airlock, then cell 3 on the same line; the other cells,
+# the office and the cafeteria lie south of the tunnel. Sizes are the show's: the hall Ø≈28 with a 5 m ceiling (BFDG
+# t2375s), the airlock door ≈2.4 (t2756s), the tunnel 3-4 m wide and ≈4 m high (S1E02 #27).
+HALL = (-20, 38, 14)                  # cafeteria centre x, z and radius (inside of its wall); portal from the gallery
+                                      # due north along x = -20, the screen recess on the south wall facing north
+HALL_DOOR = (-26, 25)                 # its second entrance (north-west), the passage to the sheriff's office
+OFFICE = (-32, 12, 6)                 # the sheriff's office, round: centre x, z, radius
+VEST = (-56, -32, 4, 7)               # the cells' corridor (x0, x1, z0, z1), from the office west along the cells
+TUN_Z = (-2, 1)                       # the tunnel's inside, 4 wide, on the axis
+VAULT_X = -47                         # the round vault door at the tunnel's foot (r 47)
+LOCK = (-51, -48)                     # the airlock, x range on the tunnel's line (z = TUN_Z)
+CELLS = ((-55, -53, -2, 1), (-55, -53, 9, 11), (-51, -49, 9, 11))   # cell 3 (behind the lock), then cells 1-2
+HALL_ANG0 = -math.pi / 2              # the hall's own bearing 0: toward its portal (north)
+SCREEN_RECESS = (12, 4)               # the cafeteria's flat screen recess, width x height (a 3:1 screen)
+# The way up (Artem 15.11, S3E09 05/07/10): the stub from the berm's cut crosses the bowl to a pad at the open stair
+# head, which faces it; the steps go down away from the path, outward; the trench's closed end over the portal; the
+# camera shelter on the lawn just beyond it, its open front with the cone facing back up the steps to the head.
+STEPS = 7                             # the open trench's steps, one block each
+EXIT_X = -18                          # the top step, flush with the lawn: the head (r 18, just off the dome)
+PORTAL_X = EXIT_X - STEPS + 1         # the lowest open step (r 24); the roof starts at PORTAL_X - 1
+RAMP_Z = TUN_Z                        # kept for callers: the trench's inside z
+TRENCH_X = (PORTAL_X, EXIT_X)         # open trench x range (min, max)
+CAMERA = (-31, -28, -2, 2)            # the camera shelter beyond the closed end: x0 its dark back wall, x1 its open
+                                      # front facing +x up the steps, z0, z1 (5 wide, ≈3.5 m outer; roof top 2.5 m)
 
 
 class Silo:
@@ -230,8 +230,8 @@ class Silo:
         out = [b for b in range(self.s.bays) if b % self.s.alley_every == k]
         if n in ROOM_LEVELS:
             out = [b for b in out if b != ROOM_BAY]
-        if n == 1:                                       # the cafeteria and the way in face west
-            out = [b for b in out if abs(((self.bay_center(b) - math.pi + math.pi) % TAU) - math.pi) > math.radians(70)]
+        if n == 1:                                       # the way in (west) and the rooms south of it (to 120 deg)
+            out = [b for b in out if abs(((self.bay_center(b) - math.radians(150) + math.pi) % TAU) - math.pi) > math.radians(70)]
         return out
 
     def _plan(self) -> None:
@@ -882,8 +882,8 @@ class Silo:
     def cafeteria(self) -> None:
         """Level 1's cafeteria, its own round hall behind the gallery (BFDG t2338s option 03, t2375s model, 39:19:
         no columns): Ø28, a few steps down from an oval portal, a 5 m ceiling of concentric rings and radial beams
-        round a flower-shaped light, the curved screen with oval ends on the far wall opposite the portal (40:34),
-        the serving counter along the wall between the two entrances."""
+        round a flower-shaped light, a flat screen recess in the far wall opposite the portal (a 3:1 screen, left
+        empty for a screen block), the serving counter along the wall between the two entrances."""
         s, v = self.s, self.v
         y = self.level_y(1)
         hx, hz, hr = HALL
@@ -896,7 +896,7 @@ class Silo:
         v.mask(y + 4, y + 4, hall, "minecraft:white_concrete")
         dx, dz = self.X - hx, self.Z - hz
         d = np.hypot(dx, dz)
-        ang = np.mod(np.arctan2(dz, dx), TAU)            # hall-local bearing: 0 east (the portal), pi west (screen)
+        ang = np.mod(np.arctan2(dz, dx) - HALL_ANG0, TAU)  # hall-local bearing: 0 the portal (north), pi the screen
         offa = lambda a: np.abs(((ang - a + math.pi) % TAU) - math.pi)
         # ceiling: concentric rings and radial beams, the flower over the middle
         beams = (np.mod(ang, TAU / 12) < 0.09) & (d > 3.2)
@@ -910,27 +910,22 @@ class Silo:
         # wall panelling and sconces
         face = hall & (d >= hr - 1.0)
         v.mask(fl, y + 3, face, "minecraft:dark_oak_planks")
-        v.mask(y + 1, y + 1, face & (np.mod(ang, TAU / 20) < 0.12), "minecraft:shroomlight")
-        # the screen on the far wall: 70 degrees of arc, rows 1-3 over the floor, oval ends in black
-        screen = face & (offa(math.pi) < SCREEN_ARC / 2)
-        ends = face & (offa(math.pi) >= SCREEN_ARC / 2) & (offa(math.pi) < SCREEN_ARC / 2 + 0.08)
-        v.mask(fl + 1, y + 2, screen, "minecraft:gray_stained_glass")
-        v.mask(fl + 1, y + 2, ends, "minecraft:black_concrete")
-        v.mask(fl, fl, screen, "minecraft:black_concrete")
-        v.mask(y + 3, y + 3, screen, "minecraft:black_concrete")
-        # the oval portal from the gallery and the half steps down
-        portal = (np.abs(self.Z - hz) <= 2) & (self.X <= -int(s.r_facade) + 1) & (self.X >= hx + hr - 1)
+        v.mask(y + 1, y + 1, face & (np.mod(ang, TAU / 20) < 0.12) & (offa(math.pi) > SCREEN_ARC / 2), "minecraft:shroomlight")
+        self.screen_recess(y)
+        # the oval portal from the gallery, due north of the hall, and the half step down
+        portal = (np.abs(self.X - hx) <= 2) & (self.Z < hz) & (self.Z > 0) & (self.r >= s.r_facade - 1.0) & (d >= hr - 1.0)
         v.mask(y, y + 2, portal, AIR)
-        v.mask(y + 3, y + 3, portal & (np.abs(self.Z - hz) <= 1), AIR)
-        v.mask(y - 1, y - 1, portal, "minecraft:polished_andesite")
-        v.mask(fl, fl, portal & (self.X == hx + hr - 1), STOOP)
-        # the second entrance, north-east, and its passage to the sheriff's office (passing under the ramp)
+        v.mask(y + 3, y + 3, portal & (np.abs(self.X - hx) <= 1), AIR)
+        v.mask(y - 1, y - 1, portal & (d >= hr), "minecraft:polished_andesite")
+        v.mask(fl, fl, portal & (d < hr), STOOP)
+        # the second entrance, north-west, and its passage north to the sheriff's office
         ex, ez = HALL_DOOR
         ox, oz, orr = OFFICE
-        # it runs from inside the panelling to inside the office's round wall; carved in level_one() after every room
-        # of level 1 stands, so neither the hall's panelling nor the office's wall ring closes it again
-        pas = (np.abs(self.X - ex) <= 1) & (self.Z <= ez + 4) & (self.Z >= oz + orr - 1) & (d >= hr - 1.0)
-        sides = (np.abs(self.X - ex) == 2) & (self.Z <= ez) & (self.Z >= oz + orr) & (d >= hr + 1.0)
+        do = np.hypot(self.X - ox, self.Z - oz)
+        # from inside the panelling to inside the office's round wall; carved in level_one() after every room of
+        # level 1 stands, so neither the hall's panelling nor the office's wall ring closes it again
+        pas = (np.abs(self.X - ex) <= 1) & (self.Z <= hz) & (self.Z >= oz) & (d >= hr - 1.0) & (do >= orr - 0.5)
+        sides = (np.abs(self.X - ex) == 2) & (self.Z <= hz) & (self.Z >= oz) & (d >= hr + 1.0) & (do >= orr + 0.5)
 
         def passage() -> None:
             v.mask(y - 1, y + 3, sides | (pas & (d >= hr + 1.2)), CONCRETE)
@@ -940,8 +935,8 @@ class Silo:
             v.mask(y + 3, y + 3, pas & (self.X == ex) & (self.Z % 4 == 0) & (d >= hr + 1.2), "minecraft:sea_lantern")
         self.openings.append(passage)
         # the serving counter on the arc between the two entrances
-        door_a = math.atan2(ez - hz, ex - hx) % TAU
-        counter = hall & (np.abs(d - (hr - 2.5)) < 0.5) & (ang > door_a + 0.2) & (ang < TAU - 0.2)
+        door_a = (math.atan2(ez - hz, ex - hx) - HALL_ANG0) % TAU
+        counter = hall & (np.abs(d - (hr - 2.5)) < 0.5) & (ang > 0.4) & (ang < math.pi - SCREEN_ARC / 2 - 0.3)
         v.mask(fl, fl, counter, "minecraft:spruce_slab[type=top,waterlogged=false]")
         xs, zs = np.nonzero(counter)
         for i, (x, z) in enumerate(zip(xs, zs)):
@@ -957,33 +952,63 @@ class Silo:
                 a = (k + 0.5) * TAU / count
                 if aisle(a, rr) or (rr > hr - 6 and abs(((a - math.pi + math.pi) % TAU) - math.pi) < SCREEN_ARC / 2):
                     continue
+                aw = a + HALL_ANG0
                 for sg in (-0.4, 0.4):
-                    X_, Z_ = self.at(int(round(hx + rr * math.cos(a + sg / rr))), int(round(hz + rr * math.sin(a + sg / rr))))
+                    X_, Z_ = self.at(int(round(hx + rr * math.cos(aw + sg / rr))), int(round(hz + rr * math.sin(aw + sg / rr))))
                     v.set(X_, fl, Z_, "minecraft:spruce_slab[type=top,waterlogged=false]")
                 for sd in (-1, 1):
-                    X_, Z_ = self.at(int(round(hx + (rr + sd) * math.cos(a))), int(round(hz + (rr + sd) * math.sin(a))))
+                    X_, Z_ = self.at(int(round(hx + (rr + sd) * math.cos(aw))), int(round(hz + (rr + sd) * math.sin(aw))))
                     if v.get(X_, fl, Z_) == AIR:
-                        back = self.facing_radial(a if sd > 0 else a + math.pi)
+                        back = self.facing_radial(aw if sd > 0 else aw + math.pi)
                         v.set(X_, fl, Z_, f"minecraft:oak_stairs[facing={back},half=bottom,shape=straight,waterlogged=false]")
             rr += 3.6
 
+    def recess_box(self) -> tuple[int, int, int, int, int]:
+        """The screen recess in silo-frame offsets: x0, x1 (its width), z of the open recess row, z of the solid back
+        behind it, the bottom row (index): it faces north (-z), toward the portal."""
+        hx, hz, hr = HALL
+        w, h = SCREEN_RECESS
+        return hx - w // 2, hx + (w + 1) // 2 - 1, hz + hr - 1, hz + hr, self.level_y(1)
+
+    def screen_recess(self, y: int) -> None:
+        """A flat recess in the hall's far wall, opposite the portal (a 3:1 screen block goes in later): air one block
+        deep and the panelling cut away in front of it, a solid dark back, its bottom one block over the floor."""
+        v = self.v
+        x0, x1, zr, zb, yb = self.recess_box()
+        w, h = SCREEN_RECESS
+        for x in range(x0 - 1, x1 + 2):
+            X_, _ = self.at(x, 0)
+            _, Zf = self.at(0, zr - 1)
+            _, Zr = self.at(0, zr)
+            _, Zb = self.at(0, zb)
+            for yy in range(yb - 1, yb + h + 1):
+                inside = x0 <= x <= x1 and yb <= yy < yb + h
+                v.set(X_, yy, Zb, "minecraft:black_concrete" if inside else CONCRETE)
+                v.set(X_, yy, Zr, AIR if inside else "minecraft:black_concrete")
+                if inside:
+                    v.set(X_, yy, Zf, AIR)
+
     def sheriff(self) -> None:
         """The sheriff's office (BFDG 44:08, EN wiki): round, concentric circles in the floor, desks round the middle,
-        entered through the cafeteria; the holding cells on the same floor along one wall, behind barred fronts."""
+        entered through the cafeteria; the holding cells along a corridor west of it, behind barred fronts. Cell 3
+        lies on the tunnel's line, its back door into the airlock."""
         v = self.v
         y = self.level_y(1)
         ox, oz, orr = OFFICE
         room = self.disc(ox, oz, orr + 0.5)
         wall = self.disc(ox, oz, orr + 1.7) & ~room
-        vest = self.rect(CELLS_X[1] + 2, ox - orr + 1, CELLS_Z[0][0], CELLS_Z[-1][1])     # in front of the cells
+        x0_, x1_ = CELLS[0][0], CELLS[0][1]
+        vest = self.rect(*VEST) | self.rect(x0_, x1_, CELLS[0][3] + 2, VEST[2])     # and the nook before cell 3
         cells = np.zeros_like(room)
-        for z0, z1 in CELLS_Z:
-            cells |= self.rect(CELLS_X[0], CELLS_X[1], z0, z1)
-        block = self.rect(CELLS_X[0] - 1, ox, CELLS_Z[0][0] - 1, CELLS_Z[-1][1] + 1) | wall
+        block = wall | self.rect(VEST[0] - 1, VEST[1], VEST[2] - 1, VEST[3] + 1)
+        for x0, x1, z0, z1 in CELLS:
+            cells |= self.rect(x0, x1, z0, z1)
+            block |= self.rect(x0 - 1, x1 + 1, z0 - 1, z1 + 1)
         v.mask(y - 1, y + 4, block, CONCRETE)
         v.mask(y, y + 3, room | vest | cells, AIR)
         v.mask(y - 1, y - 1, room | vest, "minecraft:polished_andesite")
         v.mask(y - 1, y - 1, cells, "minecraft:white_glazed_terracotta[facing=north]")
+        v.mask(y + 3, y + 3, vest & (self.Z == VEST[2] + 1) & (self.X % 4 == 0), "minecraft:sea_lantern")
         dd = np.hypot(self.X - ox, self.Z - oz)
         v.mask(y - 1, y - 1, room & ((np.abs(dd - 2.5) < 0.5) | (np.abs(dd - 4.5) < 0.5)), "minecraft:polished_blackstone")
         v.mask(y + 3, y + 3, room & (np.abs(dd - 3) < 0.6), LAMP_COOL)
@@ -997,102 +1022,118 @@ class Silo:
             X_, Z_ = self.at(int(round(ox + 1.0 * math.cos(a))), int(round(oz + 1.0 * math.sin(a))))
             if v.get(X_, y, Z_) == AIR:
                 v.set(X_, y, Z_, f"minecraft:spruce_stairs[facing={OPP[self.facing_radial(a)]},half=bottom,shape=straight,waterlogged=false]")
-        # barred fronts with a cell door; a bunk in each
-        fx = CELLS_X[1] + 1
-        for z0, z1 in CELLS_Z:
-            for z in range(z0, z1 + 1):
-                X_, Z_ = self.at(fx, z)
+        # barred fronts on the corridor with a cell door; a bunk in each
+        for i, (x0, x1, z0, z1) in enumerate(CELLS):
+            fz = z1 + 1 if i == 0 else z0 - 1            # cell 3 fronts south onto the corridor, cells 1-2 north
+            for x in range(x0, x1 + 1):
+                X_, Z_ = self.at(x, fz)
                 for dy in range(3):
                     v.set(X_, y + dy, Z_, RAIL)
-            X_, Z_ = self.at(fx, (z0 + z1) // 2)
+            X_, Z_ = self.at((x0 + x1) // 2, fz)
             for half, dy in (("lower", 0), ("upper", 1)):
-                v.set(X_, y + dy, Z_, f"minecraft:iron_door[facing=west,half={half},hinge=left,open=false,powered=false]")
-            v.set(X_ + 1, y, Z_, PLATE)
-            v.set(X_ - 1, y, Z_, PLATE)
-            bx, bz = self.at(CELLS_X[0], z0)
-            v.set(bx, y, bz, "minecraft:gray_bed[facing=west,occupied=false,part=head]")
-            v.set(bx + 1, y, bz, "minecraft:gray_bed[facing=west,occupied=false,part=foot]")
-            X_, Z_ = self.at(CELLS_X[0] + 1, z1)
+                v.set(X_, y + dy, Z_, f"minecraft:iron_door[facing=south,half={half},hinge=left,open=false,powered=false]")
+            v.set(X_, y, Z_ + 1, PLATE)
+            v.set(X_, y, Z_ - 1, PLATE)
+            bz, fz2, f = (z0, z0 + 1, "north") if i == 0 else (z1, z1 - 1, "south")
+            bx, _ = self.at(x0, 0)
+            _, bz_ = self.at(0, bz)
+            _, fz_ = self.at(0, fz2)
+            v.set(bx, y, bz_, f"minecraft:gray_bed[facing={f},occupied=false,part=head]")
+            v.set(bx, y, fz_, f"minecraft:gray_bed[facing={f},occupied=false,part=foot]")
+            X_, Z_ = self.at(x1, (z0 + z1) // 2)
             v.set(X_, y + 3, Z_, "minecraft:sea_lantern")
+
+    def tunnel_surface(self, x: int) -> float:
+        """Walking surface (index, halves) of the way out at silo-frame x: the open steps one block each from the head
+        (flush with the lawn) down to PORTAL_X, then the roofed tunnel half a block a block (a stair, then a flat
+        block: the ribbed floor) down to level 1, and level 1's floor from there to the vault door."""
+        top = self.yi(0) + 1
+        y = self.level_y(1)
+        if x >= PORTAL_X:
+            return float(top - (EXIT_X - x))
+        return max(float(y), top - (EXIT_X - PORTAL_X) - 0.5 * (PORTAL_X - x))
 
     def way_out(self) -> None:
         """Holding cell 3 -> the airlock (a thick door ≈2.4 m at each end, BFDG 46:23; "these two big sliding doors
-        each weigh 25 tons", S3E09: here each is a pair of iron leaves in a steel frame) -> a U-turn -> the ribbed ramp
-        (LOW, CROSS, then up the axis) -> a slot with steps on the ring's axis, opening on the bowl floor inside half
-        its radius (SPEC 5, S1E02 #25/#27, S3E09 #77). The slot's curb and the camera block are surface.py's."""
+        each weigh 25 tons", S3E09: here the inner one a pair of iron leaves in a steel frame, the outer one the round
+        vault door) -> ONE straight tunnel on the ring's axis up to the stair head (S1E02 #25, #27; S1E10 #22; S3E09
+        #77): an elongated octagon (vertical lower walls, sloped upper walls, flat ceiling) 4 wide and 4 high, dark
+        grey, a ribbed floor of stairs and flat blocks, tall light slots in both walls every 3 m (end rods standing in
+        recesses, two high), and the open trench of steps at the top. The trench's curb and the camera shelter are
+        surface.py's."""
         v = self.v
         y = self.level_y(1)
-        grade = self.yi(0)                               # the bowl floor's top block; its walking surface is grade + 1
-        z0, z1 = CELLS_Z[-1]
-        lock = self.rect(LOCK[0], LOCK[1], z0, z1)
-        turn = self.rect(TURN_X[0], TURN_X[1], z0, LOW_Z[1])
-        v.mask(y - 1, y + 4, self.rect(TURN_X[0] - 1, LOCK[1] + 1, z0 - 1, LOW_Z[1] + 1), CONCRETE)
-        v.mask(y, y + 2, lock | turn, AIR)
-        v.mask(y - 1, y - 1, lock | turn, "minecraft:polished_andesite")
-        v.mask(y + 3, y + 3, lock & ((self.X % 2) == 0) & (self.Z == (z0 + z1) // 2), "minecraft:sea_lantern")
-        # the thick doors: steel frames round a 2 x 2 opening, the leaves a pair of iron doors
-        for dx in (LOCK[1] + 1, LOCK[0] - 1):
-            v.mask(y - 1, y + 3, self.rect(dx, dx, z0 - 1, z1 + 1), "minecraft:iron_block")
-            v.mask(y, y + 1, self.rect(dx, dx, z0 + 1, z1), AIR)
-            self.steel_door(y, [self.at(dx, z0 + 1), self.at(dx, z0 + 2)], "west")
-        ceil1 = y + self.s.pitch - 1                     # level 1's ceiling row: the upper runs never dig below it
-        top = grade + 1 - STEPS                          # walking surface where the steps begin
-        lz, cx = (LOW_Z[0] + LOW_Z[1]) // 2, (CROSS_X[0] + CROSS_X[1]) // 2
-        # the centre line: (x, z, walking surface, along, kind); along is the run's axis ("x" or "z")
-        line = []
-        for x in range(LOW_X[0], LOW_X[1] + 1):
-            line.append((x, lz, y + 4 * (x - LOW_X[0]) / (LOW_X[1] - LOW_X[0]), "x", "low"))
-        for z in range(lz, 1):
-            # over the cafeteria (|z| <= 15) the floor stays over level 1's ceiling; nearer the U-turn it may cut in
-            surf = y + 4 + 2 * (z - lz) / (-15 - lz) if z <= -15 else y + 6 + (top - y - 6) * (z + 15) / 15
-            line.append((cx, z, min(surf, top), "z", "low" if surf < y + 6 else "up"))
-        for x in range(PORTAL_X, EXIT_X - 1, -1):
-            line.append((x, 0, top + (PORTAL_X - x) + 1, "x", "step"))
-        inner = {}                                       # (x, z) -> (k, half, roof, kind, along, i)
-        for i, (x, z, surf, along, kind) in enumerate(line):
-            q = round(surf * 2) / 2
+        grade = self.yi(0)
+        z0, z1 = TUN_Z
+        ceil1 = y + self.s.pitch - 1                     # level 1's ceiling row
+        WALL, TRIM = CONCRETE_DARK, "minecraft:polished_andesite"
+        for x in range(VAULT_X + 1, EXIT_X + 1):
+            q = self.tunnel_surface(x)
             k = int(math.floor(q))
-            half = kind != "step" and q - k >= 0.5
-            roof = grade + 1 if kind == "step" else min(k + (1 if half else 0) + 3, grade - 1)
-            w = range(CROSS_X[0], CROSS_X[1] + 1) if along == "z" else \
-                (range(LOW_Z[0], LOW_Z[1] + 1) if z == lz else range(RAMP_Z[0], RAMP_Z[1] + 1))
-            for o in w:
-                c = (o, z) if along == "z" else (x, o)
-                if c not in inner:
-                    inner[c] = (k, half, roof, kind, along, i)
-        walls = {}
-        for (x, z), (k, half, roof, kind, along, i) in inner.items():
-            for dx in (-1, 0, 1):
-                for dz in (-1, 0, 1):
-                    c = (x + dx, z + dz)
-                    if c in inner or c[0] < LOW_X[0]:            # the west end opens into the U-turn
-                        continue
-                    lo = max(y - 1, k - 3) if kind == "low" else max(ceil1, k - 3)
-                    hi = grade if kind == "step" else roof
-                    o = walls.get(c)
-                    walls[c] = (min(lo, o[0]), max(hi, o[1])) if o else (lo, hi)
-        for (x, z), (lo, hi) in walls.items():
-            X_, Z_ = self.at(x, z)
-            for yy in range(lo, hi + 1):
-                v.set(X_, yy, Z_, CONCRETE)
-        for (x, z), (k, half, roof, kind, along, i) in inner.items():
-            X_, Z_ = self.at(x, z)
-            lo = max(y - 1, k - 3) if kind == "low" else max(ceil1, k - 3)
-            hi = grade if kind == "step" else roof
-            for yy in range(lo, hi + 1):
-                v.set(X_, yy, Z_, CONCRETE if (yy < k or (yy == roof and kind != "step")) else AIR)
-            if kind == "step":
-                v.set(X_, k - 1, Z_, "minecraft:polished_andesite_stairs[facing=west,half=bottom,shape=straight,waterlogged=false]")
-                continue
-            rib = ((z if along == "z" else x) % 2) == 0
-            v.set(X_, k - 1, Z_, "minecraft:waxed_cut_copper" if rib else "minecraft:smooth_stone")
-            if half:
-                v.set(X_, k, Z_, "minecraft:waxed_cut_copper_slab[type=bottom,waterlogged=false]" if rib else STOOP)
-            # lights: a sea lantern in the roof over the run's middle, every third block
-            mid = (x == cx) if along == "z" else (z == lz or z == 0)
-            if mid and i % 3 == 1 and roof < grade:
-                v.set(X_, roof, Z_, "minecraft:sea_lantern")
-        self.exit_cells = [(x, z) for x in range(EXIT_X, PORTAL_X + 1) for z in range(RAMP_Z[0] - 1, RAMP_Z[1] + 2)]
+            half = q - k >= 0.5
+            open_ = x >= PORTAL_X
+            roof = k + 4                                 # flat ceiling row over the stair's own row
+            lo = y - 1 if k - 2 <= ceil1 else k - 2      # under level 1's ceiling: solid down to its floor
+            hi = grade if open_ else roof + 1
+            for z in range(z0 - 2, z1 + 3):
+                X_, Z_ = self.at(x, z)
+                wall_col = z < z0 or z > z1
+                for yy in range(lo, hi + 1):
+                    v.set(X_, yy, Z_, (TRIM if open_ else WALL) if wall_col else CONCRETE)
+                if wall_col:
+                    continue
+                # floor: a stair where the surface is at a half, else a flat block; light ribs
+                if half:
+                    v.set(X_, k - 1, Z_, "minecraft:smooth_stone")
+                    v.set(X_, k, Z_, "minecraft:polished_andesite_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]")
+                    a0 = k + 1
+                else:
+                    v.set(X_, k - 1, Z_, "minecraft:polished_andesite_stairs[facing=east,half=bottom,shape=straight,waterlogged=false]"
+                          if open_ else "minecraft:smooth_stone")
+                    a0 = k
+                top_air = grade + 1 if open_ else roof - 1
+                for yy in range(a0, top_air + 1):
+                    v.set(X_, yy, Z_, AIR)
+                if open_:
+                    continue
+                # sloped upper walls: the outer columns' top air row is a stair hanging from the ceiling
+                if z in (z0, z1):
+                    v.set(X_, roof - 1, Z_, f"minecraft:polished_andesite_stairs[facing={'north' if z == z0 else 'south'},"
+                                            "half=top,shape=straight,waterlogged=false]")
+                v.set(X_, roof, Z_, "minecraft:gray_concrete")
+            if not open_ and x % 3 == 0 and x > -46:
+                # the light slots: a recess in each wall, two end rods standing in it
+                for z in (z0 - 1, z1 + 1):
+                    X_, Z_ = self.at(x, z)
+                    v.set(X_, k + 1, Z_, "minecraft:end_rod[facing=up]")
+                    v.set(X_, k + 2, Z_, "minecraft:end_rod[facing=up]")
+        # the airlock on the same line: the round vault door, the chamber, the inner steel door into cell 3
+        lock = self.rect(LOCK[0], LOCK[1], z0, z1)
+        v.mask(y - 1, y + 4, self.rect(LOCK[0] - 1, VAULT_X, z0 - 1, z1 + 1), CONCRETE)
+        v.mask(y, y + 3, lock, AIR)
+        v.mask(y - 1, y - 1, lock, "minecraft:polished_andesite")
+        v.mask(y + 3, y + 3, lock & ((self.X % 2) == 0) & (self.Z == z0), "minecraft:sea_lantern")
+        v.mask(y + 3, y + 3, lock & ((self.X % 2) == 0) & (self.Z == z1), "minecraft:sea_lantern")
+        dx = LOCK[0] - 1
+        v.mask(y - 1, y + 3, self.rect(dx, dx, z0 - 1, z1 + 1), "minecraft:iron_block")
+        v.mask(y, y + 1, self.rect(dx, dx, z0 + 1, z1 - 1), AIR)
+        self.steel_door(y, [self.at(dx, z0 + 1), self.at(dx, z1 - 1)], "west")
+        self.vault_door(y)
+        self.exit_cells = [(x, z) for x in range(PORTAL_X, EXIT_X + 1) for z in range(z0 - 1, z1 + 2)]
+
+    def vault_door(self, y: int) -> None:
+        """The round vault door (S1E02 #27): a steel disc Ø≈5 in a dark rim, filling the tunnel's end wall, a pair of
+        iron leaves in its middle (2 x 2, the way through)."""
+        v = self.v
+        z0, z1 = TUN_Z
+        zc, yc = (z0 + z1) / 2, y + 1.0
+        for z in range(z0 - 1, z1 + 2):
+            for yy in range(y - 1, y + 5):
+                rr = math.hypot(z - zc, yy - yc)
+                X_, Z_ = self.at(VAULT_X, z)
+                v.set(X_, yy, Z_, "minecraft:iron_block" if rr < 2.3 else ("minecraft:polished_deepslate" if rr < 3.0 else CONCRETE))
+        v.mask(y, y + 1, self.rect(VAULT_X, VAULT_X, z0 + 1, z1 - 1), AIR)
+        self.steel_door(y, [self.at(VAULT_X, z0 + 1), self.at(VAULT_X, z1 - 1)], "west")
 
     def keep_clear(self, f: dict) -> set[tuple[int, int]]:
         """Cells of a flat that furniture leaves free: both ends of its doors (the template's "clear") and the first

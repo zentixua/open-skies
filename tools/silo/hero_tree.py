@@ -95,7 +95,8 @@ def place_1to1(shaft: tuple[float, float], k: int, bank_r: float = 62.0) -> tupl
     from silo import EXIT_X, RAMP_Z
     # the head now looks out toward -x (the steps rise outward): work in the frame turned half round, where it looks
     # toward +x as the model's view does, and turn the result back
-    px, pz = -EXIT_X, -(RAMP_Z[0] + RAMP_Z[1]) / 2
+    # the tree stands where the v5 build put it (head at r 40 on the axis); the head moved to EXIT_X in v6 (15.11)
+    px, pz = 40, 0.0
     lx, lz = HERO_TREE
     a = math.atan2(-lx, lz)                     # to the right of the view: +z in the silo frame
     dx, dz = math.cos(a), math.sin(a)

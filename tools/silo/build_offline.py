@@ -578,7 +578,7 @@ class Builder:
             g = self.done.get(f"silo{s['number']}", {}).get("grade")
             if g is None:
                 continue
-            cols = [(s["x"] + x, s["z"] + z) for x in range(EXIT_X, PORTAL_X + 1) for z in range(RAMP_Z[0], RAMP_Z[1] + 1)]
+            cols = [(s["x"] + x, s["z"] + z) for x in range(PORTAL_X, EXIT_X + 1) for z in range(RAMP_Z[0], RAMP_Z[1] + 1)]
             cols = turn_points(cols, TURNS[s["dir"]], s["x"], s["z"])
             xs = [c[0] for c in cols]; zs = [c[1] for c in cols]
             v = Volume((min(xs), g + 1, min(zs)), (max(xs) - min(xs) + 1, 200 - g, max(zs) - min(zs) + 1))

@@ -51,6 +51,10 @@ else:
     cls = Silo
 sil = cls(Spec(number=a.silo), 0, grade, 0)
 vol = sil.build()
+# only the rows the walk needs (the surface down to a level under the goal): the whole shaft's graph does not fit
+# beside four running servers
+_y0 = max(0, sil.level_y(a.levels + 1) - 2)
+vol.ids = np.ascontiguousarray(vol.ids[:, _y0:, :]); vol.origin = (vol.origin[0], vol.origin[1] + _y0, vol.origin[2])
 w = W.Walk(vol.ids, vol.palette)
 R = sil.R
 X_, H_, Z_ = w.shape
@@ -100,7 +104,7 @@ def nearest(fx, fz, y_world):
 
 
 start = nearest(EXIT_X, 0, grade + 1)          # the top step
-goal = nearest(-(sil.s.r_atrium + 2.5), 0, sil.level_y(a.levels) + oy)
+goal = nearest(-(sil.s.r_atrium + 2.5), 0, sil.level_y(a.levels) + oy - _y0)
 order, pred = breadth_first_order(G, start, directed=False, return_predecessors=True)
 if pred[goal] < 0 and goal != start:
     raise SystemExit(f"silo {a.silo}: level {a.levels}'s gallery is not reachable from the stair head")
@@ -159,8 +163,8 @@ if a.silo == 1:
 else:
     cv = (1.0, 0.0)
 side = 4.5
-surface = [(110 * cv[0], 110 * cv[1]), (60 * cv[0], 60 * cv[1]), (0, 0), (CAMERA[0] + 9, side), (EXIT_X - 2, side),
-           (EXIT_X - 2, 0.5), (EXIT_X + 0.5, 0.5)]
+# v6: the stub crosses the bowl to the pad at the open head, which faces it (+x); straight onto the top step
+surface = [(110 * cv[0], 110 * cv[1]), (60 * cv[0], 60 * cv[1]), (0, 0), (EXIT_X + 2, -0.5), (EXIT_X + 0.5, -0.5)]
 legs = [("surface", [(*world(x + 0.5, z + 0.5), grade + 1) for x, z in surface])]
 legs.append(("down", [(*world(x, z), y) for x, y, z in way[1:]]))
 

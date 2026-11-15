@@ -160,9 +160,9 @@ class Site:
         """(open trench, curb) columns in this frame: the steps' opening (head at EXIT_X, open toward the berm) and the
         pale curb along both sides and across the closed inner end over the portal (S3E09 07)."""
         z0, z1 = RAMP_Z
-        open_ = {(x, z) for x in range(EXIT_X, PORTAL_X + 1) for z in range(z0, z1 + 1)}
-        curb = {(x, z) for x in range(EXIT_X, PORTAL_X + 2) for z in (z0 - 1, z1 + 1)}
-        curb |= {(PORTAL_X + 1, z) for z in range(z0, z1 + 1)}
+        open_ = {(x, z) for x in range(PORTAL_X, EXIT_X + 1) for z in range(z0, z1 + 1)}
+        curb = {(x, z) for x in range(PORTAL_X - 1, EXIT_X + 1) for z in (z0 - 1, z1 + 1)}
+        curb |= {(PORTAL_X - 1, z) for z in range(z0, z1 + 1)}
         return open_, curb
 
     def build(self) -> Volume:
@@ -219,26 +219,26 @@ class Site:
         return v
 
     def camera(self, v: Volume) -> None:
-        """The camera shelter (S3E09 07, 08; s3e09-notes.md; review of 43c71ce) between the centre and the trench, its
-        open front facing out toward the steps: a dark back wall, light side walls, a thin roof slab overhanging the
+        """The camera shelter (S3E09 07, 08; s3e09-notes.md; Artem 15.11) on the lawn just beyond the trench's closed
+        end, its open front facing back up the steps to the head: a dark back wall, light side walls, a thin roof slab overhanging the
         front (top at 2.5 m); before it a plinth of slabs (≈0.5 m) across the whole front and a block forward, the cone
         on it (a polished andesite block) with a brass sensor (waxed copper slab) on top at 1.5 m. 5 wide in all."""
         R, oy = self.radius, v.origin[1]
-        x0, x1, z0, z1 = CAMERA                             # x0: the open front (toward the trench, -x); x1: the back
+        x0, x1, z0, z1 = CAMERA                             # x0: the dark back; x1: the open front (toward the steps, +x)
         g = self.grade
         put = lambda x, y, z, st: v.set(R + x, y - oy, R + z, st)
         zc = (z0 + z1) // 2
         for dy in (1, 2):
             for z in range(z0, z1 + 1):
-                put(x1, g + dy, z, DARK)                   # back wall
-                for x in range(x0, x1):
+                put(x0, g + dy, z, DARK)                   # back wall
+                for x in range(x0 + 1, x1 + 1):
                     put(x, g + dy, z, CONCRETE if z in (z0, z1) else AIR)   # side walls, open middle
-        for x in range(x0 - 1, x1 + 1):                    # roof slab, overhanging the front by one
+        for x in range(x0, x1 + 2):                        # roof slab, overhanging the front by one
             for z in range(z0, z1 + 1):
                 put(x, g + 3, z, STEP)
         for z in range(z0, z1 + 1):                        # the plinth across the whole front, one block forward
-            put(x0 - 1, g + 1, z, STEP)
+            put(x1 + 1, g + 1, z, STEP)
         for z in range(z0 + 1, z1):
-            put(x0, g + 1, z, STEP)
-        put(x0, g + 1, zc, "minecraft:polished_andesite")
-        put(x0, g + 2, zc, "minecraft:waxed_cut_copper_slab[type=bottom,waterlogged=false]")
+            put(x1, g + 1, z, STEP)
+        put(x1, g + 1, zc, "minecraft:polished_andesite")  # the cone
+        put(x1, g + 2, zc, AIR)                            # the lens's block, left free (a camera block goes there)

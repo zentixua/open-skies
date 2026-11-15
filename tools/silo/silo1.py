@@ -256,7 +256,8 @@ class Silo1(Silo):
         hall = self.disc(hx, hz, hr - 1.0)
         v.mask(fl, y + 2, hall, AIR)
         v.mask(fl - 1, fl - 1, self.disc(hx, hz, hr), DARK)
-        door_a = math.atan2(base.HALL_DOOR[1] - hz, base.HALL_DOOR[0] - hx) % TAU
+        A0 = base.HALL_ANG0                    # the hall's bearing 0: its portal; pi: the screen recess
+        door_a = (math.atan2(base.HALL_DOOR[1] - hz, base.HALL_DOOR[0] - hx) - A0) % TAU
         # long tables in tangential rows, chairs both sides, clear of the two entrances
         for rr in (4.5, 8.5):
             n_seg = int(TAU * rr / 7)
@@ -266,13 +267,14 @@ class Silo1(Silo):
                     ang = a0 + t
                     if min(abs(((ang - g + math.pi) % TAU) - math.pi) * rr for g in (0.0, door_a, math.pi)) < 2.5:
                         continue
-                    x, z = self.at(int(round(hx + rr * math.cos(ang))), int(round(hz + rr * math.sin(ang))))
+                    aw = ang + A0
+                    x, z = self.at(int(round(hx + rr * math.cos(aw))), int(round(hz + rr * math.sin(aw))))
                     v.set(x, fl, z, TABLE)
                     if int(t * rr) % 2 == 0:
                         for off, outward in ((1.2, True), (-1.2, False)):
-                            xx, zz = self.at(int(round(hx + (rr + off) * math.cos(ang))), int(round(hz + (rr + off) * math.sin(ang))))
+                            xx, zz = self.at(int(round(hx + (rr + off) * math.cos(aw))), int(round(hz + (rr + off) * math.sin(aw))))
                             if v.get(xx, fl, zz) == AIR:
-                                f = self.facing_radial(ang)
+                                f = self.facing_radial(aw)
                                 if not outward:
                                     f = self.opposite(f)
                                 v.set(xx, fl, zz, f"minecraft:birch_stairs[facing={f},half=bottom,shape=straight,waterlogged=false]")
@@ -283,23 +285,13 @@ class Silo1(Silo):
                 x, z = self.at(int(round(hx + rr * math.cos((i + 0.5) * TAU / count))), int(round(hz + rr * math.sin((i + 0.5) * TAU / count))))
                 v.set(x, y + 3, z, "minecraft:chain[axis=y,waterlogged=false]")
                 v.set(x, y + 2, z, DISC)
-        # the wallscreen: the forest mosaic over the screen's arc, rounded ends in black
-        cells = self.arc_cells(hr - 1, math.pi - base.SCREEN_ARC / 2, math.pi + base.SCREEN_ARC / 2, hx + 0.5, hz + 0.5)
-        cells = [c for c in cells if c[0] - self.R <= hx]
-        rows = CAFE_SCREEN
-        h_scr = 3
-        w = len(cells)
-        for i, (x, z) in enumerate(cells):
-            col = int(i * len(rows[0]) / max(1, w))
-            for j in range(h_scr):
-                state = "minecraft:" + MOSAIC[rows[2 * j][col]]
-                corner = (i in (0, w - 1)) and j in (0, h_scr - 1)
-                v.set(x, fl + h_scr - j, z, INK if corner else state)
+        # the wallscreen: the far wall's recess stays empty for a screen block (silo.screen_recess)
         # food dispensers along the counter's arc: LED band, lit window, dark body, cyan CIBUM header
-        disp = self.arc_cells(hr - 3, door_a + 0.2, TAU - 0.2, hx + 0.5, hz + 0.5)
+        c0, c1 = A0 + 0.4, A0 + math.pi - base.SCREEN_ARC / 2 - 0.3      # the counter's arc (silo.cafeteria)
+        disp = self.arc_cells(hr - 3, c0, c1, hx + 0.5, hz + 0.5)
         for i, (x, z) in enumerate(disp):
             v.set(x, fl, z, AIR)
-        disp = self.arc_cells(hr - 1, door_a + 0.2, TAU - 0.2, hx + 0.5, hz + 0.5)
+        disp = self.arc_cells(hr - 1, c0, c1, hx + 0.5, hz + 0.5)
         for i, (x, z) in enumerate(disp):
             ang = math.atan2(z - self.R - hz, x - self.R - hx)
             if i % 2:
