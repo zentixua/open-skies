@@ -34,8 +34,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 RING_PATH_R = 110         # surface.Site.path_r: the ring path, Ø≈220 (SPEC 1)
 PATH_W = 3                # surface.Site.path_half: 3 wide, two people side by side (S3E09 05)
 FLOOR_R = 55              # surface.Site.floor_r
-STUB_END = -15.5          # the stub's pad, metres from the centre: across the bowl on the slot's side, right at the
-                          # stair head (silo.EXIT_X = -18), which faces it (Artem 15.11)
+STUB_END = 0.0            # the stub's pad, metres from the centre: the path ends at the bowl's centre; the stair
+                          # head beyond it at the far berm's foot faces away, toward the hill (Artem 15.11 22:12)
 LINK_MAX = 1.08           # flower neighbours: centres within this many ring spacings
 ROSETTES = [(49, 48, 43), (31, 30, 29), (32, 33, 29), (35, 29, 34), (19, 20, 14), (12, 7, 11), (13, 7, 8)]
 ROSETTE_R = 41          # S3E09 aerial: ~50 m across at the old 156 m spacing, scaled to 270 like the layout

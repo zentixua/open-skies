@@ -163,8 +163,10 @@ if a.silo == 1:
 else:
     cv = (1.0, 0.0)
 side = 4.5
-# v6: the stub crosses the bowl to the pad at the open head, which faces it (+x); straight onto the top step
-surface = [(110 * cv[0], 110 * cv[1]), (60 * cv[0], 60 * cv[1]), (0, 0), (EXIT_X + 2, -0.5), (EXIT_X + 0.5, -0.5)]
+# v7: the path ends at the centre; past the camera shelter and along the trench's side to the head at the berm's
+# foot, which opens outward (-x), then onto the top step
+surface = [(110 * cv[0], 110 * cv[1]), (60 * cv[0], 60 * cv[1]), (0, 0), (-30, side), (EXIT_X - 2, side),
+           (EXIT_X - 2, -0.5), (EXIT_X - 1.5, -0.5)]
 legs = [("surface", [(*world(x + 0.5, z + 0.5), grade + 1) for x, z in surface])]
 legs.append(("down", [(*world(x, z), y) for x, y, z in way[1:]]))
 
