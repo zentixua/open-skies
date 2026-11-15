@@ -73,7 +73,7 @@ cd pack && packwiz mr export      # → Open Skies-<версия>.mrpack
 | авиация и оружие | Immersive Aircraft, Man of Many Planes, Vic's Point Blank (+ GeckoLib), Point Blank Aeronautics compat, Do a Barrel Roll (полёт на элитрах с креном, + Forgified Fabric API) |
 | картинка и камера | шейдерпаки Photon, Solas, Complementary Unbound, BSL, MakeUp Ultra Fast (на выбор, ниже), Euphoria Patches (дополнение к Complementary), Aeronautics Camera Sync, 3D Skin Layers, Not Enough Animations, Ok Zoomer (зум, ниже) |
 | мир вокруг | Subtle Effects (мелкие частицы и звуки: искры огня, дым горящих мобов, рябь, листья; + Fzzy Config, Kotlin for Forge; стоит и на сервере, ниже), Particle Rain (дождь, снег и пыльные бури частицами), AmbientSounds (звуки природы по биому, высоте и времени; + CreativeCore), LambDynamicLights (свет от факела в руке, горящих мобов и снарядов), Contraption Lights (свет фонарей на аппаратах Create и кораблях Sable падает на мир), Sound Physics Remastered (эхо в помещениях и глушение звука стенами для звуков мира), Burnt (огонь прогорает: обугленные дома и деревья, обрушение горящих построек) |
-| камеры и экраны | Vista (+ Moonlight Lib): телевизоры из блоков показывают живую картинку с камеры-видоискателя (ниже) |
+| камеры и экраны | Vista (+ Moonlight Lib): телевизоры из блоков показывают живую картинку с камеры-видоискателя (ниже); Iris Bonk (только у игрока): экраны Vista и другие шейдеры модов не чернеют с шейдерпаком |
 | мультиплеер и удобство | Essential, TrueUUID (вход на сервер, ниже), LAN Server Properties (временно, ниже), JEI (+ MezzConfig), Jade, Jade Sable Compat, Xaero's Minimap и World Map (+ MapSyncer: готовый снимок всей карты с сервера), Create – Xaero's map, GraveStone и его патч для Sable, Mouse Tweaks, No Chat Reports |
 | запись (по выбору) | Flashback, Flashback NeoForge Fixed, Sinytra Connector |
 | клавиши | Default Options (+ Balm): раскладка сборки (ниже) |
@@ -192,6 +192,10 @@ Reimagined удалить руками — на следующем запуск�
   поверхности. Настройку сервера Moonlight Lib присылает игрокам сам. Цена — второй проход отрисовки мира с камеры,
   только пока экран включён и рядом: до 10 кадров в секунду, дальность 64 блока, не больше ~17 мс на кадр (значения
   мода по умолчанию). С Iris мод предупреждает о худшей картинке экрана.
+- `config/vista-client.toml` — `[general]`: `no_iris_warn_screen = true`, `no_veil_warn_screen = true`. Иначе Vista при
+  каждом запуске с Iris (и Veil у Contraption Lights) показывает экран-предупреждение и советует Iris Bonk. Iris Bonk в
+  сборке есть (экспериментальный: без него с шейдерпаком экран Vista чёрный); он меняет, как Iris обращается с шейдерами
+  всех модов, в том числе Incoming, — если что-то сломается, убираем его первым.
 - `config/defaultoptions/keybindings.txt` — раскладка клавиш сборки (ниже).
 - `config/subtle_effects/general.toml` — значения Subtle Effects 1.15.1 по умолчанию, кроме `particleRenderDistance = 32`
   (его предел, 512 блоков; по умолчанию 5 чанков). Отсечение частиц у мода включено и прячет почти все частицы дальше
@@ -300,6 +304,7 @@ Default Options — только у игроков. Его библиотека 
 
 | версия | мод | что изменилось |
 |---|---|---|
+| 0.1.62 | 3.13.0 | Iris Bonk: экраны Vista с шейдерпаком показывают картинку, а не чёрный экран. Vista больше не показывает при запуске предупреждение об Iris. Обновление автоматическое. |
 | 0.1.61 | 3.13.0 | Vista (+ Moonlight Lib): экраны с живой картинкой с камеры, широкие экраны из телевизоров. Ставится и на сервер. Обновление автоматическое. |
 | 0.1.60 | 3.13.0 | Incoming 3.13.0 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.13.0.md)). Обновление автоматическое. |
 | 0.1.59 | 3.12.1 | Incoming 3.12.1 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.12.1.md)). Обновление автоматическое. |

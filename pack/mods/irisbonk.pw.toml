@@ -1,0 +1,13 @@
+name = "Iris Bonk"
+filename = "iris_bonk-1.21.1-0.1.4-neoforge.jar"
+side = "client"
+
+[download]
+url = "https://cdn.modrinth.com/data/28XrxART/versions/mEULWiZZ/iris_bonk-1.21.1-0.1.4-neoforge.jar"
+hash-format = "sha512"
+hash = "54866938b36b5f19e2ad3049d89567d8b7d4fe46847be56474673c6ac47ab2b17543f9790e7cc85dc077cd713266f154332065b8476250c60897032922c3d7f2"
+
+[update]
+[update.modrinth]
+mod-id = "28XrxART"
+version = "mEULWiZZ"
