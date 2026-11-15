@@ -41,6 +41,10 @@ file = "config/subtle_effects/general.toml"
 hash = "5513e33f046e07449bca4b189e22a1883b39b637231a8da923e13ea5e1a20585"
 
 [[files]]
+file = "config/vista-client.toml"
+hash = "49bab4c1213aa70bed30b31a428182a37336387b3bdeebe700aa45db6e0f7b8e"
+
+[[files]]
 file = "config/vista-common.toml"
 hash = "8a4fa5d521964de60b53c3e01a41e12fdec91d58eda06d2540b64b4a41586603"
 
