@@ -1,13 +1,13 @@
 name = "LOD Server Support"
-filename = "lod-server-support-neoforge-0.20.0+1.21.1.jar"
+filename = "lod-server-support-neoforge-0.22.0-beta.1+1.21.1.jar"
 side = "both"
 
 [download]
-url = "https://cdn.modrinth.com/data/lKiXKLvv/versions/jxJ4956L/lod-server-support-neoforge-0.20.0%2B1.21.1.jar"
+url = "https://cdn.modrinth.com/data/lKiXKLvv/versions/GrgVoMsO/lod-server-support-neoforge-0.22.0-beta.1%2B1.21.1.jar"
 hash-format = "sha512"
-hash = "0912c9c6477d6b4d97f24980c55a99ef1aee3d841eb3b05c3773614cd92dd4267c9f6896db0e2d0ad3f64660d34787d0d431791cc3893cb017457b4d73c5b479"
+hash = "01fb955248e35f2b73021735a54c0356642d47bf9f8093aea5bfb2507b145d6ce0e220728796b5571d4b57f18e8965d1974b2033e12065ac916722486ef51d3d"
 
 [update]
 [update.modrinth]
 mod-id = "lKiXKLvv"
-version = "jxJ4956L"
+version = "GrgVoMsO"

@@ -304,6 +304,7 @@ Default Options — только у игроков. Его библиотека 
 
 | версия | мод | что изменилось |
 |---|---|---|
+| 0.1.63 | 3.13.0 | Обновлены моды: Contraption Lights (Bi-directional Coloured Dynamic Lights) 1.6.0, CreativeCore 2.13.54, Entity Culling 1.12.1, Flashback Neoforge Fixed 1.0.18, Kotlin for Forge 5.13.0, LOD Server Support v0.22.0-beta.1+neoforge+mc1.21.1, MezzConfig 0.7.1, Subtle Effects 1.15.2. Обновление автоматическое. |
 | 0.1.62 | 3.13.0 | Iris Bonk: экраны Vista с шейдерпаком показывают картинку, а не чёрный экран. Vista больше не показывает при запуске предупреждение об Iris. Обновление автоматическое. |
 | 0.1.61 | 3.13.0 | Vista (+ Moonlight Lib): экраны с живой картинкой с камеры, широкие экраны из телевизоров. Ставится и на сервер. Обновление автоматическое. |
 | 0.1.60 | 3.13.0 | Incoming 3.13.0 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.13.0.md)). Обновление автоматическое. |
