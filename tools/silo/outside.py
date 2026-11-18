@@ -173,106 +173,131 @@ reg.holders().forEach { h ->
 return out
 """
 
-# The rule: every 10 server ticks, nearest-first over the chunks each player is sent, swap biome cells above the
-# chunk's lowest surface - 8 (forward while storage silo:outside on=1b, back otherwise). A chunk once brought to the
-# current state is rechecked after RECHECK ticks (a new nuke may write Incoming tiers into it). Stops at MS per run.
+# The rule: every 10 server ticks, nearest-first over the chunks each player has been sent, swap biome cells above
+# the chunk's lowest surface - 8 (forward while storage silo:outside on=1b, back otherwise). A chunk once brought to
+# the current state is rechecked after RECHECK ticks (a new nuke may write Incoming tiers into it). Stops at MS per run.
 RULE_CODE = r"""
-import net.minecraft.core.registries.Registries
-import net.minecraft.resources.ResourceLocation
-import net.minecraft.resources.ResourceKey
-import net.minecraft.world.level.ChunkPos
-import net.minecraft.world.level.levelgen.Heightmap
+import groovy.transform.CompileStatic
+import net.minecraft.core.Holder
 import net.minecraft.core.QuartPos
+import net.minecraft.core.Registry
+import net.minecraft.core.registries.Registries
+import net.minecraft.resources.ResourceKey
+import net.minecraft.resources.ResourceLocation
+import net.minecraft.server.MinecraftServer
+import net.minecraft.server.level.ChunkMap
+import net.minecraft.server.level.ServerLevel
+import net.minecraft.server.level.ServerPlayer
+import net.minecraft.world.level.ChunkPos
+import net.minecraft.world.level.biome.Biome
 import net.minecraft.world.level.biome.BiomeResolver
-final double MS = 4.0
-final int RECHECK = 600
-long t0 = System.nanoTime()
-def lvl = server.overworld()
-def players = lvl.players()
-if (players.isEmpty()) return
-boolean on = server.getCommandStorage().get(ResourceLocation.parse('silo:outside')).getBoolean('on')
-def maps = state['silo.outside.maps']
-if (maps == null) {
-  def fwd = new HashMap(), back = new HashMap()
-  def reg = server.registryAccess().registryOrThrow(Registries.BIOME)
-  reg.holders().forEach { h ->
-    def id = h.key().location()
-    if (id.namespace == 'silo' && id.path.startsWith('dead/')) {
-      def rest = id.path.substring(5); int i = rest.indexOf('/')
-      def o = reg.getHolder(ResourceKey.create(Registries.BIOME, ResourceLocation.fromNamespaceAndPath(rest.substring(0, i), rest.substring(i + 1))))
-      if (o.isPresent()) { fwd.put(o.get(), h); back.put(h, o.get()) }
+import net.minecraft.world.level.biome.Climate
+import net.minecraft.world.level.chunk.ChunkAccess
+import net.minecraft.world.level.chunk.LevelChunk
+import net.minecraft.world.level.chunk.LevelChunkSection
+import net.minecraft.world.level.levelgen.Heightmap
+import java.util.function.Consumer
+
+// Statically compiled: dynamic Groovy spent 10-40 ms a run on call dispatch alone (test copy, 18.11).
+@CompileStatic
+class SiloOutside {
+    static final double MS = 4.0d       // per run; the rule runs every 10 ticks
+    static final int RECHECK = 600      // ticks before a chunk already in the current state is looked at again
+
+    static void run(MinecraftServer server, Map<String, Object> state) {
+        long t0 = System.nanoTime()
+        ServerLevel lvl = server.overworld()
+        List<ServerPlayer> players = lvl.players()
+        if (players.isEmpty()) return
+        boolean on = server.getCommandStorage().get(ResourceLocation.parse('silo:outside')).getBoolean('on')
+        List<Map<Holder<Biome>, Holder<Biome>>> maps = (List<Map<Holder<Biome>, Holder<Biome>>>) state.get('silo.outside.maps')
+        if (maps == null) {
+            Map<Holder<Biome>, Holder<Biome>> fwd = new HashMap<>(), back = new HashMap<>()
+            Registry<Biome> reg = server.registryAccess().registryOrThrow(Registries.BIOME)
+            for (Holder.Reference<Biome> h : reg.holders().toList()) {
+                ResourceLocation id = h.key().location()
+                if (id.namespace != 'silo' || !id.path.startsWith('dead/')) continue
+                String rest = id.path.substring(5)
+                int i = rest.indexOf('/')
+                def o = reg.getHolder(ResourceKey.create(Registries.BIOME, ResourceLocation.fromNamespaceAndPath(rest.substring(0, i), rest.substring(i + 1))))
+                if (o.isPresent()) { fwd.put(o.get(), h); back.put(h, o.get()) }
+            }
+            maps = [fwd, back]
+            state.put('silo.outside.maps', maps)
+            state.put('silo.outside.seen', new HashMap<Long, long[]>())
+            state.put('silo.outside.stats', [swapped: 0L, cells: 0L, scanned: 0L, runs: 0L, ms: 0.0d, maxMs: 0.0d] as Map<String, Object>)
+        }
+        Map<Holder<Biome>, Holder<Biome>> m = on ? maps[0] : maps[1]
+        Map<Long, long[]> seen = (Map<Long, long[]>) state.get('silo.outside.seen')
+        Map<String, Object> st = (Map<String, Object>) state.get('silo.outside.stats')
+        long now = lvl.getGameTime()
+        long mode = on ? 1L : 0L
+        ChunkMap cm = lvl.getChunkSource().chunkMap
+        int vd = server.getPlayerList().getViewDistance()
+        int[][] offs = (int[][]) state.get('silo.outside.offs' + vd)
+        if (offs == null) {
+            List<int[]> l = []
+            for (int dx = -vd; dx <= vd; dx++) for (int dz = -vd; dz <= vd; dz++) l.add([dx, dz, dx * dx + dz * dz] as int[])
+            l.sort { int[] a, int[] b -> a[2] <=> b[2] }
+            offs = l.toArray(new int[0][])
+            state.put('silo.outside.offs' + vd, offs)
+        }
+        Climate.Sampler sampler = lvl.getChunkSource().randomState().sampler()
+        List<ChunkAccess> resend = []
+        long scanned = 0, swapped = 0, cells = 0
+        boolean out = false
+        for (ServerPlayer p : players) {
+            if (out) break
+            int pcx = p.chunkPosition().x, pcz = p.chunkPosition().z
+            for (int[] o : offs) {
+                if ((System.nanoTime() - t0) > (long) (MS * 1e6)) { out = true; break }
+                int cx = pcx + o[0], cz = pcz + o[1]
+                long key = ChunkPos.asLong(cx, cz)
+                long[] s = seen.get(key)
+                if (s != null && s[0] == mode && now - s[1] < RECHECK) continue
+                LevelChunk chunk = lvl.getChunkSource().getChunkNow(cx, cz)
+                if (chunk == null) continue
+                if (cm.getPlayers(new ChunkPos(cx, cz), false).isEmpty()) continue   // not yet sent to anyone
+                scanned++
+                int low = Integer.MAX_VALUE
+                for (int x = 0; x < 16; x += 3) for (int z = 0; z < 16; z += 3) low = Math.min(low, chunk.getHeight(Heightmap.Types.WORLD_SURFACE, x, z))
+                for (int z = 0; z < 16; z += 3) low = Math.min(low, chunk.getHeight(Heightmap.Types.WORLD_SURFACE, 15, z))
+                int y0 = low - 8
+                int qyMin = QuartPos.fromBlock(y0)
+                LevelChunkSection[] sections = chunk.getSections()
+                int[] changed = [0] as int[]
+                for (int i = Math.max(0, chunk.getSectionIndex(y0)); i < sections.length; i++) {
+                    LevelChunkSection sec = sections[i]
+                    boolean[] need = [false] as boolean[]
+                    sec.getBiomes().getAll({ Holder<Biome> h -> if (m.containsKey(h)) need[0] = true } as Consumer<Holder<Biome>>)
+                    if (!need[0]) continue
+                    sec.fillBiomesFromNoise({ int x, int y, int z, Climate.Sampler smp ->
+                        Holder<Biome> h = chunk.getNoiseBiome(x, y, z)
+                        Holder<Biome> t = y >= qyMin ? m.get(h) : null
+                        if (t != null) { changed[0]++; return t }
+                        return h
+                    } as BiomeResolver, sampler, QuartPos.fromSection(cx), QuartPos.fromSection(chunk.getSectionYFromSectionIndex(i)), QuartPos.fromSection(cz))
+                }
+                seen.put(key, [mode, now] as long[])
+                if (changed[0] > 0) {
+                    chunk.setUnsaved(true)
+                    resend.add(chunk)
+                    swapped++
+                    cells += changed[0]
+                }
+            }
+        }
+        if (!resend.isEmpty()) cm.resendBiomesForChunks(resend)
+        double ms = (System.nanoTime() - t0) / 1e6d
+        st.put('scanned', ((Long) st.get('scanned')) + scanned)
+        st.put('swapped', ((Long) st.get('swapped')) + swapped)
+        st.put('cells', ((Long) st.get('cells')) + cells)
+        st.put('runs', ((Long) st.get('runs')) + 1L)
+        st.put('ms', ((Double) st.get('ms')) + ms)
+        st.put('maxMs', Math.max((Double) st.get('maxMs'), ms))
     }
-  }
-  maps = [fwd, back]
-  state['silo.outside.maps'] = maps
-  state['silo.outside.seen'] = new HashMap()
-  state['silo.outside.stats'] = [swapped: 0L, cells: 0L, scanned: 0L, runs: 0L, ms: 0.0d, maxMs: 0.0d]
 }
-Map m = on ? maps[0] : maps[1]
-Map seen = state['silo.outside.seen']
-Map st = state['silo.outside.stats']
-long now = lvl.getGameTime()
-int mode = on ? 1 : 0
-def cm = lvl.getChunkSource().chunkMap
-int vd = server.getPlayerList().getViewDistance()
-def offs = state['silo.outside.offs' + vd]
-if (offs == null) {
-  offs = []
-  for (int dx = -vd; dx <= vd; dx++) for (int dz = -vd; dz <= vd; dz++) offs << [dx, dz, dx * dx + dz * dz]
-  offs.sort { it[2] }
-  state['silo.outside.offs' + vd] = offs
-}
-def sampler = lvl.getChunkSource().randomState().sampler()
-def resend = []
-boolean out = false
-for (p in players) {
-  if (out) break
-  int pcx = p.chunkPosition().x, pcz = p.chunkPosition().z
-  for (o in offs) {
-    if ((System.nanoTime() - t0) / 1e6 > MS) { out = true; break }
-    int cx = pcx + o[0], cz = pcz + o[1]
-    long key = ChunkPos.asLong(cx, cz)
-    long[] s = seen.get(key)
-    if (s != null && s[0] == mode && now - s[1] < RECHECK) continue
-    def chunk = lvl.getChunkSource().getChunkNow(cx, cz)
-    if (chunk == null) continue
-    if (cm.getPlayers(new ChunkPos(cx, cz), false).isEmpty()) continue
-    st.scanned++
-    int low = Integer.MAX_VALUE
-    for (int x = 0; x < 16; x += 3) for (int z = 0; z < 16; z += 3) low = Math.min(low, chunk.getHeight(Heightmap.Types.WORLD_SURFACE, x, z))
-    for (int z = 0; z < 16; z += 3) low = Math.min(low, chunk.getHeight(Heightmap.Types.WORLD_SURFACE, 15, z))
-    int y0 = low - 8
-    def sections = chunk.getSections()
-    int s0 = Math.max(0, chunk.getSectionIndex(y0))
-    int changed = 0
-    for (int i = s0; i < sections.length; i++) {
-      def sec = sections[i]
-      boolean need = false
-      sec.getBiomes().getAll({ h -> if (m.containsKey(h)) need = true } as java.util.function.Consumer)
-      if (!need) continue
-      int qy = QuartPos.fromSection(chunk.getSectionYFromSectionIndex(i))
-      int qyMin = QuartPos.fromBlock(y0)
-      sec.fillBiomesFromNoise({ int x, int y, int z, smp ->
-        def h = chunk.getNoiseBiome(x, y, z)
-        def t = y >= qyMin ? m.get(h) : null
-        if (t != null) { changed++; return t }
-        return h
-      } as BiomeResolver, sampler, QuartPos.fromSection(cx), qy, QuartPos.fromSection(cz))
-    }
-    seen.put(key, [mode, now] as long[])
-    if (changed > 0) {
-      chunk.setUnsaved(true)
-      resend << chunk
-      st.swapped++
-      st.cells += changed
-    }
-  }
-}
-if (!resend.isEmpty()) cm.resendBiomesForChunks(resend)
-double ms = (System.nanoTime() - t0) / 1e6
-st.runs++
-st.ms += ms
-st.maxMs = Math.max(st.maxMs, ms)
+SiloOutside.run(server, (Map<String, Object>) state)
 """
 
 STATUS = r"""
