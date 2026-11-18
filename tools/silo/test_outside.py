@@ -46,8 +46,9 @@ class Twins(unittest.TestCase):
                       "data/silo/almighty/notes/outside.md", "pack.mcmeta"):
                 self.assertTrue(os.path.exists(os.path.join(d, p)), p)
             self.assertFalse(json.load(open(os.path.join(d, "data/silo/worldgen/biome/dead/minecraft/plains.json")))["has_precipitation"])
-            for tag in ("minecraft/tags/worldgen/biome/is_overworld.json", "c/tags/worldgen/biome/is_overworld.json",
-                        "minecraft/tags/worldgen/biome/has_structure/desert_pyramid.json"):
+            self.assertFalse(os.path.exists(os.path.join(d, "data/minecraft/tags/worldgen/biome/has_structure")),
+                             "no desert tag: Photon's desert sandstorm is orange (test copy 18.11)")
+            for tag in ("minecraft/tags/worldgen/biome/is_overworld.json", "c/tags/worldgen/biome/is_overworld.json"):
                 t = json.load(open(os.path.join(d, "data", tag)))
                 self.assertFalse(t["replace"], tag)
                 self.assertEqual(sorted(t["values"]), ["silo:dead/incoming/singed", "silo:dead/minecraft/plains"], tag)

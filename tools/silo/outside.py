@@ -14,7 +14,8 @@ How (plan and reasons: the silo-weather report):
 - No rain falls because the outside's biomes are swapped for "dead twins": exact copies of each overworld biome
   (`silo:dead/<namespace>/<path>`) without precipitation and with the colours measured from the series' frames
   (sky, fog, grass, leaves, water) and a drifting dust particle. Rain over a biome without precipitation renders as
-  dust: Complementary's dry-biome fog, Particle Rain's dust haze on sand/coarse dirt, no rain streaks or sound.
+  overcast without rain: no streaks or sound; Complementary's dry-biome fog, Photon's overcast, Particle Rain's dust
+  haze on sand/coarse dirt.
 - An Almighty rule (persisted with the world) swaps biomes in the chunks players already see, nearest first, within
   a small time budget: original -> twin while on, twin -> original while off. Each twin maps to one original, so off
   restores exactly. It never loads a chunk; chunks never visited again are swapped when a player next sees them.
@@ -49,8 +50,8 @@ RULE = "silo-outside"
 COLOURS = {
     "sky_color": 0xD9F2D1,
     "fog_color": 0xFFFAD1,
-    "grass_color": 0xB4AE8C,
-    "foliage_color": 0x9A9070,
+    "grass_color": 0x9A9C84,
+    "foliage_color": 0x8A8670,
     "water_color": 0x5B6157,
     "water_fog_color": 0x2E322C,
 }
@@ -118,12 +119,12 @@ air, dead grass and leaves, no rain. Artem switches it; do not switch it on your
 """
 
 
-# Biome tags of every twin, and only these. Overworld: Particle Rain spawns its dust only in #c:is_overworld biomes.
-# Desert pyramid: Iris derives the shaders' biome_category from vanilla tags, first match wins (BiomeUniforms, 1.8.14:
-# without wandering trader -> NONE, snowy village -> ICY, hill, taiga, ocean, jungle, forest, badlands -> MESA, nether,
-# end, beach, desert pyramid -> DESERT); with this tag alone a twin reads DESERT, and in rain Photon draws its desert
-# sandstorm (fog.glsl DESERT_SANDSTORM). Twins exist in no biome source, so the structure tag places nothing.
-TAGS = ("minecraft:is_overworld", "c:is_overworld", "minecraft:has_structure/desert_pyramid")
+# Biome tags of every twin, and only these: overworld (Particle Rain spawns its dust only in #c:is_overworld biomes).
+# Not a desert tag: Iris derives the shaders' biome_category from vanilla tags (BiomeUniforms, 1.8.14: desert pyramid
+# -> DESERT), and Photon then draws its desert sandstorm in rain, which is orange (blue extinction 0.45 against red
+# 0.2, colour 1.00/0.83/0.60) and dense: test copy 18.11, frames 12-17, against the series' grey haze with the
+# skyline still visible. Without it the twins are temperate and Photon draws its own overcast.
+TAGS = ("minecraft:is_overworld", "c:is_overworld")
 
 
 def pack(dump: dict, out: str) -> int:
@@ -316,9 +317,11 @@ for (int cx = cx0 - r; cx <= cx0 + r; cx++) for (int cz = cz0 - r; cz <= cz0 + r
   def c = lvl.getChunkSource().getChunkNow(cx, cz)
   if (c == null) continue
   def hist = [:]
-  for (sec in c.getSections()) sec.getBiomes().getAll({ h ->
+  // count, not getAll: getAll reports each distinct value once per section; Lithium's count also reports zeros
+  for (sec in c.getSections()) sec.getBiomes().count({ h, int n ->
+    if (n <= 0) return
     def k = h.unwrapKey().map { it.location().toString() }.orElse('?')
-    hist[k] = (hist[k] ?: 0) + 1 } as java.util.function.Consumer)
+    hist[k] = (hist[k] ?: 0) + n } as net.minecraft.world.level.chunk.PalettedContainer.CountConsumer)
   out["${cx},${cz}"] = hist
 }
 return out
