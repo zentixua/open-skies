@@ -19,3 +19,9 @@
   (move to `archive/`, never delete; README index) and closes superseded PRs with a reason; laptop cleanup never
   touches the keep-list or his game, worlds, settings; the lead rewrites project memory; open tasks restart from the
   handoffs.
+- File exchange (tested 14.11): `/mnt/project-files` is the claude.ai project storage, mounted only in cloud sessions.
+  Laptop → project files: SendUserFile (lands in the root, subfolders dropped); the laptop reads them with
+  list_project_files/read_project_file. A cloud thread linked to the laptop reads and writes laptop files directly.
+  Big files go through netcup.
+- Browsing for research on the laptop: Camoufox on a hidden/virtual display, never flickering on Artem's desktop.
+- Laptop clock: `tsc=directsync` in /etc/default/limine keeps it right; his client logs are in local time.
