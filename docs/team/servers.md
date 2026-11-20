@@ -5,6 +5,10 @@ Procedures: the `game-servers` skill. Live state (ports in use, settings, golden
 ## netcup
 - 12 vCPU EPYC, 31 GiB, Ubuntu 24.04, no GPU, no sudo; Artem's Docker services are not ours; keep ≥ 4 GB free.
 - The host reboots itself for kernel updates and Crafty servers do not autostart afterwards.
+- CPU-rendered incoming clients (vanilla frames, incoming `client-scenario.md` "CPU rendering"): clone in
+  `~/incoming-soft`, Java 21 in `~/jdk-21*`; environment `JAVA_HOME=~/jdk-21* ORG_GRADLE_PROJECT_noRecompile=1
+  ORG_GRADLE_PROJECT_mcModsDir=run/ci-mods GRADLE_OPTS="-Dorg.gradle.daemon=false -Xmx1200m" INCOMING_SOFT_HEAP=1536m`,
+  then `tools/sandbox.sh start` / `shot` as on the laptop; one client at a time; copy frames back with `scp`.
 - The laptop reaches it with `ssh vps` (Tailscale, user ubuntu). Slow Tailscale upload: check the laptop's wlan IPv6
   MTU first (a mobile router announces 1280; `nmcli` ipv6.mtu 1480 on that connection fixes it).
 - A netcup Remote Control session starts only on Artem's message in that thread, hears only his messages and returns
