@@ -25,3 +25,7 @@
   Big files go through netcup.
 - Browsing for research on the laptop: Camoufox on a hidden/virtual display, never flickering on Artem's desktop.
 - Laptop clock: `tsc=directsync` in /etc/default/limine keeps it right; his client logs are in local time.
+- claude.ai project memory (`/tmp/claude/memory/...` in a thread) syncs only writes made with the Edit/Write tools.
+  A shell `rm` of a topic file is reverted by the next sync (tested 20.11: 93 files deleted with `rm` came back within
+  hours). Retire a stale topic file by dropping its index line in MEMORY.md and moving its facts to their repo home;
+  do not rely on deleting it.
