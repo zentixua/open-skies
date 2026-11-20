@@ -1,4 +1,4 @@
-# Silo server (team reference; rules in .claude/rules/team.md)
+# Silo server: Artem's rules and team reference
 
 Artem's Zearth Silo server (25567) rebuilds the "Silo" series' silo complex to replay the S3E09 nuke. His rules:
 - Full 1:1 scale, no exceptions (Artem, 12.11); only real data from the show and its sources, no guesses.

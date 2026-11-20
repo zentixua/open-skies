@@ -23,14 +23,18 @@ def check(root: Path) -> list[str]:
     if f.is_symlink() or not f.is_file():
         return [f"{f} must be a regular file (not missing, not a symlink)"]
     raw = f.read_bytes()
+    try:
+        text = raw.decode("utf-8")
+    except UnicodeDecodeError as e:
+        return [f"team.md is not valid UTF-8 ({e.reason} at byte {e.start}): its readers would fail"]
     problems = []
-    if not raw.strip():
+    if not text.strip():
         problems.append("team.md is empty")
     if raw.lstrip().startswith(b"---"):
         problems.append("team.md has frontmatter: a root rule must have none, or project threads may not load it")
     if len(raw) > MAX:
         problems.append(f"team.md is {len(raw)} B > {MAX} B")
-    for n, line in enumerate(raw.decode("utf-8", "replace").splitlines(), 1):
+    for n, line in enumerate(text.splitlines(), 1):
         if SECRETS.search(line):
             problems.append(f"team.md:{n}: looks like a secret")
     return problems
