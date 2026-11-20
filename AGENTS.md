@@ -29,7 +29,7 @@ the Almighty host bridge (server only) is at https://github.com/zentixua/almight
 - GitHub releases are automatic: a new `version` on `main` becomes release `v<version>` (downloads without signing in
   at `releases/latest/download/Open-Skies.zip` and `…/Open-Skies.mrpack`).
   Other public steps (Modrinth, etc.) require Artem's explicit instruction.
-- Merge a ready PR yourself after green CI and one review round by a model that did not write it. Review the diff
+- Merge a ready PR yourself (as the task's owner; team roles: `.claude/rules/team.md`) after green CI and one review round by a model that did not write it. Review the diff
   and surrounding code, not the PR description. Only serious errors (wrong behaviour, a crash) block;
   everything else is optional.
 - A commit ends with the `Co-Authored-By:` line of your own agent.

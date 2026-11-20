@@ -14,8 +14,7 @@ Procedures: the `game-servers` skill. Live state (ports in use, settings, golden
 ## Crafty play servers
 - online-mode=false + TrueUUID (licensed players verified via Mojang, unknown names offline only), whitelist, op only
   ZentixUA; plain offline mode on a public IP is unsafe. A new player gets the right UUID in
-  `config/trueuuid-registry.json`. Artem's brother Maks1k8717 plays with offline UUID
-  9c30cab0-8cf6-3404-a1a8-f645e08bb0cc (TrueUUID no-session fallback). The Crafty panel is tailnet-only; its admin
+  `config/trueuuid-registry.json` (Artem's brother plays with an offline UUID registered there). The Crafty panel is tailnet-only; its admin
   password file is never copied.
 - Stops, restarts, world resets or deletions of any server, and starting a public one, need Artem's own line in the
   working thread.

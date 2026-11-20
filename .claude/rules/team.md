@@ -12,11 +12,12 @@ changes; no history.
   briefs and missions, accepts results and keeps the project memory.
 - **Executors** on the laptop: claude2 (Artem's second Claude account, default) and Codex. Launched only through
   `delegate` / `mission` (skill `laptop-agents:delegate-agents`); `claude` (main account) only by Artem's word.
-  Normal mode: brief → executor's plan.md, stop → lead's OK → draft PR → cross-vendor review → lead merges.
-  Autonomous mode: MISSION.md; the executor finishes alone (plan, code, checks, review, merge where allowed, report);
+  Normal mode: brief → executor's plan.md, stop → lead's OK → draft PR → cross-vendor review → the lead merges (the
+  lead owns normal-mode tasks).
+  Autonomous mode: MISSION.md; the executor owns the task and finishes alone (plan, code, checks, review, merge
+  where MISSION.md allows, report);
   lead corrections in `lead-notes.md`; anything outside the mission → `questions.md` + `BLOCKED`.
-- **Each agent only where it is strong** (Artem, 19.11): Codex writes and reviews code (correctness, tests, budgets,
-  concurrency); Claude judges frames, WAV, logos and design. Never give Codex visual or aesthetic judgement.
+- Each agent only where it is strong (incoming AGENTS.md, review): Codex gets code and code review, never visuals.
 - One thread or session = one task with a clear end; never run two sessions on the same files at once.
 - **Models:** ordinary code Codex GPT-6.2 Sol medium; effort by the incoming effort rule; Fable only by Artem's
   word. **Cost:** every Claude request costs Artem money: few turns, updates only when needed, no polling (a mission
@@ -43,7 +44,8 @@ changes; no history.
 ## What needs Artem's word
 Releases (his own word for each release in the chat; a relay is not enough) and anything public (GitHub release, Modrinth, CurseForge, YouTube, TikTok, public replies), contacting
 other authors, live servers and worlds, his game/instances/worlds/settings, deleting anything your task did not
-create, one-off paid resources, new required pack mods, Claude permissions/hooks/`settings.json`, the Fable model.
+create, one-off paid resources, new required pack mods, Claude permissions, `settings.json` and account-level hooks (plugin hooks change by
+ordinary PR), the Fable model.
 Code PRs and their merge are ordinary engineering work.
 
 ## Machines
@@ -64,12 +66,14 @@ Code PRs and their merge are ordinary engineering work.
 Minecraft servers run only in Crafty on netcup; read the `game-servers` skill before any server work and never build a
 server from scratch. Newisle 25565, Zearth 25566, Zearth Silo 25567: the same pack and settings, different maps. Work
 on fresh copies of the reference maps; restarts, resets and live worlds only by Artem's word (he may be playing).
-Details (netcup, Crafty, golden worlds, test jars): `docs/team/servers.md`.
+Details (netcup, Crafty, golden worlds, test jars): `docs/team/servers.md`; the Silo server's rules:
+`docs/team/silo.md`.
 
 ## Media
 - YouTube trailer: staged, cinematic, English, no worse than the scenario reference; deviations announced before;
   final when the "falls short" list is empty.
 - TikTok: live player-view footage that Artem records and we render; every frame checked against game data.
+- Every mod's store pages and README first screen use the popular-mod layout (incoming `docs/store/listing.md`).
 - Shot verification, trailer and TikTok specs, captions, stores, Reddit: `docs/team/media.md`.
 
 ## Knowledge
