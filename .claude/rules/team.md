@@ -17,6 +17,7 @@ changes; no history.
   lead corrections in `lead-notes.md`; anything outside the mission → `questions.md` + `BLOCKED`.
 - **Each agent only where it is strong** (Artem, 19.11): Codex writes and reviews code (correctness, tests, budgets,
   concurrency); Claude judges frames, WAV, logos and design. Never give Codex visual or aesthetic judgement.
+- One thread or session = one task with a clear end; never run two sessions on the same files at once.
 - **Models:** ordinary code Codex GPT-6.2 Sol medium; effort by the incoming effort rule; Fable only by Artem's
   word. **Cost:** every Claude request costs Artem money: few turns, updates only when needed, no polling (a mission
   announces long waits in `WAITING`).
