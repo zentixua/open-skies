@@ -41,6 +41,10 @@ jobs:
       - name: packwiz
         run: go install github.com/packwiz/packwiz@v0.0.0-20260906154125-ef87d964f8cb
 
+      # Team rules every agent loads at start (.claude/rules/team.md): present, unpathed, <= 8 KiB, no secrets.
+      - name: Team rules
+        run: python3 ../tools/check_team_rules.py ..
+
       # .pw.toml files are edited manually or by packwiz; recalculate their hashes in the index in the same commit.
       - name: Fresh index
         run: |

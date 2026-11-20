@@ -45,6 +45,7 @@ pack/                    ← the modpack: pack.toml (game and NeoForge versions)
                            shaderpacks/*.pw.toml (download sources and hashes), config/ (copied into the game as is)
 tools/prism_instance.py  ← Prism instance that installs pack/ from main before every launch (Open-Skies.zip)
 tools/pack_dir.py        ← game directory from pack/ without Prism (mods checked by hash), for Incoming client checks
+.claude/rules/team.md    ← team and operations rules for every agent of Artem's projects (gate tools/check_team_rules.py)
 tools/check_loader.py    ← every mod (including nested jars) accepts the NeoForge version in pack.toml; a CI step
 tools/boot_check.py      ← the modpack boots from scratch: server reaches "Done", client enters a world, client on
                            this server records a Flashback replay; CI job "Запуск с нуля" (client: Xvfb and Mesa);
