@@ -51,7 +51,8 @@ Code PRs and their merge are ordinary engineering work.
 ## Machines
 - **Laptop zentixua-pc** (CachyOS, RTX 4060, 32 GB): all GPU work, only through `tools/gpu_lease.sh` /
   `tools/laptop_job.sh --gpu --wait`, never while Artem plays. Repositories in `/mnt/data/projects/`; the shared
-  checkout `/mnt/data/projects/incoming` is often behind `origin/main`: work in worktrees from `origin/main`.
+  checkout `/mnt/data/projects/incoming` stays on `main`, fast-forwarded by `delegate`/`mission`: never work on it,
+  use worktrees from `origin/main`.
   Never delete: `mod/run/newisle-*`, `mod/run/scenario`, `mod/run/film-war`, `release-media/music`,
   `tools/.trailer-cache`, `newisle-laptop.json`, `wt-*` and `mod/run/agents/*` (until his word).
 - **netcup** (12 vCPU, 31 GB, no GPU, no sudo; `ssh vps`, user ubuntu): CPU-heavy work and game servers; leave the host
