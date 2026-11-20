@@ -19,8 +19,9 @@ changes; no history.
   lead corrections in `lead-notes.md`; anything outside the mission → `questions.md` + `BLOCKED`.
 - Each agent only where it is strong (incoming AGENTS.md, review): Codex gets code and code review, never visuals.
 - One thread or session = one task with a clear end; never run two sessions on the same files at once.
-- **Models:** ordinary code Codex GPT-6.2 Sol medium; effort by the incoming effort rule; Fable only by Artem's
-  word. **Cost:** every Claude request costs Artem money: few turns, updates only when needed, no polling (a mission
+- **Models** by difficulty and cost (table: project files `ops/models/MODELS-report.md`): ordinary code Codex
+  GPT-6.2 Sol medium; hard work Codex Astra or Claude Opus at high; mechanical work Haiku or Terra; effort by the
+  incoming effort rule (above high only after high demonstrably failed); Fable only by Artem's word. **Cost:** every Claude request costs Artem money: few turns, updates only when needed, no polling (a mission
   announces long waits in `WAITING`).
 
 ## Talking to Artem (the lead)
