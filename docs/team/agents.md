@@ -23,5 +23,8 @@
   Laptop → project files: SendUserFile (lands in the root, subfolders dropped); the laptop reads them with
   list_project_files/read_project_file. A cloud thread linked to the laptop reads and writes laptop files directly.
   Big files go through netcup.
+- Frames or clips for Artem's review go in a private claude.ai artifact (made by the session that has them), its link
+  posted in the thread; never pushed to a branch: the auto-mode filter refuses that as leakage, in a public or a private
+  repository, and SendUserFile from a laptop session reaches only that session's desktop chat, not the project.
 - Browsing for research on the laptop: Camoufox on a hidden/virtual display, never flickering on Artem's desktop.
 - Laptop clock: `tsc=directsync` in /etc/default/limine keeps it right; his client logs are in local time.
