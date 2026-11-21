@@ -1,0 +1,267 @@
+"""The plain the complex stands on: one open grassland across the whole field, easing into the natural land.
+
+In the show's 2052 scenes the silos lie in one levelled field of mown grass. Here the field is one height (the
+median of the natural ground under it, or the layout's "level") with a gentle roll of +-UNDULATE blocks, over the
+whole complex: the plain weight is 1 within CORE of the convex hull of all shafts and rings and falls to 0 at EDGE,
+with a smooth ragged edge so the forest boundary reads as natural. Water inside the plain is filled. Inside the plain trees are cleared; water stays, and land next to water is never lowered (so no
+water spills). Each silo's own site (site.py) blends into this plain.
+"""
+from __future__ import annotations
+
+import json
+import math
+import os
+
+import numpy as np
+
+from heights import MISSING, read_area
+from surface import hash01, smooth
+from volume import Volume
+
+SIGMA = 40.0          # metres of the low-pass
+MAX_CHANGE = 9        # blocks the plain may move the natural ground
+CORE, EDGE = 150.0, 240.0   # plain weight 1 within CORE of the complex's hull, 0 at EDGE (a 90 m blend to Zearth)
+UNDULATE = 1.0        # blocks: the plain's roll, over ~700 m (13.11 review: a +-2 roll over 110 m showed as dozens of
+                      # wavy 1-block terrace lines under shaders; the 2052 field reads as smooth open grass)
+ROLL_CELL = 700       # metres per value-noise cell of that roll
+TREES_OUT = 0.5       # plain weight above which trees are cleared
+SHORE = 8             # shaped ground within this many blocks of remaining water stays above its surface
+FILL = 0.35           # plain weight above which water is filled
+TOWN_KEEP = 12        # blocks around a town chunk left untouched
+
+
+def dilate_max(a: np.ndarray, r: int) -> np.ndarray:
+    """Maximum over a (2r+1)-square neighbourhood, by r 3x3 steps."""
+    out = a.copy()
+    for _ in range(r):
+        p = np.pad(out, 1, mode="edge")
+        out = np.max(np.stack([p[i:i + a.shape[0], j:j + a.shape[1]] for i in range(3) for j in range(3)]), axis=0)
+    return out
+
+
+def gaussian_conv(a: np.ndarray, w: np.ndarray, sigma_cells: float) -> np.ndarray:
+    """Normalised convolution: weighted mean of a with weights w under a Gaussian."""
+    r = int(3 * sigma_cells)
+    ax = np.arange(-r, r + 1)
+    g = np.exp(-ax ** 2 / (2 * sigma_cells ** 2))
+    g /= g.sum()
+
+    def sep(m):
+        m = np.apply_along_axis(lambda v: np.convolve(v, g, mode="same"), 0, m)
+        return np.apply_along_axis(lambda v: np.convolve(v, g, mode="same"), 1, m)
+    num = sep(a * w)
+    den = sep(w)
+    return np.where(den > 1e-3, num / np.maximum(den, 1e-6), np.nan)
+
+
+
+def smooth_noise(nx: int, nz: int, cell: int, seed: int) -> np.ndarray:
+    """Value noise in [0, 1] with one random value per `cell` metres, cubic-interpolated: no steps between cells
+    (the old ragged edge used hash01(X // 24, Z // 24), constant per 24 m cell, and its jumps in the plain weight
+    left 2-3 block dirt steps)."""
+    from scipy.ndimage import zoom
+    gx, gz = nx // cell + 4, nz // cell + 4
+    i = np.arange(gx)[:, None]
+    k = np.arange(gz)[None, :]
+    coarse = hash01(i, k, seed)
+    fine = zoom(coarse, cell, order=3)
+    return np.clip(fine[cell:cell + nx, cell:cell + nz], 0.0, 1.0)
+
+
+def hull_distance(points, x0: int, z0: int, nx: int, nz: int) -> np.ndarray:
+    """Distance from each column to the convex hull of the points (0 inside): the complex as one area, so the plain
+    covers everything between the silos (Artem 11.11: one open plain, the 2052 look), not a disc round each."""
+    from scipy.spatial import ConvexHull
+    pts = np.asarray(points, float)
+    poly = pts[ConvexHull(pts).vertices]                  # counter-clockwise in (x, z)
+    X = np.arange(nx, dtype=np.float32)[:, None] + x0
+    Z = np.arange(nz, dtype=np.float32)[None, :] + z0
+    d = np.full((nx, nz), np.inf, np.float32)
+    inside = np.ones((nx, nz), bool)
+    for (ax, az), (bx, bz) in zip(poly, np.roll(poly, -1, axis=0)):
+        ex, ez = bx - ax, bz - az
+        L2 = ex * ex + ez * ez
+        t = np.clip(((X - ax) * ex + (Z - az) * ez) / L2, 0, 1)
+        d = np.minimum(d, np.hypot(X - (ax + t * ex), Z - (az + t * ez)))
+        inside &= (ex * (Z - az) - ez * (X - ax)) >= 0
+    return np.where(inside, 0.0, d)
+
+class Field:
+    def __init__(self, layout_path: str, world: str, cache_dir: str):
+        self.layout = json.load(open(layout_path))
+        self.silos = [s for s in self.layout["silos"] if not s.get("unplaced")]
+        xs = [s["x"] for s in self.silos] + [s["ring"][0] for s in self.silos if "ring" in s]
+        zs = [s["z"] for s in self.silos] + [s["ring"][1] for s in self.silos if "ring" in s]
+        m = int(EDGE + 3 * SIGMA + 16)
+        self.x0, self.z0 = min(xs) - m, min(zs) - m
+        self.nx, self.nz = max(xs) + m - self.x0 + 1, max(zs) + m - self.z0 + 1
+        os.makedirs(cache_dir, exist_ok=True)
+        cache = os.path.join(cache_dir, f"field_{self.x0}_{self.z0}_{self.nx}_{self.nz}.npz")
+        if os.path.exists(cache):
+            d = np.load(cache)
+            self.ground, self.water, self.top = d["ground"], d["water"], d["top"]
+        else:
+            self.ground, self.water, self.top = read_area(world, self.x0, self.z0, self.nx, self.nz)
+            np.savez_compressed(cache, ground=self.ground, water=self.water, top=self.top)
+        self._plain()
+
+    def _plain(self) -> None:
+        known = self.ground > MISSING
+        wet = known & (self.water > MISSING)
+        land = known & ~wet
+        g = np.where(known, self.ground, 0).astype(float)
+        smooth_g = gaussian_conv(g, land.astype(float), SIGMA)
+        X = np.arange(self.nx)[:, None] + self.x0
+        Z = np.arange(self.nz)[None, :] + self.z0
+        d = np.full((self.nx, self.nz), 1e9)
+        for s in self.silos:            # the plain reaches out from each shaft and from its ring (crater)
+            d = np.minimum(d, np.hypot(X - s["x"], Z - s["z"]))
+            if "ring" in s:
+                d = np.minimum(d, np.hypot(X - s["ring"][0], Z - s["ring"][1]))
+        pts = [(s["x"], s["z"]) for s in self.silos] + [tuple(s["ring"]) for s in self.silos if "ring" in s]
+        dh = hull_distance(pts, self.x0, self.z0, self.nx, self.nz)
+        rag = 30 * (smooth_noise(self.nx, self.nz, 48, 7) - 0.5) + 12 * (smooth_noise(self.nx, self.nz, 14, 9) - 0.5)
+        w = 1 - smooth(CORE, EDGE, dh + rag)
+        # Zearth's own towns and villages stay as built only beyond the complex: inside the hull's core they are
+        # levelled with the rest of the field; in the blend the plain fades out before them
+        towns = self.layout.get("towns", [])
+        if towns:
+            dt = np.full((self.nx, self.nz), 1e9)
+            for tx, tz in towns:
+                i_, k_ = tx - self.x0, tz - self.z0
+                if 0 <= i_ < self.nx and 0 <= k_ < self.nz and dh[i_, k_] < CORE - 20:
+                    continue
+                if self.x0 - 100 <= tx <= self.x0 + self.nx + 100 and self.z0 - 100 <= tz <= self.z0 + self.nz + 100:
+                    dt = np.minimum(dt, np.maximum(np.abs(X - tx), np.abs(Z - tz)) - 8)
+            w = w * smooth(TOWN_KEEP, TOWN_KEEP + 96, dt)          # wide: a 48 m fade left 2-7 block steps
+        del dh
+        self.weight, self.dist = w, d
+        # land eases toward the low-passed ground; water inside the plain is filled to it
+        # far from any land (open water) the fill comes up to a block above the water
+        smooth_g = np.where(np.isnan(smooth_g), np.where(wet, self.water + 1.0, g), smooth_g)
+        # the first draft: rolling ground, the natural relief low-passed and moved at most MAX_CHANGE. Kept only to
+        # know what that draft built, so a rebuild can take it away again
+        old = np.where(land, g + w * np.clip(smooth_g - g, -MAX_CHANGE, MAX_CHANGE), smooth_g)
+        old_filled = wet & (w > FILL)
+        wl = dilate_max(np.where(wet & ~old_filled, self.water, MISSING), SHORE)
+        old = np.where(wl > MISSING, np.maximum(old, wl + 1), old)
+        self.old_height = np.where(known & (w > 0.02) & (land | old_filled), np.round(old), self.ground).astype(np.int32)
+        # the show's complex is levelled: one flat field at a single height (S3E09 02, 05, 10, 28: flat mown ground
+        # to the treeline), easing into Zearth's own relief only beyond CORE. The rolling draft kept up to 50 blocks
+        # of Zearth's hills between the shafts (63-85 on the plain, sites at 58-109)
+        core = known & land & (w >= 0.99)
+        self.level = int(self.layout.get("level") or round(float(np.median(g[core]))))
+        base = np.where(land, g, np.where(wet, self.water + 1.0, g))
+        roll = UNDULATE * (2 * smooth_noise(self.nx, self.nz, ROLL_CELL, 13) - 1)   # presentation: a slow, low roll
+        plain = base + w * (self.level + roll - base)
+        del roll
+        self.filled = wet & (w > FILL)
+        # banks hold the water that stays: shaped ground near it stays a block above its surface
+        wl = dilate_max(np.where(wet & ~self.filled, self.water, MISSING), SHORE)
+        plain = np.where(wl > MISSING, np.maximum(plain, wl + 1), plain)
+        shaped = known & (w > 0.02) & (land | self.filled)
+        self.height = np.where(shaped, np.round(plain), self.ground).astype(np.int32)
+        self.shaped = shaped
+
+    def slice(self, x: int, z: int, radius: int):
+        """For surface.Site around x, z: plain height, water that stays, highest block, original ground, plain weight
+        (0 at Zearth's towns, which no site may touch)."""
+        i, k = x - radius - self.x0, z - radius - self.z0
+        n = 2 * radius + 1
+        sl = (slice(i, i + n), slice(k, k + n))
+        water = np.where(self.filled[sl], MISSING, self.water[sl])
+        top = np.maximum(self.top[sl], np.where(self.filled[sl], self.water[sl], MISSING))
+        # what the rolling draft built above its ground (berms 2, camera block 5, the opening-day set 16) goes too
+        top = np.maximum(top, self.old_height[sl] + 20)
+        return self.height[sl], water, top, self.ground[sl], self.weight[sl]
+
+    def tiles(self, size: int = 128, skip_site: float = 100, gaps: int | None = None, paths: set | None = None):
+        """Plain tiles, nearest to Silo 1 first: (name, Volume) without columns a silo site rebuilds anyway.
+
+        With gaps (the sites' half-size, surface.Site.radius) only the columns the first pass skipped as near a
+        shaft or ring but that no site lays (see laid): the ring sits 115.5 m out along the tunnel, so its 100 m
+        circle reaches past its own site's square and into other silos' squares outside their cells, which left
+        forest and water there. Beyond 64 m from a portal no crater shapes the ground, so the plain height holds."""
+        s1 = self.silos[0]
+        tiles = []
+        for i in range(0, self.nx, size):
+            for k in range(0, self.nz, size):
+                w = self.weight[i:i + size, k:k + size]
+                if w.max() <= 0.02:
+                    continue
+                cx, cz = self.x0 + i + size // 2, self.z0 + k + size // 2
+                tiles.append((math.hypot(cx - s1["x"], cz - s1["z"]), i, k))
+        tiles.sort()
+        for _, i, k in tiles:
+            v = self.tile(i, k, size, skip_site, gaps, paths)
+            if v is not None:
+                yield f"{'gap' if gaps else 'plain'}_{self.x0 + i}_{self.z0 + k}", v
+
+    def laid(self, i: int, k: int, shape, half: int, reach: float = 150, shaft_zone: float = 120) -> np.ndarray:
+        """Columns some silo site lays (surface.Site.build): a site lays its own cell, the columns nearest its
+        shaft-to-portal line (ties go to both), within its square of the given half-size, out to reach from that
+        line or shaft_zone from its shaft."""
+        X = np.arange(shape[0])[:, None] + self.x0 + i
+        Z = np.arange(shape[1])[None, :] + self.z0 + k
+        lines = []
+        for s in self.silos:
+            ax, az = s["x"], s["z"]
+            bx, bz = s.get("ring", (ax, az))
+            dx, dz = bx - ax, bz - az
+            L2 = max(dx * dx + dz * dz, 1e-9)
+            t = np.clip(((X - ax) * dx + (Z - az) * dz) / L2, 0, 1)
+            lines.append(np.hypot(X - (ax + t * dx), Z - (az + t * dz)))
+        near = np.min(lines, axis=0)
+        laid = np.zeros(np.broadcast_shapes(X.shape, Z.shape), bool)
+        for s, d in zip(self.silos, lines):
+            square = (np.abs(X - s["x"]) <= half) & (np.abs(Z - s["z"]) <= half)
+            zone = (d <= reach) | (np.hypot(X - s["x"], Z - s["z"]) <= shaft_zone)
+            laid |= square & zone & (d <= near + 1e-6)
+        return laid
+
+    def tile(self, i: int, k: int, size: int, skip_site: float, gaps: int | None = None,
+             paths: set | None = None) -> Volume | None:
+        """paths: world columns whose top block becomes path (paths.py: smooth sandstone, flush with the lawn)."""
+        sl = (slice(i, i + size), slice(k, k + size))
+        w, h, n, top = self.weight[sl], self.height[sl], self.ground[sl], self.top[sl]
+        dist, filled, ws = self.dist[sl], self.filled[sl], self.water[sl]
+        old_h = self.old_height[sl]
+        if gaps is None:
+            work = self.shaped[sl] & (dist > skip_site)
+        else:
+            work = self.shaped[sl] & (dist <= skip_site) & ~self.laid(i, k, h.shape, gaps)
+        if not work.any():
+            return None
+        clear = work & (w > TREES_OUT)
+        lo = int(np.minimum(h, n)[work].min()) - 3
+        hi = int(np.maximum(np.maximum(np.where(clear, top, h), np.maximum(h, n)), ws)[work].max()) + 1
+        nx, nz = h.shape
+        v = Volume((self.x0 + i, lo, self.z0 + k), (nx, hi - lo + 1, nz))
+        ids = v.ids
+        grass, dirt, air, tall = v.id("minecraft:grass_block"), v.id("minecraft:dirt"), v.id("minecraft:air"), v.id("minecraft:short_grass")
+        X = np.arange(nx)[:, None] + self.x0 + i
+        Z = np.arange(nz)[None, :] + self.z0 + k
+        tuft = hash01(X, Z, 3) < 0.3
+        from surface import path_state
+        path = None
+        for a, b in zip(*np.nonzero(work)):
+            t, nat = int(h[a, b]), int(n[a, b])
+            col = ids[a, :, b]
+            if t != nat or filled[a, b]:
+                col[min(t, nat) - 2 - lo:t - lo] = dirt
+                col[t - lo] = grass
+            up = int(top[a, b]) if clear[a, b] else nat
+            if filled[a, b]:
+                up = max(up, int(ws[a, b]))        # the water above the new ground goes
+            if up > t:
+                col[t + 1 - lo:up + 1 - lo] = air
+            # also on a filled lake: the fill is lawn now, and the lines of the show cross where the lakes were
+            if paths and (self.x0 + i + a, self.z0 + k + b) in paths:
+                col[t - lo] = v.id(path_state(self.x0 + i + a, self.z0 + k + b))
+                if t + 1 - lo < col.shape[0]:
+                    col[t + 1 - lo] = air
+                continue
+            if (t != nat or clear[a, b]) and tuft[a, b] and t + 1 - lo < col.shape[0]:
+                if t != nat:
+                    col[t + 1 - lo] = tall
+        return v
