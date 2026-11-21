@@ -16,7 +16,11 @@ changes; no history.
   lead owns normal-mode tasks).
   Autonomous mode: MISSION.md; the executor owns the task and finishes alone (plan, code, checks, review, merge
   where MISSION.md allows, report);
-  lead corrections in `lead-notes.md`; anything outside the mission → `questions.md` + `BLOCKED`.
+  lead corrections in `lead-notes.md`. Inside a goal or look Artem approved, missions and the laptop decide
+  everything themselves (how to finish, better or different, another round of fixes or review, task order), take the
+  best option toward the goal, record the decision with its reason in the PR and keep going (Artem, 21.11). They stop
+  and wait for him only for "What needs Artem's word" below → `questions.md` + `BLOCKED`. At night the laptop acts as
+  the lead for its own missions.
 - Each agent only where it is strong (incoming AGENTS.md, review): Codex gets code and code review, never visuals.
 - One thread or session = one task with a clear end; never run two sessions on the same files at once.
 - **Models** by difficulty and cost (table: project files `ops/models/MODELS-report.md`): ordinary code Codex
