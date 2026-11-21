@@ -52,7 +52,7 @@ Everything else inside a goal or look Artem approved is ours to decide (Artem, 2
 doing it better or differently, an extra round of fixes or review (the required review is never skipped), task order.
 Pick the best option toward the goal, record the decision and its reason in the PR, and keep going; never stop to wait
 for him on such a question. A mission stops (`BLOCKED`) only on an item from the list above; MISSION.md scope still
-binds. While the cloud lead cannot reach the laptop (the laptop session takes only Artem's own lines), the laptop
+binds. While the cloud lead cannot reach the laptop (the laptop session takes only Artem's own lines; a new thread starts its own, `docs/team/agents.md`), the laptop
 session acts as lead for its own missions: it answers their questions and merges what their MISSION.md allows.
 
 ## Machines
