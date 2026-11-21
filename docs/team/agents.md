@@ -1,7 +1,10 @@
 # Agent environment (team reference; rules in .claude/rules/team.md)
 
 - The laptop auto-mode filter accepts agent launches and server actions only after Artem's own line in that thread;
-  ask for it up front, for the whole scope. A quiet laptop session is checked by its processes and service state, not
+  ask for it up front, for the whole scope. The laptop lead is a Remote Control session bound to one project thread:
+  it takes only Artem's own messages posted there (send_message to it is refused). A new thread that must steer the
+  laptop starts its own session (`start_remote_control`, folder from `list_devices`, carrying Artem's line); he approves
+  it once on the card. Files the laptop executors need go on a git branch: they cannot read project files. A quiet laptop session is checked by its processes and service state, not
   its last report.
 - Project threads run in auto mode (bypass/dontAsk ignored); auto mode drops broad allow rules and every Agent/Monitor
   allow rule. Agent writes to `.claude/settings.json` are blocked as self-modification even after Artem's «да»: send
