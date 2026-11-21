@@ -49,9 +49,11 @@ create, one-off paid resources, new required pack mods, Claude permissions, `set
 ordinary PR), the Fable model.
 Code PRs and their merge are ordinary engineering work.
 Everything else inside a goal or look Artem approved is ours to decide (Artem, 21.11, permanent): how to reach it,
-doing it better or differently, another round of fixes or review, task order. Pick the best option toward the goal,
-record the decision and its reason in the PR, and keep going; never stop to wait for him on such a question. A mission
-stops (`BLOCKED`) only on an item from the list above. At night the laptop session acts as lead for its own missions.
+doing it better or differently, an extra round of fixes or review (the required review is never skipped), task order.
+Pick the best option toward the goal, record the decision and its reason in the PR, and keep going; never stop to wait
+for him on such a question. A mission stops (`BLOCKED`) only on an item from the list above; MISSION.md scope still
+binds. While the cloud lead cannot reach the laptop (the laptop session takes only Artem's own lines), the laptop
+session acts as lead for its own missions: it answers their questions and merges what their MISSION.md allows.
 
 ## Machines
 - **Laptop zentixua-pc** (CachyOS, RTX 4060, 32 GB): GPU work (shader-pack, Voxy/DH frames, frame cost) only through
