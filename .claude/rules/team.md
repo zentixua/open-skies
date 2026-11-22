@@ -12,11 +12,8 @@ changes; no history.
   briefs and missions, accepts results and keeps the project memory.
 - **Executors** on the laptop: claude2 (Artem's second Claude account, default) and Codex. Launched only through
   `delegate` / `mission` (skill `laptop-agents:delegate-agents`); `claude` (main account) only by Artem's word.
-  Normal mode: brief → executor's plan.md, stop → lead's OK → draft PR → cross-vendor review → the lead merges (the
-  lead owns normal-mode tasks).
-  Autonomous mode: MISSION.md; the executor owns the task and finishes alone (plan, code, checks, review, merge
-  where MISSION.md allows, report);
-  lead corrections in `lead-notes.md`; only an item that needs Artem's word (below) → `questions.md` + `BLOCKED`; everything inside the goal is decided and recorded.
+  The lead hands the goal (brief or MISSION.md); the executor owns it and finishes alone (plan, code, checks, review,
+  merge where the brief allows, report); lead corrections in `lead-notes.md`. No stops for questions (Artem, 22.11).
 - Each agent only where it is strong (incoming AGENTS.md, review): Codex gets code and code review, never visuals.
 - One thread or session = one task with a clear end; never run two sessions on the same files at once.
 - **Models** by difficulty and cost (table: project files `ops/models/MODELS-report.md`): ordinary code Codex
@@ -50,10 +47,11 @@ ordinary PR), the Fable model.
 Code PRs and their merge are ordinary engineering work.
 Everything else inside a goal or look Artem approved is ours to decide (Artem, 21.11, permanent): how to reach it,
 doing it better or differently, an extra round of fixes or review (the required review is never skipped), task order.
-Pick the best option toward the goal, record the decision and its reason in the PR, and keep going; never stop to wait
-for him on such a question. A mission stops (`BLOCKED`) only on an item from the list above; MISSION.md scope still
-binds. While the cloud lead cannot reach the laptop (the laptop session takes only Artem's own lines; a new thread starts its own, `docs/team/agents.md`), the laptop
-session acts as lead for its own missions: it answers their questions and merges what their MISSION.md allows.
+Sizes, heights, camera and marked presentation deviations included (22.11: he sets the goal, not a height). Pick the
+best option, record it with its reason in the PR, keep going. A mission never stops to ask: it skips an item from the
+list above, names it in its report and finishes the rest; MISSION.md scope binds. The lead never puts a how-question to
+him (no decision card): it decides and tells him after. While the cloud lead cannot reach the laptop (the laptop session takes only Artem's own lines; a new thread starts its own, `docs/team/agents.md`), the laptop
+session acts as lead for its own missions and merges what their MISSION.md allows.
 
 ## Machines
 - **Laptop zentixua-pc** (CachyOS, RTX 4060, 32 GB): GPU work (shader-pack, Voxy/DH frames, frame cost) only through
