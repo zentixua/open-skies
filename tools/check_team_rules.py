@@ -23,7 +23,8 @@ SECRETS = re.compile(
 ANCHORS = [
     ("## What needs Artem's word", "the list of what waits for Artem"),
     ("Everything else inside a goal or look Artem approved is ours to decide", "the autonomy rule (Artem, 21.11)"),
-    ("A mission stops (`BLOCKED`) only on an item from the list above", "the only reason a mission stops"),
+    ("A mission never stops to ask", "missions never stop for questions (Artem, 22.11)"),
+    ("The lead never puts a how-question to him", "the lead decides how-questions itself (Artem, 22.11)"),
 ]
 
 
