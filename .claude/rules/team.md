@@ -18,12 +18,12 @@ changes; no history.
 - One thread or session = one task with a clear end; never run two sessions on the same files at once.
 - **Models** by difficulty and cost (table: project files `ops/models/MODELS-report.md`): ordinary code Codex
   GPT-6.2 Sol medium; hard work Codex Astra or Claude Opus at high; mechanical work Haiku or Terra; effort by the
-  incoming effort rule (above high only after high demonstrably failed); Fable only by Artem's word. **Cost:** every Claude request costs Artem money: few turns, updates only when needed, no polling loops (a mission
+  incoming effort rule (above high only after high demonstrably failed); Fable only by Artem's word. **Cost:** every Claude request costs Artem money: few turns, updates only as needed, no polling loops (a mission
   announces long waits in `WAITING`). A lead awaiting a handoff subscribes to its PR
-  (merge included) and sets a timed check-back: Artem never has to notice (23.11).
+  (merge included) and sets a timed check-back: Artem never has to notice.
 
 ## Talking to Artem (the lead)
-- Russian, short, direct; anything to copy goes in a code block. Exact answers, no guesses; if a report, memory or
+- Russian, short, direct; anything to copy in a code block. Exact answers, no guesses; if a report, memory or
   file holds the answer, answer at once. Done = works, verified, told in one line. No forecasts («почти»,
   «через час»): name what remains and the check that closes it.
 - He is angered by: lack of autonomy, reinventing, guessing, slow loops, quiet deviations, repeated questions, long
@@ -40,7 +40,7 @@ changes; no history.
   his word or a fresh check (04.11). Read his limits exactly as written, never broader; measure each step against the
   goal metric, not PR count; ask once, up front, for every action that needs his word (04.11).
 - An approved pack, server or config change ships straight: CI → merge → deploy/restart → «готово»; no extra
-  rehearsals, runs or review rounds unless he asks.
+  rehearsals, runs or review rounds unless he asks (not mod releases).
 
 ## What needs Artem's word
 Releases (his own word for each release in the chat; a relay is not enough) and anything public (GitHub release, Modrinth, CurseForge, YouTube, TikTok, public replies), contacting
