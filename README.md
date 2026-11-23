@@ -304,6 +304,7 @@ Default Options — только у игроков. Его библиотека 
 
 | версия | мод | что изменилось |
 |---|---|---|
+| 0.1.64 | 3.13.0 | Обновлены моды: Create: Diesel Generators 1.21.1-1.3.16, CreativeCore 2.13.55, Entity Culling 1.12.2, Euphoria Patches 1.11.2-r5.10-neoforge, Flashback Neoforge Fixed 1.0.19, Geckolib 4.9.4, Iris Bonk 1.21.1-0.1.5, Just Enough Items (JEI) 19.76.1.478, LOD Server Support v0.23.0-beta.1+neoforge+mc1.21.1, Particle Rain v4.0.4+1.21.1-neoforge, Reese's Sodium Options mc1.21.1-2.2.6+neoforge, Subtle Effects 1.15.3, Vista 1.21.1-5.6.10, Complementary Shaders - Unbound r5.10, MakeUp - Ultra Fast 9.6a. Обновление автоматическое. |
 | 0.1.63 | 3.13.0 | Обновлены моды: Contraption Lights (Bi-directional Coloured Dynamic Lights) 1.6.0, CreativeCore 2.13.54, Entity Culling 1.12.1, Flashback Neoforge Fixed 1.0.18, Kotlin for Forge 5.13.0, LOD Server Support v0.22.0-beta.1+neoforge+mc1.21.1, MezzConfig 0.7.1, Subtle Effects 1.15.2. Обновление автоматическое. |
 | 0.1.62 | 3.13.0 | Iris Bonk: экраны Vista с шейдерпаком показывают картинку, а не чёрный экран. Vista больше не показывает при запуске предупреждение об Iris. Обновление автоматическое. |
 | 0.1.61 | 3.13.0 | Vista (+ Moonlight Lib): экраны с живой картинкой с камеры, широкие экраны из телевизоров. Ставится и на сервер. Обновление автоматическое. |

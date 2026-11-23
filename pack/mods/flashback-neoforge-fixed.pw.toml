@@ -1,16 +1,16 @@
 name = "Flashback Neoforge Fixed"
-filename = "flashback_neoforge_fixed-1.0.18.jar"
+filename = "flashback_neoforge_fixed-1.0.19.jar"
 side = "client"
 
 [download]
-url = "https://cdn.modrinth.com/data/QaOcZcLU/versions/6lI0Ig17/flashback_neoforge_fixed-1.0.18.jar"
+url = "https://cdn.modrinth.com/data/QaOcZcLU/versions/Fglj63ER/flashback_neoforge_fixed-1.0.19.jar"
 hash-format = "sha512"
-hash = "dea893742d4b61fa457785b52533ac39edb24d74f7edb036ff5fed7f1fe56d46d0f9211584add48769d028bcd655f0f4c5f254698db403ed3fec46c4695bfe9b"
+hash = "61e59bfe229bbc7d5bbeee64ce499cab6739220e60e31d2d9aa13dd043c3e1dd456c7601731816710794a242a427191bddede733293bf976f4afa3a34bed50e2"
 
 [update]
 [update.modrinth]
 mod-id = "QaOcZcLU"
-version = "6lI0Ig17"
+version = "Fglj63ER"
 
 [option]
 optional = true
