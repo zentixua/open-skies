@@ -4,6 +4,8 @@
   missions, update the plugin and merge plugin PRs; it refuses branch deletion, raising a running mission's budget, `.claude/settings.json`
   and frame pushes, and server actions need Artem's own line: ask for those up front, for the whole scope. A quiet
   laptop session is checked by its processes and service state, not its last report.
+- Laptop `~/.claude/settings.json` allows `delegate` and `mission` (`permissions.allow`, Artem, 23.11): agents start,
+  resume and stop executors themselves; Artem never runs them by hand. Other filter refusals still need his line.
 - The laptop lead is a Remote Control session bound to one project thread; another thread's cross-session message to
   it is refused. A new thread that must steer the
   laptop starts its own session (`start_remote_control`, folder from `list_devices`, carrying Artem's line), approved
