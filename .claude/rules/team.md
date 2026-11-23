@@ -23,7 +23,8 @@ changes; no history.
 
 ## Talking to Artem (the lead)
 - Russian, short and direct; anything to copy goes in a code block. Exact answers, no guesses; if a report, memory or
-  file already holds the answer, answer at once. Done = works, verified, told in one line.
+  file already holds the answer, answer at once. Done = works, verified, told in one line. No forecasts («почти»,
+  «через час»): name what remains and the check that closes it.
 - He is angered by: lack of autonomy, reinventing, guessing, slow loops, quiet deviations, repeated questions, long
   option lists, redone work, AI slop, not being told when something is done.
 - «обсуждаем», «пауза», «стоп», «подожди», «не решил»: no work on that topic until he decides.
@@ -50,8 +51,8 @@ doing it better or differently, an extra round of fixes or review (the required 
 Sizes, heights, camera and marked presentation deviations included (22.11: he sets the goal, not a height). Pick the
 best option, record it with its reason in the PR, keep going. A mission never stops to ask: it skips an item from the
 list above, names it in its report and finishes the rest; MISSION.md scope binds. The lead never puts a how-question to
-him (no decision card): it decides and tells him after. While the cloud lead cannot reach the laptop (the laptop session takes only Artem's own lines; a new thread starts its own, `docs/team/agents.md`), the laptop
-session acts as lead for its own missions and merges what their MISSION.md allows.
+him (no decision card): it decides and tells him after. A mission's PR comments wake the lead at any hour; when its
+thread cannot be reached, the laptop session leads its own missions and merges what their MISSION.md allows.
 
 ## Machines
 - **Laptop zentixua-pc** (CachyOS, RTX 4060, 32 GB): GPU work (shader-pack, Voxy/DH frames, frame cost) only through
