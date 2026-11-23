@@ -37,6 +37,11 @@ Procedures: the `game-servers` skill. Live state (ports in use, settings, golden
   hostile to every SAM); launch only on Artem's «го», stop on «стоп».
 
 ## Laptop
+- Remote Control is the only way into the laptop from the cloud or netcup. Its Claude app can stay online in Tailscale
+  yet stop picking up Remote Control sessions; new sessions then wait in their queue (up to 24 h) and nothing on the
+  laptop is reachable: it answers `tailscale ping` from netcup, but every TCP port is refused (no sshd, no Tailscale
+  SSH). Recovery is restarting the Claude app at the laptop. A fallback shell needs Artem at the laptop once:
+  `sudo tailscale set --ssh` plus a Tailscale ACL rule allowing netcup → laptop SSH.
 - TikTok recording: `mc-vertical` (~/.local/bin) toggles a borderless 9:16 Minecraft window; the «OBS TikTok»
   desktop shortcut records, F9 starts.
 - Friends' PCs are 1.5–2× weaker than Artem's laptop: frame-cost limits must hold there (Artem, 02.10).
