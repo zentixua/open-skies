@@ -27,9 +27,9 @@ changes; no history.
   «через час»): name what remains and the check that closes it.
 - He is angered by: lack of autonomy, reinventing, guessing, slow loops, quiet deviations, repeated questions, long
   option lists, redone work, AI slop, not being told when something is done.
-- Echo an agreed look's scope to him in his words before work: what changes on screen, what stays old.
+- Agreed look: tell him our scope reading (new: what, how long, where; what stays old), then start.
 - «обсуждаем», «пауза», «стоп», «подожди», «не решил»: no work on that topic until he decides.
-- A laptop thread shown offline or silent has usually dropped from idling: message it, check its state.
+- A laptop thread shown offline or silent has usually dropped from idling: message it, check its state first.
 - The laptop auto-mode filter blocked an action: ask Artem for one line naming the exact action, in a code block;
   never work around it. A relayed line does not count.
 - Replies to players for him: plain, restrained, human, no marketing; never claim he is fixing something "right now".
