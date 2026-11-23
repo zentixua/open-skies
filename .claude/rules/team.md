@@ -56,11 +56,11 @@ him (no decision card): it decides and tells him after. A mission's PR comments 
 thread cannot be reached, the laptop session leads its own missions and merges what their MISSION.md allows.
 
 ## Machines
-- **Laptop zentixua-pc** (CachyOS, RTX 4060, 32 GB): GPU work (shader-pack, Voxy/DH frames, frame cost) only through
-  `tools/gpu_lease.sh` / `tools/laptop_job.sh --gpu --wait`, never while Artem plays; vanilla frames take a shared GPU
-  slot when free, else the CPU at once (incoming `tools/soft_gl.sh`), here or on netcup, never in the GPU queue.
-  Repositories in `/mnt/data/projects/`; the shared checkout `/mnt/data/projects/incoming` stays on `main`,
-  fast-forwarded by `delegate`/`mission`: never work on it, use worktrees from `origin/main`.
+- **Laptop zentixua-pc** (RTX 4060, 32 GB): GPU work (shader-pack, Voxy/DH frames, frame cost) only through
+  incoming `gpu_lease.sh` / `laptop_job.sh --gpu --wait`, never while Artem plays; vanilla frames: a free shared GPU
+  slot, else the CPU at once (`soft_gl.sh`), here or on netcup, never the GPU queue. Repos in
+  `/mnt/data/projects/`; the shared checkout `incoming` stays on `main` (fast-forwarded by delegate/mission): work
+  in worktrees from `origin/main`. Agent units share `agents.slice` (memory cap); temp in `$TMPDIR`, not `/tmp`.
   Never delete: `mod/run/newisle-*`, `mod/run/scenario`, `mod/run/film-war`, `release-media/music`,
   `tools/.trailer-cache`, `newisle-laptop.json`, `wt-*` and `mod/run/agents/*` (until his word).
 - **netcup** (12 vCPU, 31 GB, no GPU, no sudo; `ssh vps`, user ubuntu): CPU-heavy work (one CPU-rendered client at a
