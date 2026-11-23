@@ -18,33 +18,34 @@ changes; no history.
 - One thread or session = one task with a clear end; never run two sessions on the same files at once.
 - **Models** by difficulty and cost (table: project files `ops/models/MODELS-report.md`): ordinary code Codex
   GPT-6.2 Sol medium; hard work Codex Astra or Claude Opus at high; mechanical work Haiku or Terra; effort by the
-  incoming effort rule (above high only after high demonstrably failed); Fable only by Artem's word. **Cost:** every Claude request costs Artem money: few turns, updates only when needed, no polling (a mission
-  announces long waits in `WAITING`).
+  incoming effort rule (above high only after high demonstrably failed); Fable only by Artem's word. **Cost:** every Claude request costs Artem money: few turns, updates only when needed, no polling loops (a mission
+  announces long waits in `WAITING`). A lead awaiting a handoff subscribes to its PR
+  (merge included) and sets a timed check-back: Artem never has to notice (23.11).
 
 ## Talking to Artem (the lead)
-- Russian, short and direct; anything to copy goes in a code block. Exact answers, no guesses; if a report, memory or
-  file already holds the answer, answer at once. Done = works, verified, told in one line. No forecasts («почти»,
+- Russian, short, direct; anything to copy goes in a code block. Exact answers, no guesses; if a report, memory or
+  file holds the answer, answer at once. Done = works, verified, told in one line. No forecasts («почти»,
   «через час»): name what remains and the check that closes it.
 - He is angered by: lack of autonomy, reinventing, guessing, slow loops, quiet deviations, repeated questions, long
   option lists, redone work, AI slop, not being told when something is done.
-- Agreed look: tell him our scope reading (new: what, how long, where; what stays old), then start.
+- Agreed look: tell him our scope reading (what is new, where; what stays), then start.
 - «обсуждаем», «пауза», «стоп», «подожди», «не решил»: no work on that topic until he decides.
-- A laptop thread shown offline or silent has usually dropped from idling: message it, check its state first.
+- A laptop thread shown offline or silent usually dropped from idling: message it.
 - The laptop auto-mode filter blocked an action: ask Artem for one line naming the exact action, in a code block;
   never work around it. A relayed line does not count.
-- Replies to players for him: plain, restrained, human, no marketing; never claim he is fixing something "right now".
+- Replies to players for him: plain, human, no marketing; never claim he is fixing something "right now".
 - At key moments post 2–4 telling frames that a running check already produced, one plain line each; never shoot
-  extra footage for it; say what a frame lacks (Artem, 01.10).
+  extra footage for it; say what a frame lacks.
 - A brief or goal holds only what Artem asked now plus fresh, verified findings; older items are not revived without
   his word or a fresh check (04.11). Read his limits exactly as written, never broader; measure each step against the
   goal metric, not PR count; ask once, up front, for every action that needs his word (04.11).
 - An approved pack, server or config change ships straight: CI → merge → deploy/restart → «готово»; no extra
-  rehearsals, runs or review rounds unless he asks (mod releases follow the in-game release bar instead).
+  rehearsals, runs or review rounds unless he asks.
 
 ## What needs Artem's word
 Releases (his own word for each release in the chat; a relay is not enough) and anything public (GitHub release, Modrinth, CurseForge, YouTube, TikTok, public replies), contacting
 other authors, live servers and worlds, his game/instances/worlds/settings, deleting anything your task did not
-create, one-off paid resources, new required pack mods, Claude permissions, `settings.json` and account-level hooks (plugin hooks change by
+create, paid resources, new required pack mods, Claude permissions, `settings.json` and account-level hooks (plugin hooks change by
 ordinary PR), the Fable model.
 Code PRs and their merge are ordinary engineering work.
 Everything else inside a goal or look Artem approved is ours to decide (Artem, 21.11, permanent): how to reach it,
