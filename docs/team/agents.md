@@ -1,7 +1,7 @@
 # Agent environment (team reference; rules in .claude/rules/team.md)
 
-- The laptop auto-mode filter judges each action. The lead's relays alone start and resume missions, update the
-  plugin and merge plugin PRs; it refuses branch deletion, raising a running mission's budget, `.claude/settings.json`
+- The laptop auto-mode filter judges each action, case by case. Observed: the lead's relays alone start and resume
+  missions, update the plugin and merge plugin PRs; it refuses branch deletion, raising a running mission's budget, `.claude/settings.json`
   and frame pushes, and server actions need Artem's own line: ask for those up front, for the whole scope. A quiet
   laptop session is checked by its processes and service state, not its last report.
 - The laptop lead is a Remote Control session bound to one project thread; another thread's cross-session message to
