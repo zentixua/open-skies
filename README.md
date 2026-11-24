@@ -11,7 +11,8 @@ from a Shahed drone to cruise missiles and a nuclear ICBM, aimed with binoculars
   backpacks, per-player loot, claims for servers.
 - **Horizon-wide view.** Voxy long-distance rendering, on by default.
 - About 100 mods, every one with a single job ([What's inside](#whats-inside)); built in the open with
-  [packwiz](https://packwiz.infra.link/) and checked by CI on every change (a server and a client boot from scratch).
+  [packwiz](https://packwiz.infra.link/) and checked by CI on every change (a server and a client load it from scratch
+  and the client joins the server; CI has no GPU, so Voxy's and shaders' rendering is not part of that check).
 
 ## Install
 
@@ -25,7 +26,9 @@ Download from the [latest release](https://github.com/zentixua/open-skies/releas
   ([packwiz-installer](https://packwiz.infra.link/tutorials/installing/packwiz-installer/) in its pre-launch command).
   Worlds and your own settings stay; files of the pack are replaced when a release changes them.
 
-Optional files: Prism and Modrinth App show them **unticked**. Tick Simple Voice Chat if your server runs it.
+Optional file: Simple Voice Chat. Prism and Modrinth App show it **unticked** when importing the `.mrpack`: tick it if
+your server runs it. The auto-updating Prism zip and a server installed with packwiz-installer get it by default;
+delete its jar on a server that goes without voice chat.
 
 **Requirements.** Java 21 (launchers install it), 6 GB of memory for the game (the Prism zip sets 6144 MB; set the
 same in Modrinth App) and 16 GB of system RAM, a GPU with OpenGL 4.6 (GTX 1660 / RX 580 class or better without
@@ -135,6 +138,7 @@ taken moves to Alt + the same key.
 | H (hold) | Tweaked Controllers: mouse as joystick; in an aircraft: free look |
 | \` | Big Cannons mount: aim or move; in an aircraft: mouse steering on/off |
 | Left Alt | Create's schematic menu and toolbox |
+| Tab | player list; with Create Aeronautics' physics staff: rotate |
 | M, ], [ | world map, its settings, minimap settings (Xaero) |
 | U, J, Z, Num + | waypoints, new waypoint, larger minimap, instant waypoint (Xaero) |
 | N, ",", "." | projectile camera, targeting map, second key (Incoming) |

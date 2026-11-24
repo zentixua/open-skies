@@ -16,9 +16,9 @@ exit with code 0. The client enters --world (copied into saves/) through Quick P
 seconds without crashing; then its process is terminated. With --server, the client joins the dedicated check
 server (same directory, server started again) and stays --stay seconds next to a sleeping villager (SLEEPER), whose
 sounds client mods play. This checks what singleplayer cannot: server registries, joining with the server mods'
-channels, and client mods whose registry entries the server must know. The client needs a window: on a headless machine, use --wrap with xvfb-run (CI)
-or nested KWin (laptop: tools/nested_kwin.sh incoming, `{cmdq}` passes the command as one argument). The client must
-not open an audio device (nested_kwin.sh blocks it on the laptop; CI has no device).
+channels, and client mods whose registry entries the server must know. The client needs a window: on a headless
+machine, use --wrap with xvfb-run (as CI does) or any other wrapper (`{cmdq}` passes the command as one argument).
+The client should not open an audio device (CI has none).
 
 A loading crash (a mod rejects NeoForge or another mod, "Mod loading has failed", a RegisterEvent error) exits
 with code 1 and prints the log tail and crash report at the end. Requirements: Java 21 (JAVA_HOME or java in PATH);

@@ -48,6 +48,9 @@ latest release: packwiz-installer instances and servers read `pack/` from `main`
 - **Keys.** `pack/config/defaultoptions/keybindings.txt` lists every key of every mod except JEI. A new mod's default
   key that is taken moves to Alt + the same key, or is unbound when its action has a menu; README's key table changes
   with it.
+- **Stores.** The pack is published on GitHub only. Uploading it to Modrinth or CurseForge needs the owner's word and
+  a license pass first: Photon's license forbids redistribution on platforms that pay creators, and several mods allow
+  only non-commercial use (README, "Licenses and credits").
 - **Merging.** A PR merges after green CI and one review by someone (or a model) who did not write it. Only serious
   errors (wrong behaviour, a crash) block.
 

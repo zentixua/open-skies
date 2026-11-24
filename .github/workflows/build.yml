@@ -63,6 +63,20 @@ jobs:
           [ -n "$v" ] || { echo "pack.toml: missing version"; exit 1; }
           echo "version=$v" >> "$GITHUB_OUTPUT"
 
+      # Players and servers read pack/ from main: a PR that changes pack/ must also change the version, which
+      # releases it on merge.
+      - name: Pack changes bump the version
+        if: github.event_name == 'pull_request'
+        env:
+          V: ${{ steps.version.outputs.version }}
+        run: |
+          git fetch -q --depth=1 origin "$GITHUB_BASE_REF"
+          base=$(git show FETCH_HEAD:pack/pack.toml 2>/dev/null | sed -n 's/^version = "\(.*\)"$/\1/p')
+          if ! git diff --quiet FETCH_HEAD -- . && [ "$base" = "$V" ]; then
+            echo "pack/ changed but pack.toml still has version $V: bump it and add its CHANGELOG.md section"
+            exit 1
+          fi
+
       # Unversioned names: releases/latest/download/<name> always points to the latest pack; Prism names the
       # instance after the file (GitHub would replace a space in a release filename with a dot).
       - name: Launcher file

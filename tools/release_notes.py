@@ -21,7 +21,7 @@ def render(root=ROOT):
     if not re.fullmatch(r"\d+\.\d+\.\d+", version):
         raise ValueError(f"Invalid pack version: {version!r}")
     sections = re.split(r"^## ", (root / "CHANGELOG.md").read_text(encoding="utf-8"), flags=re.M)[1:]
-    found = [s.split("\n", 1) for s in sections if s.split("\n", 1)[0].split()[0] == version]
+    found = [s.split("\n", 1) for s in sections if s.split("\n", 1)[0].split()[:1] == [version]]
     if len(found) != 1 or not found[0][1].strip():
         raise ValueError(f"CHANGELOG.md: expected one non-empty '## {version}' section, got {len(found)}")
     incoming = tomllib.loads((root / "pack/mods/incoming.pw.toml").read_text(encoding="utf-8"))["filename"]
