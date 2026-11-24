@@ -22,8 +22,8 @@ created or changed in `pack/`. Facts were checked on 24.11.2026 against the sour
    the public pack: BSL and Solas (no modpack permission), Flashback (ARR, "do not redistribute"), Essential (an
    account service with revocable terms), and our personal mods. The pack stays non-monetised because of several
    non-commercial licenses.
-6. **Repositories:** the public pack gets a new repository. `zentixua/open-skies` stays the friends' pack and adds our
-   extras by merging upstream. Note: this repository is already public today.
+6. **Repositories:** the public pack gets a new repository, created from this one's history. `zentixua/open-skies`
+   stays the friends' pack: it merges upstream `main` and adds only its own files. Mod updates run upstream only. Note: this repository is already public today.
 7. **Name:** "Open Skies" is free on Modrinth and GitHub. On CurseForge the address `open-skies` belongs to a dead
    2017 pack.
 8. **Main costs:** the pinned Create 6.0.10, Sable and Aeronautics stack; Roxy supports exactly one Voxy file; mod
@@ -64,8 +64,9 @@ Sources: Fabulously Optimized principles (https://wiki.download.fo/principles), 
   ATM). Open Skies already does this and checks it in CI (server to "Done", client into a world).
 - **Updates and versioning.** Public packs ship numbered versions with changelogs. ATM10's changelogs openly list
   reverts ("reverted ... to fix heavy lag"). Bugs go to GitHub issues and support to a channel with a "how to send
-  logs" answer. Silent continuous updates, like our 3-hourly friends' flow, are wrong for public worlds: a player must
-  be able to stay on a version.
+  logs" answer. Silent continuous updates, like our 3-hourly friends' flow, are wrong for public players: a player
+  must be able to stay on a version. A development `main` may still update continuously, as long as players install
+  release tags (section 6).
 
 ## 2. Format and distribution
 
@@ -124,7 +125,7 @@ writing. "The author's wishes and any licensing agreements always take priority.
 | Photon | yes | its license explicitly allows "Redistribute Photon Shaders as part of a (commercial) Modpack"; re-uploading it to Modrinth or CurseForge needs permission, linking does not | https://github.com/sixthsurge/photon/blob/main/LICENSE |
 | MakeUp Ultra Fast (LGPL), Euphoria Patches (MPL) | yes | — | Modrinth pages |
 | **BSL** (ARR) | **no**, leave out | "You're not allowed to ... Redistribute the shaderpack without my permission" | https://modrinth.com/shader/bsl-shaders |
-| **Solas** (ARR) | **no**, leave out | no modpack statement | https://modrinth.com/shader/solas-shader |
+| **Solas** (ARR) | leave out | no modpack statement; its role is covered by the three shaderpacks we keep | https://modrinth.com/shader/solas-shader |
 | **Flashback** (ARR) | leave out | "Do not redistribute. All rights reserved."; Fabric-only, runs through Connector; recording is our personal need | https://github.com/Moulberry/Flashback/blob/master/LICENSE.md |
 | **Essential** (ARR, source-available) | leave out | no modpack grant; "reserves the right to revoke this permission at any time"; pushes an account and cosmetics service on players | https://github.com/EssentialGG/Essential/blob/main/LICENSE |
 | Xaero's Minimap and World Map | yes | monetisation only through CurseForge or Modrinth; the pack name must not be confusable with Xaero's | https://modrinth.com/mod/xaeros-world-map |
@@ -135,14 +136,22 @@ writing. "The author's wishes and any licensing agreements always take priority.
 | Vic's Point Blank, its Aeronautics compat, GraveStone, Ok Zoomer (ARR, no statement) | yes on Modrinth (Modrinth-hosted file) | no explicit grant: the weakest link of the war layer; ask the authors when going public | Modrinth pages |
 | Incoming (GPL-3.0-only, ours) | yes | best as a Modrinth project (needs Artem's word); a GitHub release URL is allowed by the format, with "Your project" on the permissions page | https://github.com/zentixua/incoming |
 
+**Our inclusion policy.** Modrinth's rule would let us link any Modrinth-hosted file. We go one step stricter: we
+leave out a file when the author's own text forbids redistribution (BSL, Flashback) or makes the permission
+revocable (Essential). We also leave out a mod that duplicates a role already filled (Solas: Photon, Complementary
+and MakeUp cover the shader range). ARR mods with no statement either way (Point Blank, GraveStone, Ok Zoomer) stay
+as Modrinth-hosted links, and we ask their authors before listing.
+
 **Voxy and Roxy, plainly.** They do not block a Modrinth listing. By the letter of the page, we use the official
 Modrinth file, link back to the page, and never re-upload it. The soft spot is the spirit: the author asks packs not
 to ship "unofficial backports". Roxy is not a modified Voxy, but it runs a 1.21.11 Fabric build on NeoForge 1.21.1,
 which the author did not release.
 
 What we do about it:
-- Voxy and Roxy are optional and off by default in `.mrpack` launchers. They have extra limits anyway: OpenGL 4.6, no
-  macOS without Roxy's patch, and "Geometry OOM" on 8 GB cards at section render distance 16.
+- Voxy and Roxy are optional and off by default. Prism's `.mrpack` dialog shows optional files unchecked;
+  in the public packwiz files `voxy.pw.toml` gets `default = false` and an English option text that says to tick
+  Roxy and Voxy together (today it is `default = true`, in Russian). Neither format can bind two optional files, so
+  the pack page says it too. They have extra limits anyway: OpenGL 4.6, no macOS without Roxy's patch, and "Geometry OOM" on 8 GB cards at section render distance 16.
 - The pack page credits and links Voxy, says Roxy issues go to Roxy and never to Voxy (Roxy's own request), and drops
   Voxy at once if its author objects.
 - A courtesy note to the Voxy author before listing would remove the doubt, but it needs Artem's word.
@@ -279,32 +288,46 @@ none of the candidates conflict.
 | `pack/` base: versions, mods, shaderpacks, configs with reasons | owns it | merges it from upstream |
 | Almighty, TrueUUID, LAN Server Properties, Essential, Flashback, MapSyncer, Vista/Silo configs, ServerCore settings | no | adds them as its own files |
 | auto-update Prism instance | optional, "advanced" | the default install, as today |
-| `update.yml` (3-hourly Incoming, weekly Modrinth) | no; deliberate monthly releases plus hotfixes | yes, as today |
+| `update.yml` (3-hourly Incoming, weekly Modrinth, each checked by CI) | yes, onto `main` only: `main` is the development line; players get monthly release tags | no own mod bumps: it merges upstream `main` every 3 hours instead (below) |
 | `check_loader.py`, `boot_check.py` | yes | yes |
 | release: GitHub release with `.mrpack` and server zip; Modrinth upload as a manual job | yes (the upload after Artem's word) | GitHub release only |
 | `.claude/rules/team.md`, `docs/team/` | no | better moved to a private ops repository (Artem's word) |
 | README | English: players and pack makers, "use as a template" | Russian: friends' install, as today |
 
-**How the fork pulls upstream:**
-1. The friends' repository has an `upstream` remote. `update.yml` gains one step: fetch `upstream/main` and merge it
-   into `pack-update`.
-2. Only generated or per-repository files may conflict, and the job resolves them mechanically:
+**How the fork pulls upstream.** There is one update stream, upstream's, and the fork only adds files:
+1. **Updates happen upstream only.** Today's `update.yml` moves to the public repository and keeps committing checked
+   Incoming and Modrinth updates to upstream `main`. A public player is not affected: they install release tags, cut
+   monthly (plus crash hotfixes), not `main`. The friends' fork drops its own mod bumps; its `update.yml` merges
+   `upstream/main` into `pack-update` every 3 hours, so friends keep today's 3-hour delay for new Incoming releases.
+   Almighty is the one fork-only mod with its own GitHub bump, and it lives in a file upstream never has.
+2. **Shared history.** The public repository is created from this repository's history (a copy of `main`, then one
+   commit that removes the personal files and rewrites the README in English), not from an empty tree. The fork
+   records that commit once with `git merge -s ours` (taken as merged, nothing deleted), so later merges see only real
+   changes. Without this the first merge has no common base (`--allow-unrelated-histories`) and conflicts in every file.
+3. **Files that always differ** are resolved by standard git mechanisms, not by hand:
+   - `README.md` (English upstream, Russian in the fork) has `merge=ours` in the fork's `.gitattributes`, with the
+     `ours` driver enabled in CI;
    - `pack/index.toml` is always regenerated with `packwiz refresh`;
-   - `version` in `pack/pack.toml` is the upstream version plus `+friends.<n>`;
-   - README's version table.
+   - `pack/pack.toml` takes upstream's Minecraft and NeoForge versions, and its `version` is the upstream version
+     plus a fourth number for the fork's own changes (`1.2.0` becomes `1.2.0.1`; no `+` or `-`, so tags, URLs and
+     the existing release flow keep working; untested until built).
 
    Any other conflict fails the job and opens the existing "Automatic pack update failed" issue.
-3. `build.yml` checks `pack-update` as today (index, loader ranges, boot from scratch, Flashback replay) and only then
+4. `build.yml` checks `pack-update` as today (index, loader ranges, boot from scratch, Flashback replay) and only then
    moves it to `main`.
-4. Rule in both AGENTS.md files: a base change goes upstream first. The fork never edits a base file; its extras live
+5. Rule in both AGENTS.md files: a base change goes upstream first. The fork never edits a base file; its extras live
    only in files upstream never touches.
+6. **Composition is Artem's call.** Merging upstream variant B would bring about 35 new mods (structures, claims,
+   Lootr, backpacks) into the friends' world and server, and a new required mod needs Artem's word. So the fork
+   starts merging upstream only after he says the friends' pack becomes "public base plus our extras". Until then the
+   friends' repository runs exactly as today, and the public repository starts from today's base.
 
 **CI:**
 - **Public, every PR:** index freshness, `check_loader.py`, `boot_check.py` (server and client), `.mrpack` export, and
   a permission check: every file is a Modrinth CDN file or on an allowlist with its license and reason.
 - **Public, version tag:** a GitHub release.
 - **Public, Modrinth upload:** a separate manual workflow.
-- **Fork:** as today, plus the upstream merge.
+- **Fork:** as today, with the upstream merge instead of its own mod bumps.
 
 ## 7. Honest verdict
 
@@ -342,3 +365,5 @@ stays small and Modrinth-only, ships versioned releases, and has a written scope
 4. Monetisation: we propose off, because of the non-commercial licenses.
 5. Moving `.claude/rules/team.md` and `docs/team/` out of the public `zentixua/open-skies` into a private ops
    repository.
+6. Whether the friends' pack becomes "public base plus our extras", which brings variant B's new mods into the
+   friends' world and server (section 6, step 6).
