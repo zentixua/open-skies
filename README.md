@@ -1,5 +1,9 @@
 # Open Skies
 
+> **Сборка друзей переехала в [zentixua/open-skies-friends](https://github.com/zentixua/open-skies-friends).**
+> Здесь скоро будет публичная сборка Open Skies с другим набором модов. Перевести экземпляр — одна строка в
+> предстартовой команде: [«Переезд»](https://github.com/zentixua/open-skies-friends#переезд).
+
 Своя сборка для игры с друзьями: NeoForge 1.21.1, Create, Create Aeronautics, Incoming, дальняя прорисовка Voxy,
 шейдеры и запись повторов, на сервере — Almighty.
 Без контента не по теме: оружие и техника, Create для построек и аппаратов, всё лишнее для такой игры не берём.

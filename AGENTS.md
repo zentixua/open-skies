@@ -7,6 +7,11 @@ Voxy long-distance rendering (through Roxy), shaders, replay recording, and Almi
 for the contents and installation. The mod is at https://github.com/zentixua/incoming;
 the Almighty host bridge (server only) is at https://github.com/zentixua/almighty.
 
+**Moving (24.11.2026).** The friends' pack and the team rules moved with the full history to
+`zentixua/open-skies-friends`; make pack changes and team-rule changes there. This repository keeps serving the same
+pack (the same `update.yml` runs in both) until Artem confirms every instance and server has moved to the new address;
+then `main` switches to the public Open Skies pack (English, a template for other pack makers).
+
 ## People and rules
 
 - Author/host: **Artem** (GitHub zentixua, in-game ZentixUA). Friends: **ENOTzRPG**, **WallyFillmark**.
@@ -29,7 +34,7 @@ the Almighty host bridge (server only) is at https://github.com/zentixua/almight
 - GitHub releases are automatic: a new `version` on `main` becomes release `v<version>` (downloads without signing in
   at `releases/latest/download/Open-Skies.zip` and `…/Open-Skies.mrpack`).
   Other public steps (Modrinth, etc.) require Artem's explicit instruction.
-- Merge a ready PR yourself (as the task's owner; team roles: `.claude/rules/team.md`) after green CI and one review round by a model that did not write it. Review the diff
+- Merge a ready PR yourself (as the task's owner; team roles: open-skies-friends `.claude/rules/team.md`) after green CI and one review round by a model that did not write it. Review the diff
   and surrounding code, not the PR description. Only serious errors (wrong behaviour, a crash) block;
   everything else is optional.
 - A commit ends with the `Co-Authored-By:` line of your own agent.
@@ -45,7 +50,7 @@ pack/                    ← the modpack: pack.toml (game and NeoForge versions)
                            shaderpacks/*.pw.toml (download sources and hashes), config/ (copied into the game as is)
 tools/prism_instance.py  ← Prism instance that installs pack/ from main before every launch (Open-Skies.zip)
 tools/pack_dir.py        ← game directory from pack/ without Prism (mods checked by hash), for Incoming client checks
-.claude/rules/team.md    ← team and operations rules for every agent of Artem's projects (gate tools/check_team_rules.py)
+.claude/rules/team.md    ← pointer: the team rules live in zentixua/open-skies-friends
 tools/check_loader.py    ← every mod (including nested jars) accepts the NeoForge version in pack.toml; a CI step
 tools/boot_check.py      ← the modpack boots from scratch: server reaches "Done", client enters a world, client on
                            this server records a Flashback replay; CI job "Запуск с нуля" (client: Xvfb and Mesa);
