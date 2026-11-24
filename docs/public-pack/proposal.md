@@ -298,7 +298,9 @@ none of the candidates conflict.
 1. **Updates happen upstream only.** Today's `update.yml` moves to the public repository and keeps committing checked
    Incoming and Modrinth updates to upstream `main`, but there **without** bumping `version`: each update goes under
    an "Unreleased" heading of the changelog. A public player is not affected. The public `build.yml` releases only
-   when `version` changes, and only the monthly release PR (plus crash hotfixes) changes it. Players install those
+   when `version` changes, and only the monthly release PR (plus crash hotfixes) changes it. This needs one change
+   to the public copy of `tools/update_pack.py`: a `finish` mode that writes the changelog entry without the
+   version bump and README row. Players install those
    releases, not `main`. The friends' fork drops its own mod bumps; its `update.yml` merges
    `upstream/main` into `pack-update` every 3 hours, so friends keep today's 3-hour delay for new Incoming releases.
    Almighty is the one fork-only mod with its own GitHub bump, and it lives in a file upstream never has.
@@ -315,7 +317,11 @@ none of the candidates conflict.
      number). The job merges with `git merge --no-commit` and then runs the existing `tools/update_pack.py finish` (it compares
      mod files against `HEAD`, so it must run before the merge is committed): it bumps the fork's patch
      version, writes the README version-table row and `docs/releases/<version>.en.md` (naming the upstream commit
-     and the mods it changed), and refreshes the index, exactly as it does for today's automatic updates.
+     and the mods it changed), and refreshes the index, exactly as it does for today's automatic updates. Before
+     that, the job resolves the conflicted `pack.toml` lines (upstream's game and loader versions, the fork's
+     `version`) and stages them with `git add`. A merge that changes only configs (`finish` prints "No mod
+     changes") gets the same bump through a `--force` flag added to `finish`: the fork's composition rule
+     (every pack change gets a new version) applies to configs too.
 
    Any other conflict fails the job and opens the existing "Automatic pack update failed" issue.
 4. `build.yml` checks `pack-update` as today (index, loader ranges, boot from scratch, Flashback replay) and only then
