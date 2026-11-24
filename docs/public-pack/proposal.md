@@ -312,7 +312,8 @@ none of the candidates conflict.
    - `pack/index.toml` is always regenerated with `packwiz refresh`;
    - `pack/pack.toml` takes upstream's Minecraft and NeoForge versions and keeps the fork's own `version`, a separate
      three-number line as today (`tools/release_notes.py` accepts only `\d+.\d+.\d+`, so no suffix and no fourth
-     number). After the merge the job runs the existing `tools/update_pack.py finish`: it bumps the fork's patch
+     number). The job merges with `git merge --no-commit` and then runs the existing `tools/update_pack.py finish` (it compares
+     mod files against `HEAD`, so it must run before the merge is committed): it bumps the fork's patch
      version, writes the README version-table row and `docs/releases/<version>.en.md` (naming the upstream commit
      and the mods it changed), and refreshes the index, exactly as it does for today's automatic updates.
 
