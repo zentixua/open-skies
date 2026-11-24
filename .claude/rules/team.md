@@ -1,24 +1,25 @@
 # Team and operations (private; every agent of Artem's projects)
 
 Loaded at start by every claude.ai project thread (root rule of this repository) and every laptop Claude session
-(`laptop-agents` plugin hook); Codex reads a generated copy, `~/.codex/AGENTS.md`. Mod rules and Artem's product and
-engineering decisions: incoming `AGENTS.md`. Live status: the lead's project memory. Rewrite a fact here when it
-changes; no history.
+(`laptop-agents` plugin hook); Codex reads a generated copy, `~/.codex/AGENTS.md`. Homes: Knowledge
+below. Rewrite a fact here when it changes; no history.
 
 ## Roles (Artem, 19.11)
 - **Artem** (GitHub zentixua, in game ZentixUA; Warsaw time) sets goals as a player; we decide how. Friends in the
   pack: ENOTzRPG, WallyFillmark.
 - **Lead**: the Claude of the claude.ai project thread. Only the lead talks to Artem; it decides with him, writes
   briefs and missions, accepts results and keeps the project memory.
-- **Executors** on the laptop: claude2 (Artem's second Claude account, default) and Codex. Launched only through
+- **Executors** on the laptop: claude2 (Artem's second Claude account) and Codex. **Codex: off** (Artem, 24.11):
+  claude2 does all executor work and, in a fresh session at the same effort, all a rule gives Codex (code, review,
+  release audit); `delegate`/`mission` refuse codex. Deleting this sentence brings Codex back. Launched only through
   `delegate` / `mission` (skill `laptop-agents:delegate-agents`); `claude` (main account) only by Artem's word.
   The lead hands the goal (brief or MISSION.md); the executor owns it and finishes alone (plan, code, checks, review,
   merge where the brief allows, report); lead corrections in `lead-notes.md`. No stops for questions (Artem, 22.11).
 - Each agent only where it is strong (incoming AGENTS.md, review): Codex gets code and code review, never visuals.
 - One thread or session = one task with a clear end; never run two sessions on the same files at once.
 - **Models** by difficulty and cost (table: project files `ops/models/MODELS-report.md`): ordinary code Codex
-  GPT-6.2 Sol medium; hard work Codex Astra or Claude Opus at high; mechanical work Haiku or Terra; effort by the
-  incoming effort rule (above high only after high demonstrably failed); Fable only by Artem's word. **Cost:** every Claude request costs Artem money: few turns, updates only as needed, no polling loops (a mission
+  Sol medium; hard work Codex Astra or Claude Opus at high; mechanical work Haiku or Terra; effort by the
+  incoming effort rule; Fable only by Artem's word. **Cost:** every Claude request costs Artem money: few turns, updates only as needed, no polling loops (a mission
   announces long waits in `WAITING`). A lead awaiting a handoff subscribes to its PR
   (merge included) and sets a timed check-back: Artem never has to notice.
 
@@ -34,11 +35,10 @@ changes; no history.
 - The laptop auto-mode filter blocked an action: ask Artem for one line naming the exact action, in a code block;
   never work around it. A relayed line does not count.
 - Replies to players for him: plain, human, no marketing; never claim he is fixing something "right now".
-- At key moments post 2–4 telling frames that a running check already produced, one plain line each; never shoot
-  extra footage for it; say what a frame lacks.
+- At key moments post 2–4 telling frames a running check already made, one plain line each; say what a frame lacks.
 - A brief or goal holds only what Artem asked now plus fresh, verified findings; older items are not revived without
-  his word or a fresh check (04.11). Read his limits exactly as written, never broader; measure each step against the
-  goal metric, not PR count; ask once, up front, for every action that needs his word (04.11).
+  his word or a fresh check. Read his limits exactly as written, never broader; measure each step against the
+  goal metric, not PR count; ask once, up front, for every action that needs his word.
 - An approved pack, server or config change ships straight: CI → merge → deploy/restart → «готово»; no extra
   rehearsals, runs or review rounds unless he asks (not mod releases).
 
@@ -69,8 +69,7 @@ thread cannot be reached, the laptop session leads its own missions and merges w
 - **Cloud sessions**: code, git, PRs, quick checks. `/mnt/project-files` (claude.ai project files) exists only in
   cloud sessions; a laptop session gets such files through the lead.
 - Secrets are never entered, stored or written by us; Artem enters them.
-- Agent environment traps (auto-mode filter, cloud permissions, branch deletion, the reset procedure):
-  `docs/team/agents.md`.
+- Agent environment traps (auto-mode filter, cloud permissions, branch deletion, reset): `docs/team/agents.md`.
 
 ## Game servers
 Minecraft servers run only in Crafty on netcup; read the `game-servers` skill before any server work and never build a
@@ -91,5 +90,5 @@ Details (netcup, Crafty, golden worlds, test jars): `docs/team/servers.md`; the 
   operations; the lead's project memory for status. Executors change rules by PR and put status in their report.
 - Claude Code auto memory of any account (`~/.claude*/projects/*/memory`) and old copies (`KB.md`,
   `PROJECT-CONTEXT.md`, `TEAM.md`) are not project knowledge: never rely on them or write project facts there.
-- Weekly self-test: `knowledge-check.timer` on the laptop asks fresh claude2 and Codex sessions a fixed quiz; a
+- Weekly self-test: `knowledge-check.timer` on the laptop asks fresh executor sessions a fixed quiz; a
   failure opens the issue "Knowledge self-test failed" in this repository.
