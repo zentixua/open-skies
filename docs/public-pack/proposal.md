@@ -296,8 +296,10 @@ none of the candidates conflict.
 
 **How the fork pulls upstream.** There is one update stream, upstream's, and the fork only adds files:
 1. **Updates happen upstream only.** Today's `update.yml` moves to the public repository and keeps committing checked
-   Incoming and Modrinth updates to upstream `main`. A public player is not affected: they install release tags, cut
-   monthly (plus crash hotfixes), not `main`. The friends' fork drops its own mod bumps; its `update.yml` merges
+   Incoming and Modrinth updates to upstream `main`, but there **without** bumping `version`: each update goes under
+   an "Unreleased" heading of the changelog. A public player is not affected. The public `build.yml` releases only
+   when `version` changes, and only the monthly release PR (plus crash hotfixes) changes it. Players install those
+   releases, not `main`. The friends' fork drops its own mod bumps; its `update.yml` merges
    `upstream/main` into `pack-update` every 3 hours, so friends keep today's 3-hour delay for new Incoming releases.
    Almighty is the one fork-only mod with its own GitHub bump, and it lives in a file upstream never has.
 2. **Shared history.** The public repository is created from this repository's history (a copy of `main`, then one
@@ -308,9 +310,11 @@ none of the candidates conflict.
    - `README.md` (English upstream, Russian in the fork) has `merge=ours` in the fork's `.gitattributes`, with the
      `ours` driver enabled in CI;
    - `pack/index.toml` is always regenerated with `packwiz refresh`;
-   - `pack/pack.toml` takes upstream's Minecraft and NeoForge versions, and its `version` is the upstream version
-     plus a fourth number for the fork's own changes (`1.2.0` becomes `1.2.0.1`; no `+` or `-`, so tags, URLs and
-     the existing release flow keep working; untested until built).
+   - `pack/pack.toml` takes upstream's Minecraft and NeoForge versions and keeps the fork's own `version`, a separate
+     three-number line as today (`tools/release_notes.py` accepts only `\d+.\d+.\d+`, so no suffix and no fourth
+     number). After the merge the job runs the existing `tools/update_pack.py finish`: it bumps the fork's patch
+     version, writes the README version-table row and `docs/releases/<version>.en.md` (naming the upstream commit
+     and the mods it changed), and refreshes the index, exactly as it does for today's automatic updates.
 
    Any other conflict fails the job and opens the existing "Automatic pack update failed" issue.
 4. `build.yml` checks `pack-update` as today (index, loader ranges, boot from scratch, Flashback replay) and only then
