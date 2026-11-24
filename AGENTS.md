@@ -1,106 +1,77 @@
-# Open Skies — Artem and friends' NeoForge 1.21.1 modpack
+# Open Skies: contributor rules
 
-These project rules apply to every contributor, human or agent. Read this file in full before starting.
+These rules apply to every contributor, human or agent. Read this file in full before changing the pack. Players'
+documentation is README.md; release history is CHANGELOG.md. Everything in this repository is in English.
 
-Our own "Open Skies" modpack in [packwiz](https://packwiz.infra.link/): Create, Create Aeronautics, Incoming,
-Voxy long-distance rendering (through Roxy), shaders, replay recording, and Almighty on the server. See README.md
-for the contents and installation. The mod is at https://github.com/zentixua/incoming;
-the Almighty host bridge (server only) is at https://github.com/zentixua/almighty.
-
-## People and rules
-
-- Author/host: **Artem** (GitHub zentixua, in-game ZentixUA). Friends: **ENOTzRPG**, **WallyFillmark**.
-  Chat in Russian, briefly and to the point.
-- **`pack/` on `main` is the live modpack**: players' auto-updating instances (Prism, packwiz-installer before every
-  launch) and the dedicated server install it from `main` on their next launch. Only CI-verified changes and jars
-  from published releases go into `main`.
-- **Updates are automatic** (`.github/workflows/update.yml`, `tools/update_pack.py`): every 3 hours it picks up new
-  Incoming and Almighty releases, weekly (Monday 02:41 UTC) all Modrinth mods, as a new patch version with a
-  generated README row and English notes. build.yml checks it on branch `pack-update`, then pushes that commit to
-  `main` and releases it; no PR or review round (there is no authored code). A failed update opens the issue
-  "Automatic pack update failed". Do not open pack PRs for a mod release; to get one in at once, run `update`
-  manually. Pinned mods stay out: Voxy and Roxy (below) and Create, Sable, Create Aeronautics and Immersive Aircraft, which
-  Incoming's and Almighty's GameTests pin; update those by hand in a PR together with the mods' dev pins.
-- Keep the modpack clean and reliable: standard mechanisms, no workarounds; other mods' settings stay at their
-  defaults, and every file in `config/` needs a reason in README.md. Add a required mod only on Artem's instruction.
-- Bump `version` in `pack.toml` for every change to the modpack's composition, and add a row to README.md's version
-  table: all players must have the same set. Each new pack version also needs
-  `docs/releases/<version>.en.md` with the English translation of that row; CI requires both.
-- GitHub releases are automatic: a new `version` on `main` becomes release `v<version>` (downloads without signing in
-  at `releases/latest/download/Open-Skies.zip` and `…/Open-Skies.mrpack`).
-  Other public steps (Modrinth, etc.) require Artem's explicit instruction.
-- Merge a ready PR yourself (as the task's owner; team roles: `.claude/rules/team.md`) after green CI and one review round by a model that did not write it. Review the diff
-  and surrounding code, not the PR description. Only serious errors (wrong behaviour, a crash) block;
-  everything else is optional.
-- A commit ends with the `Co-Authored-By:` line of your own agent.
-- **Languages (Artem, 26.10).** Everything in the repository is in English: code, comments, log messages, CLAUDE.md,
-  `.claude/rules`, AGENTS.md, internal docs, `tools/`, CI, commits and PRs. English plus Russian only for what players
-  need: the public docs (README, `docs/guide`, release notes, store pages) and the mod's interface (`en_us`/`ru_ru`).
-  No mixing inside one file. Chat with Artem stays in Russian.
+Open Skies is a public NeoForge 1.21.1 modpack built around [Incoming](https://github.com/zentixua/incoming): Create,
+Create Aeronautics and aircraft, a light survival and exploration layer, Voxy long-distance rendering through Roxy.
+It is also meant as a template other pack makers can fork.
 
 ## Layout
 
 ```text
-pack/                    ← the modpack: pack.toml (game and NeoForge versions), index.toml, mods/*.pw.toml and
-                           shaderpacks/*.pw.toml (download sources and hashes), config/ (copied into the game as is)
+pack/                    ← the pack: pack.toml (game and NeoForge versions, pack version), index.toml (hashes),
+                           mods/*.pw.toml and shaderpacks/*.pw.toml (download source and hash), config/ (copied
+                           into the game as is)
+CHANGELOG.md             ← one "## <version>" section per release; the GitHub release notes come from it
+tools/check_sources.py   ← every file is on the Modrinth CDN or an allowed source with its license; excluded projects
+                           stay out; valid sides
+tools/check_loader.py    ← every mod (including nested jars) accepts the NeoForge version in pack.toml
+tools/boot_check.py      ← the pack boots from scratch: server to "Done", client into a world and onto the server
 tools/prism_instance.py  ← Prism instance that installs pack/ from main before every launch (Open-Skies.zip)
-tools/pack_dir.py        ← game directory from pack/ without Prism (mods checked by hash), for Incoming client checks
-.claude/rules/team.md    ← team and operations rules for every agent of Artem's projects (gate tools/check_team_rules.py)
-tools/check_loader.py    ← every mod (including nested jars) accepts the NeoForge version in pack.toml; a CI step
-tools/boot_check.py      ← the modpack boots from scratch: server reaches "Done", client enters a world, client on
-                           this server records a Flashback replay; CI job "Запуск с нуля" (client: Xvfb and Mesa);
-                           manually: client in Incoming's nested KWin (see the script header)
-.github/workflows/build.yml  ← CI "Сборка модов": fresh index, .mrpack and Prism instance (artifact open-skies);
-                               and "Запуск с нуля" (boot_check.py); a new version on main becomes release v<version>
-                               with these files only if both pass (notes: README's version table row and
-                               docs/releases/<version>.en.md); on pack-update it also moves the checked update to main
-.github/workflows/update.yml ← automatic updates (tools/update_pack.py), see "People and rules"
+tools/release_notes.py   ← release notes for the current version from CHANGELOG.md
+.github/workflows/build.yml ← CI on every PR and main push; a new version on main becomes release v<version>
 ```
 
-Modpack address for packwiz-installer: `https://raw.githubusercontent.com/zentixua/open-skies/main/pack/pack.toml`;
-instances installed under the previous modpack name (Airstrike Pack) use the old address
-`zentixua/airstrike-pack/…`. GitHub serves it while zentixua has no repository with that name (keep the name unused).
-The modpack lives in `pack/`, not the root: repository files (README, CI, tools) stay out of the index and the game.
+The pack lives in `pack/`, not the root, so repository files stay out of the index and the game. `main` is always the
+latest release: packwiz-installer instances and servers read `pack/` from `main`.
+
+## Rules
+
+- **Scope.** A sandbox: no quests, no recipe changes, no teleports, no terrain overhaul, one mod per role. A new mod
+  needs a role in README's "What's inside" and must not duplicate one.
+- **Sources.** Link files, never bundle them: Modrinth CDN, or an `ALLOWED` entry in `tools/check_sources.py` with
+  the license and the reason. A mod whose author forbids redistribution or can revoke it goes to `EXCLUDED`. Jars in
+  `config/` or other overrides are forbidden.
+- **Configs.** Other mods keep their defaults. Every file in `pack/config` has its reason in README's "Settings the
+  pack ships", in the same PR.
+- **Sides.** `side` must be right: servers install with `-s server` and skip `client` mods. A client mod that
+  registers anything the server may send to players (sounds, particles, entities, items) must also be on the server
+  (`side = "both"`) if the mod supports it: in multiplayer the client gets registry ids from the server, and
+  client-only entries have none. Worldgen mods (structures) are `both`, or singleplayer worlds would lack them.
+  packwiz writes `side = "both"` for Modrinth shaderpacks; set `"client"`.
+- **Versions.** Every change to `pack/` bumps `version` in `pack.toml` (semver: patch for fixes and updates, minor for
+  added or removed mods) and adds its `CHANGELOG.md` section in the same PR. Merging it releases `v<version>`.
+- **Pins.** Create, Sable, Create Aeronautics and Immersive Aircraft are pinned to the versions Incoming is tested
+  against; change them together with Incoming. Voxy is pinned (`packwiz pin voxy`): Roxy loads only
+  `voxy-0.2.16-beta+1.21.11` (Modrinth version `H3w2nVdU`); update it only when Roxy announces another version.
+- **Keys.** `pack/config/defaultoptions/keybindings.txt` lists every key of every mod except JEI. A new mod's default
+  key that is taken moves to Alt + the same key, or is unbound when its action has a menu; README's key table changes
+  with it.
+- **Merging.** A PR merges after green CI and one review by someone (or a model) who did not write it. Only serious
+  errors (wrong behaviour, a crash) block.
 
 ## Workflow
 
 ```sh
 go install github.com/packwiz/packwiz@v0.0.0-20260906154125-ef87d964f8cb
-cd pack && packwiz update <name>          # mod from Modrinth; exact version: packwiz modrinth add --project-id … --version-id …
-cd pack && packwiz refresh                # hash index in the same commit (CI checks it)
-cd pack && packwiz mr export              # .mrpack: one-time installation without auto-updates
-python3 tools/prism_instance.py           # dist/Open-Skies.zip: new auto-updating instance
+cd pack && packwiz update --all           # monthly release; pinned mods stay
+cd pack && packwiz modrinth add <slug>    # a new mod (then check its side and README)
+cd pack && packwiz refresh                # the index with hashes, in the same commit (CI checks it)
+python3 tools/check_sources.py && python3 tools/check_loader.py pack
+python3 tools/boot_check.py server run/boot/server   # and `client` (see the script header)
 ```
-
-A new Incoming or Almighty release reaches the pack by itself within 3 hours (`update`); to start it now, run the
-`update` workflow (GitHub MCP `actions_run_trigger`, workflow `update.yml`, ref `main`).
 
 ## Pitfalls
 
-- The modpack's `config/fml.toml` keeps `maxThreads = 1`: NeoForge constructs mods in parallel, but Create 6.0.10
-  registers items through tables that are not thread-safe. Occasionally startup crashes with
-  `Trying to access unbound value … create:…` (README's contents section). Remove this only once Create fixes it.
-- Roxy loads only `voxy-0.2.16-beta+1.21.11` (Modrinth `H3w2nVdU`): do not update Voxy until Roxy announces support
-  for another version. Roxy and Voxy are optional, selected by default, and must be enabled or disabled together.
-  Voxy is pinned (`packwiz pin voxy`): `packwiz update --all` leaves it alone.
-- GitHub caches raw files for up to 5 minutes: immediately after a merge, `pack.toml` and `index.toml` may come from
-  different commits. packwiz-installer reports an incorrect index hash ("Quit", launch again later).
-  Restart the server ~5 minutes after a merge.
-- The modpack does not select a shaderpack (`config/iris.properties` is absent: the player chooses;
-  Artem's decision, 23.10).
-- For Modrinth shaderpacks, packwiz writes `side = "both"` (their environment is unspecified); set it to `"client"`.
-- Mods must have the correct `side`: the server installs the modpack with `-s server`, skipping `client` mods;
-  server-only mods (Almighty) use `side = "server"`, so players do not download them.
-- A client mod with its own entries in registries that the server sends to players (sounds, particles, entities,
-  items) must also be installed on the server (`side = "both"`) if the mod supports it. After joining a server,
-  client-only entries have no id, so packets containing them cannot be encoded. Flashback records sounds that the
-  client plays itself, and recording crashed on Subtle Effects snoring (README's contents section).
-  CI checks this: a client on the modpack server records a replay next to a sleeping villager.
-- packwiz-installer removes only what it installed: when converting an instance from `.mrpack` to auto-updates,
-  move `mods` aside (README.md), or an old jar with a different name would remain alongside the new one.
-- Index paths cannot leave `pack/` (packwiz-installer discards extra `..`), and `pack.toml` contains the index hash:
-  file contents cannot redirect the modpack to another address. Enter the new address in the instance's
-  "Pre-launch command". Renaming the GitHub repository does not break the address: raw.githubusercontent.com
-  also serves files under the old name.
-- An instance with a different address in its "Pre-launch command" does not get the modpack from `main`;
-  reinstall it from `Open-Skies.zip`.
+- `config/fml.toml` keeps `maxThreads = 1`: Create 6.0.10 registers items through tables that are not thread-safe,
+  and parallel mod construction occasionally fails with `Trying to access unbound value … create:…` (README,
+  "Settings the pack ships"). Remove it only once Create fixes it.
+- Voxy and Roxy are required: `.mrpack` launchers show optional files unticked, which would leave every player
+  without long-distance rendering. macOS and GPUs without OpenGL 4.6 remove both by hand (README).
+- GitHub caches raw files for up to 5 minutes: right after a merge, `pack.toml` and `index.toml` may come from
+  different commits, and packwiz-installer reports an incorrect index hash ("Quit", launch again later).
+- packwiz-installer removes only what it installed: an instance installed from `.mrpack` that switches to the
+  auto-updating zip must move its `mods` folder aside first, or old jars with other names stay next to the new ones.
+- Index paths cannot leave `pack/`, and `pack.toml` carries the index hash: file contents cannot redirect the pack to
+  another address. A fork sets its own address in `tools/prism_instance.py`.

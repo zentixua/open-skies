@@ -6,7 +6,7 @@ hash = "43c766c084c6919984fbc5975c47e8565297781dd7f661503f59829cd3fc00fb"
 
 [[files]]
 file = "config/defaultoptions/keybindings.txt"
-hash = "2513006d0df4cb77259d0b6082171ac735f7cf5efff47026c2a991e139e00770"
+hash = "192661773efa274a00775ffb0601526e665c11a5c2f90d4988193c6fd4257a78"
 
 [[files]]
 file = "config/entityculling.json"
@@ -27,6 +27,10 @@ hash = "ea331219e42db3e87b5f9d16796037075c44ad6e9af323ddd3364b5e9ed8a48c"
 [[files]]
 file = "config/subtle_effects/general.toml"
 hash = "5513e33f046e07449bca4b189e22a1883b39b637231a8da923e13ea5e1a20585"
+
+[[files]]
+file = "config/voxy-config.json"
+hash = "c66c39f28a577688175c7df65757699137bcd9cfc2c4ba1c0066be417f1b7960"
 
 [[files]]
 file = "mods/3dskinlayers.pw.toml"
@@ -251,11 +255,6 @@ metafile = true
 [[files]]
 file = "mods/iris.pw.toml"
 hash = "db1c1e6382878b78e994dba1b9026935f8d1c5ca685c89d2437858e0a0dcab58"
-metafile = true
-
-[[files]]
-file = "mods/irisbonk.pw.toml"
-hash = "7871f24e8175a3ed712e8f5d33a042743771b183313183d5530dc1357c40e7c5"
 metafile = true
 
 [[files]]
