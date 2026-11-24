@@ -15,7 +15,6 @@ import argparse
 import hashlib
 import json
 import os
-from pathlib import Path
 import stat
 import sys
 import tomllib
@@ -78,10 +77,7 @@ def main():
     os.makedirs(os.path.dirname(out), exist_ok=True)
     with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
         for name, data in [("instance.cfg", "[General]\n" + instance_cfg), ("mmc-pack.json", mmc_pack),
-                           (f"minecraft/{BOOTSTRAP}", bootstrap),
-                           *[(f"docs/optional-mods.{lang}.md",
-                              (Path(ROOT) / "docs" / "install" / f"optional-mods.{lang}.md").read_bytes())
-                             for lang in ("en", "ru")]]:
+                           (f"minecraft/{BOOTSTRAP}", bootstrap)]:
             info = zipfile.ZipInfo(name, (1980, 1, 1, 0, 0, 0))
             info.external_attr = (stat.S_IFREG | 0o644) << 16  # Regular file, rw-r--r--: without permissions, extraction sets zero.
             z.writestr(info, data, zipfile.ZIP_DEFLATED)
