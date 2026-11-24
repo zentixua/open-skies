@@ -1,4 +1,0 @@
-[general]
-	#Disables the warning screen shown when Iris is installed without Iris Bonk
-	no_iris_warn_screen = true
-	no_veil_warn_screen = true

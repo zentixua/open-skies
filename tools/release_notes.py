@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
-"""Generate English-first and Russian release notes for the current pack version.
+"""Release notes for the pack version in pack/pack.toml, from its section in CHANGELOG.md.
 
-For each new version, add docs/releases/<version>.en.md with the English translation
-of its README.md version-table row. CI requires both before a release can be built.
+Every new version needs a `## <version>` section in CHANGELOG.md; CI runs this on every PR, so a version without one
+cannot reach main or be released.
+
+Usage: python3 tools/release_notes.py OUT
 """
 import argparse
-from pathlib import Path
 import re
 import tomllib
+from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+REPO = "https://github.com/zentixua/open-skies"
 
 
 def render(root=ROOT):
@@ -17,38 +20,29 @@ def render(root=ROOT):
     version = pack["version"]
     if not re.fullmatch(r"\d+\.\d+\.\d+", version):
         raise ValueError(f"Invalid pack version: {version!r}")
-    rows = []
-    for line in (root / "README.md").read_text(encoding="utf-8").splitlines():
-        cells = line.split(" | ", 2)
-        if len(cells) == 3 and cells[0] == f"| {version}":
-            rows.append((cells[1], cells[2].removesuffix(" |")))
-    if len(rows) != 1:
-        raise ValueError(f"README.md: expected one version-table row for {version}, got {len(rows)}")
-    mod, russian = rows[0]
-    english_path = Path(f"docs/releases/{version}.en.md")
-    try:
-        english = (root / english_path).read_text(encoding="utf-8").strip()
-    except FileNotFoundError:
-        raise ValueError(
-            f"Missing {english_path}: each new pack version needs docs/releases/<version>.en.md "
-            "with the English translation of its README.md version-table row."
-        ) from None
-    if not english:
-        raise ValueError(f"Empty English release notes for {version}")
-    sections = []
-    for language, changes in (("en", english), ("ru", russian)):
-        changes = changes.replace("](#", "](https://github.com/zentixua/open-skies#")
-        template = (root / f"docs/releases/template.{language}.md").read_text(encoding="utf-8")
-        sections.append(template.format(**pack["versions"], mod=mod, changes=changes).strip())
-    return "\n\n---\n\n".join(sections) + "\n"
+    sections = re.split(r"^## ", (root / "CHANGELOG.md").read_text(encoding="utf-8"), flags=re.M)[1:]
+    found = [s.split("\n", 1) for s in sections if s.split("\n", 1)[0].split()[:1] == [version]]
+    if len(found) != 1 or not found[0][1].strip():
+        raise ValueError(f"CHANGELOG.md: expected one non-empty '## {version}' section, got {len(found)}")
+    incoming = tomllib.loads((root / "pack/mods/incoming.pw.toml").read_text(encoding="utf-8"))["filename"]
+    incoming = incoming.removeprefix("incoming-").removesuffix(".jar")
+    versions = pack["versions"]
+    changes = found[0][1].strip().replace("](#", f"]({REPO}#")
+    return (f"Minecraft {versions['minecraft']}, NeoForge {versions['neoforge']}, Incoming {incoming}.\n\n"
+            f"{changes}\n\n"
+            "### Installation\n\n"
+            "- `Open-Skies.mrpack`: import it in Modrinth App, Prism Launcher or ATLauncher. Stays on this version.\n"
+            "- `Open-Skies.zip`: a Prism Launcher instance that updates itself to the latest release before every "
+            "launch (\"Add Instance\" → \"Import\").\n\n"
+            f"Requirements, servers and optional parts: [README]({REPO}#install).\n")
 
 
 def main():
-    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
     parser.add_argument("out", type=Path)
     args = parser.parse_args()
     args.out.write_text(render(), encoding="utf-8")
-    print(f"English and Russian release notes → {args.out}")
+    print(f"Release notes → {args.out}")
 
 
 if __name__ == "__main__":

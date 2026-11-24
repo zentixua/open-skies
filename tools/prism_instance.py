@@ -3,8 +3,8 @@
 
   tools/prism_instance.py [dist/Open-Skies.zip]
 
-The archive contains an empty instance (Minecraft and NeoForge from pack.toml, memory as in the instructions for
-friends) and packwiz-installer-bootstrap in the game directory. The instance's pre-launch command runs
+The archive contains an empty instance (Minecraft and NeoForge from pack.toml, memory as README recommends) and
+packwiz-installer-bootstrap in the game directory. The instance's pre-launch command runs
 packwiz-installer with the pack from this repository's main branch
 (https://packwiz.infra.link/tutorials/installing/packwiz-installer/). In Prism: "Add Instance" → "Import" → this
 file. On the first launch, packwiz-installer downloads the mods and asks about optional ones; on every later
@@ -15,7 +15,6 @@ import argparse
 import hashlib
 import json
 import os
-from pathlib import Path
 import stat
 import sys
 import tomllib
@@ -27,7 +26,7 @@ PACK_URL = "https://raw.githubusercontent.com/zentixua/open-skies/main/pack/pack
 BOOTSTRAP = "packwiz-installer-bootstrap.jar"
 BOOTSTRAP_URL = f"https://github.com/packwiz/packwiz-installer-bootstrap/releases/download/v0.0.3/{BOOTSTRAP}"
 BOOTSTRAP_SHA256 = "a8fbb24dc604278e97f4688e82d3d91a318b98efc08d5dbfcbcbcab6443d116c"
-# With headroom: measured on the laptop, the game with shaders needs 1.5–2.5 GB of live memory.
+# README's recommendation: about 100 mods with Create, structures and long-distance rendering, with headroom.
 MAX_MEMORY_MB = 6144
 # Prism components (mmc-pack.json) by [versions] keys in pack.toml, also checked by packwiz-installer.
 COMPONENTS = {"minecraft": "net.minecraft", "neoforge": "net.neoforged"}
@@ -64,11 +63,7 @@ def main():
         ("ConfigVersion", "1.3"),
         ("InstanceType", "OneSix"),
         ("name", ini_value(pack["name"])),
-        ("notes", ini_value(
-            'Installation and optional mods: EN '
-            'https://github.com/zentixua/open-skies/blob/main/docs/install/optional-mods.en.md | RU '
-            'https://github.com/zentixua/open-skies/blob/main/docs/install/optional-mods.ru.md'
-        )),
+        ("notes", ini_value("Installation, requirements and optional parts: https://github.com/zentixua/open-skies#install")),
         ("OverrideCommands", "true"),
         ("PreLaunchCommand", ini_value(command)),
         ("OverrideMemory", "true"),
@@ -82,10 +77,7 @@ def main():
     os.makedirs(os.path.dirname(out), exist_ok=True)
     with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
         for name, data in [("instance.cfg", "[General]\n" + instance_cfg), ("mmc-pack.json", mmc_pack),
-                           (f"minecraft/{BOOTSTRAP}", bootstrap),
-                           *[(f"docs/optional-mods.{lang}.md",
-                              (Path(ROOT) / "docs" / "install" / f"optional-mods.{lang}.md").read_bytes())
-                             for lang in ("en", "ru")]]:
+                           (f"minecraft/{BOOTSTRAP}", bootstrap)]:
             info = zipfile.ZipInfo(name, (1980, 1, 1, 0, 0, 0))
             info.external_attr = (stat.S_IFREG | 0o644) << 16  # Regular file, rw-r--r--: without permissions, extraction sets zero.
             z.writestr(info, data, zipfile.ZIP_DEFLATED)

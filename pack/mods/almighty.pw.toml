@@ -1,8 +1,0 @@
-name = "Almighty"
-filename = "almighty-0.4.0.jar"
-side = "server"
-
-[download]
-url = "https://github.com/zentixua/almighty/releases/download/v0.4.0/almighty-0.4.0.jar"
-hash-format = "sha256"
-hash = "fb4199d5add2ab5a252876a7424138716b171d8d45568b980db38e89060b8955"

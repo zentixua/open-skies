@@ -7,4 +7,3 @@ pack/*.zip
 .env
 .env.*
 !.env.example
-/config/almighty/token

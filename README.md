@@ -1,375 +1,194 @@
 # Open Skies
 
-> **Сборка друзей переехала в [zentixua/open-skies-friends](https://github.com/zentixua/open-skies-friends).**
-> Здесь скоро будет публичная сборка Open Skies с другим набором модов. Перевести экземпляр — одна строка в
-> предстартовой команде: [«Переезд»](https://github.com/zentixua/open-skies-friends#переезд).
+A NeoForge 1.21.1 modpack about a world worth defending. Explore and settle, build machines with Create, fly
+everywhere, and fight when you choose: [Incoming](https://github.com/zentixua/incoming) adds remote-guided strikes,
+from a Shahed drone to cruise missiles and a nuclear ICBM, aimed with binoculars at anything you can see.
 
-Своя сборка для игры с друзьями: NeoForge 1.21.1, Create, Create Aeronautics, Incoming, дальняя прорисовка Voxy,
-шейдеры и запись повторов, на сервере — Almighty.
-Без контента не по теме: оружие и техника, Create для построек и аппаратов, всё лишнее для такой игры не берём.
+- **Sandbox, no quests.** Vanilla progression and recipes; advancements and this page are the guide. Survival and
+  creative, singleplayer, LAN and dedicated servers.
+- **Flight is the travel.** Create Aeronautics airships, Immersive Aircraft and Man of Many Planes. No teleports.
+- **A light survival layer.** Better dungeons, temples and towns to raid from the air, Farmer's Delight cooking,
+  backpacks, per-player loot, claims for servers.
+- **Horizon-wide view.** Voxy long-distance rendering, on by default.
+- About 100 mods, every one with a single job ([What's inside](#whats-inside)); built in the open with
+  [packwiz](https://packwiz.infra.link/) and checked by CI on every change (a server and a client load it from scratch
+  and the client joins the server; CI has no GPU, so Voxy's and shaders' rendering is not part of that check).
 
-Сборка описана файлами [packwiz](https://packwiz.infra.link/): `pack.toml` (версии игры и NeoForge), `mods/*.pw.toml` и
-`shaderpacks/*.pw.toml` (откуда скачать каждый файл и его хеш), остальное — файлы, которые кладутся в игру как есть
-(`config/`). Файлы для лаунчера собирает CI (артефакт `open-skies`, у новой версии на `main` — и
-[выпуск](https://github.com/zentixua/open-skies/releases/latest)), `.mrpack` можно и руками:
+## Install
 
-```sh
-go install github.com/packwiz/packwiz@v0.0.0-20260906154125-ef87d964f8cb
-cd pack && packwiz mr export      # → Open Skies-<версия>.mrpack
-```
+Download from the [latest release](https://github.com/zentixua/open-skies/releases/latest) (no GitHub account needed):
+- [Open-Skies.mrpack](https://github.com/zentixua/open-skies/releases/latest/download/Open-Skies.mrpack): import it
+  in [Modrinth App](https://modrinth.com/app), [Prism Launcher](https://prismlauncher.org/download/) ("Add
+  Instance" → "Import") or ATLauncher. The instance stays on that version; install a newer release over it when you
+  want to update.
+- [Open-Skies.zip](https://github.com/zentixua/open-skies/releases/latest/download/Open-Skies.zip), advanced: a Prism
+  Launcher instance that updates itself to the latest release before every launch
+  ([packwiz-installer](https://packwiz.infra.link/tutorials/installing/packwiz-installer/) in its pre-launch command).
+  Worlds and your own settings stay; files of the pack are replaced when a release changes them.
 
-## Установка
+Optional file: Simple Voice Chat. Prism and Modrinth App show it **unticked** when importing the `.mrpack`: tick it if
+your server runs it. The auto-updating Prism zip and a server installed with packwiz-installer get it by default;
+delete its jar on a server that goes without voice chat.
 
-Скачать — из [последнего выпуска](https://github.com/zentixua/open-skies/releases/latest), без входа на GitHub:
-- [Open-Skies.zip](https://github.com/zentixua/open-skies/releases/latest/download/Open-Skies.zip)
-  — экземпляр [Prism Launcher](https://prismlauncher.org/download/) с автообновлением (ниже);
-- [Open-Skies.mrpack](https://github.com/zentixua/open-skies/releases/latest/download/Open-Skies.mrpack)
-  — разовая установка одной версии в Prism Launcher или Modrinth App, без автообновления (в конце раздела).
+**Requirements.** Java 21 (launchers install it), 6 GB of memory for the game (the Prism zip sets 6144 MB; set the
+same in Modrinth App) and 16 GB of system RAM, a GPU with OpenGL 4.6 (GTX 1660 / RX 580 class or better without
+shaders). Shaders, Voxy at long distances and big Create builds want more.
 
-Выпуск `v<версия>` выходит сам, когда на `main` приходит новая версия сборки; ссылки выше всегда ведут к последнему.
+**macOS and older GPUs.** Voxy needs OpenGL 4.6; macOS has OpenGL 4.1, so Voxy runs there only through Roxy's extra
+libraries ([Roxy's macOS guide](https://github.com/RasaNovum/Roxy/blob/main/Roxy-macOS-compat/setup-guide.md)).
+Without them, or on a GPU without OpenGL 4.6, remove both `roxy-*.jar` and `voxy-*.jar` from the instance's `mods`
+folder (Roxy does nothing without Voxy). In the auto-updating Prism instance, packwiz-installer would bring them back:
+use the `.mrpack` there.
 
-Сборка обновляется сама: перед каждым запуском игры Prism Launcher запускает
-[packwiz-installer](https://packwiz.infra.link/tutorials/installing/packwiz-installer/), и тот ставит `pack/` с `main`
-этого репозитория — новое докачивает, убранное из сборки удаляет. Свои файлы игрока (миры, настройки, моды не из
-сборки) он не трогает; файл из `config/` сборки перезаписывает, только когда сборка его меняет.
+**Lite setup** for weaker PCs: no shaderpack (the default), Voxy and Roxy removed as above, Simple Voice Chat unticked;
+about 4–5 GB of memory is then enough.
 
-Новый экземпляр: Prism → «Добавить экземпляр…» → «Импорт» → `Open-Skies.zip` (выпуск выше, артефакт CI
-`open-skies` или `tools/prism_instance.py`). В нём Minecraft и NeoForge из `pack.toml`, 6144 МБ памяти,
-`packwiz-installer-bootstrap.jar` в папке игры и команда перед запуском. Первый запуск скачивает моды и спрашивает про
-необязательные: запись (Flashback, Sinytra Connector, Flashback NeoForge Fixed) нужна только тем,
-кто снимает; дальняя прорисовка (Roxy и Voxy) включена, на macOS её выключить (ниже).
+## Servers
 
-Экземпляр, поставленный из `.mrpack`, переводится на автообновление так же, миры остаются:
-1. Prism: «Папка» (папка игры экземпляра, там `mods` и `saves`): переименовать `mods` в `mods-old` и положить
-   туда же [packwiz-installer-bootstrap.jar](https://github.com/packwiz/packwiz-installer-bootstrap/releases/latest).
-2. «Изменить…» → «Параметры» → «Пользовательские команды»: включить и в «Предстартовая команда» вписать
-   `"$INST_JAVA" -jar packwiz-installer-bootstrap.jar https://raw.githubusercontent.com/zentixua/open-skies/main/pack/pack.toml`
-3. Запустить: packwiz-installer скачает моды сборки заново и спросит про необязательные. Свои моды не из сборки, если
-   они были, вернуть из `mods-old` в `mods`.
+Install the server side of the pack with NeoForge (version in [pack.toml](pack/pack.toml)) and then either:
+- packwiz-installer, in the server directory:
+  `java -jar packwiz-installer-bootstrap.jar -g -s server https://raw.githubusercontent.com/zentixua/open-skies/main/pack/pack.toml`
+  ([bootstrap jar](https://github.com/packwiz/packwiz-installer-bootstrap/releases/latest); `main` is always the latest
+  release), or
+- the `.mrpack` with a server tool that reads it, for example the
+  [itzg/minecraft-server](https://docker-minecraft-server.readthedocs.io/en/latest/types-and-platforms/mod-platforms/modrinth-modpacks/)
+  Docker image (`MODRINTH_MODPACK`).
 
-Экземпляр, поставленный под прежним именем сборки (Airstrike Pack), обновляется как прежде: GitHub отдаёт файлы и по
-старому адресу `zentixua/airstrike-pack`. Ссылки на прежние файлы выпуска (`Airstrike-Pack.zip`,
-`Airstrike-Pack.mrpack`) больше не работают: новая установка — из файлов выше.
+Client-only mods are skipped on the server; every mod that registers something the server sends to players is
+installed on both sides. Notes for server owners:
+- **Claims and parties:** [Open Parties and Claims](https://modrinth.com/mod/open-parties-and-claims) protects
+  builds from other players (`/openpac-claims`, `/openpac-parties`, or the `'` key in game). Whether claims also stop Incoming's strikes is not
+  verified yet: test it on your server before relying on it. Incoming's own world rules switch block damage and fire
+  on or off, cap active strikes per player, and keep nuclear weapons operator-only by default
+  ([Incoming's guide](https://github.com/zentixua/incoming/tree/main/docs/guide)).
+- **Voice chat:** [Simple Voice Chat](https://modrinth.com/plugin/simple-voice-chat) needs UDP port 24454 open
+  (configurable in `config/voicechat/voicechat-server.properties`).
+- **Pre-generation:** [Chunky](https://modrinth.com/plugin/chunky) (`/chunky radius 3000`, `/chunky start`) saves
+  lag on first exploration; [LOD Server Support](https://modrinth.com/mod/lod-server-support) sends distant terrain
+  to players' Voxy and Xaero's map.
+- **Performance:** [spark](https://spark.lucko.me/) (`/spark tps`, `/spark profiler`).
 
-`mods` в сторону — потому что удаляет packwiz-installer только то, что ставил сам: jar старой версии сборки с другим
-именем (`airstrike-2.5.0.jar` у 0.1.0) остался бы рядом с новым, и игра не запустилась бы с двумя Airstrike. Файлы
-`config/` сборки на первом запуске он перезаписывает, если они отличаются.
+## What's inside
 
-Окно packwiz-installer на каждом запуске: «Continue» — сразу в игру (иначе само через 10 с), «Optional mods...» —
-включить или выключить запись и дальнюю прорисовку. Галочки модов сборки на странице «Моды» Prism не менять: убранный
-или выключенный мод packwiz-installer вернёт. Если сборка сменит версию Minecraft или NeoForge, он спросит, обновить
-ли их в экземпляре. Файлы сборки GitHub раздаёт с кэшем до 5 минут: запуск сразу после слияния PR сборки может застать
-`pack.toml` и `index.toml` разных коммитов, и packwiz-installer скажет про неверный хеш индекса — «Quit» и запустить
-снова позже.
-
-`.mrpack` (выпуск выше, артефакт CI или `packwiz mr export`) — разовая установка без автообновления: «Импорт» этого
-файла, Prism сам спросит про необязательные моды. Галочек по умолчанию в формате Modrinth нет, и Prism предлагает их все
-выключенными: Roxy и Voxy отметить (кроме macOS).
-
-## Что внутри
-
-| группа | моды |
+| role | mods |
 |---|---|
-| основа | Create, Sable, Create Aeronautics, Incoming (jar выпуска с GitHub) |
-| дальняя прорисовка | Voxy через Roxy (по выбору, включена; ниже), LOD Server Support (рельеф вдали присылает сервер) |
-| производительность | Sodium, Sodium Extra, Reese's Sodium Options, Iris, Colorwheel, Lithium, FerriteCore, ModernFix, ImmediatelyFast, Entity Culling, More Culling (+ Cloth Config), Dynamic FPS |
-| Create | Propulsion: Simulated, Aeroworks, Tweaked Controllers, Big Cannons (+ RPL), Connected, Deco, Diesel Generators, Aeronautics Hot Air Fix |
-| авиация и оружие | Immersive Aircraft, Man of Many Planes, Vic's Point Blank (+ GeckoLib), Point Blank Aeronautics compat, Do a Barrel Roll (полёт на элитрах с креном, + Forgified Fabric API) |
-| картинка и камера | шейдерпаки Photon, Solas, Complementary Unbound, BSL, MakeUp Ultra Fast (на выбор, ниже), Euphoria Patches (дополнение к Complementary), Aeronautics Camera Sync, 3D Skin Layers, Not Enough Animations, Ok Zoomer (зум, ниже) |
-| мир вокруг | Subtle Effects (мелкие частицы и звуки: искры огня, дым горящих мобов, рябь, листья; + Fzzy Config, Kotlin for Forge; стоит и на сервере, ниже), Particle Rain (дождь, снег и пыльные бури частицами), AmbientSounds (звуки природы по биому, высоте и времени; + CreativeCore), LambDynamicLights (свет от факела в руке, горящих мобов и снарядов), Contraption Lights (свет фонарей на аппаратах Create и кораблях Sable падает на мир), Sound Physics Remastered (эхо в помещениях и глушение звука стенами для звуков мира), Burnt (огонь прогорает: обугленные дома и деревья, обрушение горящих построек) |
-| камеры и экраны | Vista (+ Moonlight Lib): телевизоры из блоков показывают живую картинку с камеры-видоискателя (ниже); Iris Bonk (только у игрока): экраны Vista и другие шейдеры модов не чернеют с шейдерпаком |
-| мультиплеер и удобство | Essential, TrueUUID (вход на сервер, ниже), LAN Server Properties (временно, ниже), JEI (+ MezzConfig), Jade, Jade Sable Compat, Xaero's Minimap и World Map (+ MapSyncer: готовый снимок всей карты с сервера), Create – Xaero's map, GraveStone и его патч для Sable, Mouse Tweaks, No Chat Reports |
-| запись (по выбору) | Flashback, Flashback NeoForge Fixed, Sinytra Connector |
-| клавиши | Default Options (+ Balm): раскладка сборки (ниже) |
-| замер производительности | spark: на сервере `/spark tps`, `/spark health`, `/spark profiler` (операторы), у себя в клиенте — `/sparkc` |
-| только на сервере | Almighty (мост ведущего, ниже), ServerCore (производительность сервера, ниже) |
+| core | [Create](https://modrinth.com/mod/create) 6.0.10, [Sable](https://modrinth.com/mod/sable) and [Create Aeronautics](https://modrinth.com/mod/create-aeronautics) (pinned: Incoming is tested against them), [Incoming](https://github.com/zentixua/incoming) (GitHub release jar) |
+| Create | Propulsion: Simulated, Aeroworks, Tweaked Controllers, Create Big Cannons (+ Ritchie's Projectile Library), Create: Connected, Create Deco, Diesel Generators, Aeronautics Hot Air Fix |
+| aircraft and weapons | Immersive Aircraft, Man of Many Planes, Vic's Point Blank (+ GeckoLib), Point Blank Aeronautics compat, Do a Barrel Roll (banking elytra flight, + Forgified Fabric API) |
+| exploration | YUNG's Better Dungeons, Mineshafts, Strongholds, Desert Temples, Jungle Temples, Ocean Monuments, Witch Huts, Nether Fortresses and End Island, YUNG's Bridges and Extras (+ YUNG's API); Towns and Towers (+ Cristel Lib). Vanilla terrain: worlds stay cheap to generate and Voxy shows them right |
+| survival | Farmer's Delight and Create: Central Kitchen (+ Create: Dragons Plus), Sophisticated Backpacks and Storage (+ Sophisticated Core), Lootr (per-player chests), Comforts (sleeping bags and hammocks for long flights), AppleSkin, GraveStone (+ its Sable patch) |
+| multiplayer | Open Parties and Claims, Simple Voice Chat (optional), No Chat Reports, Chunky, spark |
+| long-distance rendering | [Voxy](https://modrinth.com/mod/voxy) through [Roxy](https://modrinth.com/mod/roxy), LOD Server Support |
+| performance | Sodium, Sodium Extra, Reese's Sodium Options, Lithium, FerriteCore, ModernFix, ImmediatelyFast, Entity Culling, More Culling (+ Cloth Config), Dynamic FPS, Clumps |
+| look and sound | Iris (+ Colorwheel) and three shaderpacks (below), Euphoria Patches, Subtle Effects (+ Fzzy Config, Kotlin for Forge), Particle Rain, AmbientSounds (+ CreativeCore), Sound Physics Remastered, LambDynamicLights, Contraption Lights, Burnt (fire burns structures down), 3D Skin Layers, Not Enough Animations, Aeronautics Camera Sync |
+| interface | JEI (+ MezzConfig), Jade and Jade Sable Compat, Xaero's Minimap and World Map, Create – Xaero's map, Better Advancements, Controlling (+ Searchables), Mouse Tweaks, Ok Zoomer, Default Options (+ Balm) |
 
-LAN Server Properties — временно, чтобы в мир хоста мог зайти игрок без входа в аккаунт Microsoft; уберём по слову
-Артёма. Хост: пауза → «Открыть для сети» → «Проверка лицензии»: «Без проверки лицензии + исправление UUID» → «Открыть
-мир для сети»; заходят по адресу хоста в Tailscale и порту из этого окна. Исправление UUID оставляет игрокам с лицензией
-их UUID (инвентарь и достижения в мире те же), игрок без лицензии получает свой. Порт мод не пробрасывает (UPnP у него
-нет), проверка лицензии по умолчанию включена; «Сохранить настройки» не нажимать — иначе мир будет открываться без
-проверки и дальше.
+**Shaders** run through Iris: K toggles them, O picks one. None is selected by default; the pack ships three, all
+with Voxy support: [Photon](https://modrinth.com/shader/photon-shader) (the most beautiful and the heaviest),
+[Complementary Unbound](https://modrinth.com/shader/complementary-unbound) (middle, with low-end presets; Euphoria
+Patches adds its own copy, "ComplementaryUnbound + EuphoriaPatches", on first launch) and
+[MakeUp Ultra Fast](https://modrinth.com/shader/makeup-ultra-fast-shaders) (for weak PCs). If Voxy cannot start its
+renderer with a shaderpack, Voxy turns shaders off and Iris remembers it: press K to turn them on again.
 
-Сервер сборки (выделенный, на VPS хоста) работает без проверки лицензии сервером (`online-mode=false`), а проверяет её
-TrueUUID — он стоит и на сервере, и у каждого игрока. При входе сервер посылает клиенту одноразовый вызов, клиент
-отвечает через `joinServer` своей сессии Mojang (токен остаётся у игрока), сервер сверяет ответ с `hasJoined`: игрок
-с лицензией входит со своим UUID и скином. Без лицензии пускается только клиент, который прямо отвечает «сессии нет»,
-и только под ником, который ещё ни разу не входил с лицензией (`knownPremiumDenyOffline`,
-`allowOfflineForUnknownOnly` — значения по умолчанию): под ником игрока с лицензией без неё не войти. Моды сервер
-ставит из этой же `pack/` (`packwiz-installer-bootstrap -g -s server`), поэтому `side` у модов должен быть верным:
-`client` сервер не ставит.
-Только на сервере (`side = "server"`, клиентам не нужен и у них не ставится): мост ведущего
-[Almighty](https://github.com/zentixua/almighty), через который Claude ведёт игру на сервере, и
-[ServerCore](https://modrinth.com/mod/servercore) — производительность сервера (настройки ниже).
-Мост Almighty слушает только адрес из `config/almighty-common.toml` с ключом из `config/almighty/token` (устройство —
-[CLAUDE.md](https://github.com/zentixua/almighty/blob/main/CLAUDE.md) в репозитории моста).
+**Not in the pack, on purpose:** quests and recipe changes (a sandbox), teleports and waystones (flight is the travel),
+terrain overhauls (cost and Voxy), a second mod for a role already filled.
 
-Subtle Effects (с Fzzy Config и Kotlin for Forge) стоит и на сервере, хотя всё видимое и слышимое он делает у игрока.
-Свои звуки (храп спящих, сердцебиение, капли, шипение костра и другие) он регистрирует в реестре звуков, а в
-мультиплеере номера записей реестра приходят от сервера: без мода на сервере у этих звуков у игрока номера нет. Игре
-это не мешает, но Flashback пишет в повтор и звуки, которые клиент играет сам, — по номеру, и запись падает: `Can't
-find id for subtle_effects:entity.villager.snore` (0.1.44, запись рядом со спящим жителем). Правило: клиентский мод,
-который регистрирует то, что может попасть в пакет (звуки, сущности, предметы, блоки), ставится и на сервер
-(`side = "both"`). Остальные клиентские моды сборки регистрируют только то, что в пакеты не попадает: частицы
-Particle Rain (рисуются только у игрока), окна и типы аргументов команд CreativeCore (их присылает только сервер),
-типы света Contraption Lights (свой реестр Veil у клиента). Проверяет CI: клиент с Flashback пишет повтор на сервере
-сборки рядом со спящим жителем.
+## Settings the pack ships
 
-Карта мира на сервере. В одиночке Xaero's World Map читает карту прямо из файлов мира, а в мультиплеере обычно рисует
-только чанки, которые сервер прислал игроку. В сборке LOD Server Support (LSS) передаёт дальний рельеф и в Xaero:
-карта постепенно заполняется вокруг игрока в текущем измерении, даже без Voxy. По умолчанию радиус — 512 чанков
-(8192 блока) в обычном мире и Крае, 64 чанка (1024 блока) в Незере; настройки клиента и Voxy могут его уменьшить.
-Поверхность заполняется во всём этом радиусе, текущий слой пещер — не дальше 128 чанков и радиуса LSS.
-Сохранённые изменения чанков LSS тоже отслеживает: уведомления идут раз в 200 тиков (10 секунд при 20 TPS), затем
-клиент запрашивает изменённый рельеф и обновляет карту. Это не мгновенное обновление всей карты мира. Мост соблюдает
-переключатели Xaero «Load New Chunks» и «Update Chunks»; вблизи карту ведёт сам Xaero.
+Every other mod keeps its defaults. Each file in [pack/config](pack/config) is there for a reason:
+- `fml.toml`: NeoForge's defaults except `maxThreads = 1`, so mods are constructed one at a time. Create 6.0.10
+  registers its blocks and items through shared tables that are not thread-safe ("some of these registrations are not
+  thread-safe" in its `Create.java`), and Create addons touch Create classes from their constructors; with parallel
+  construction a registration is occasionally lost and startup fails with `Trying to access unbound value:
+  ResourceKey[minecraft:item / create:…]` (Create issue #10534). Cost: about 1–2 s of startup. Remove when Create
+  fixes it.
+- `voxy-config.json`: `sectionRenderDistance = 12` instead of Voxy's 16. Voxy sizes its LOD geometry buffer from free
+  video memory when you join (about 1.8–2.1 GB on an 8 GB card); at 16 it fills on such cards and the game crashes
+  with `IllegalStateException: Geometry OOM`. 12 covers a little over half the area. With more video memory, raise it
+  in Video Settings → Voxy.
+- `entityculling.json`: Entity Culling's defaults plus Incoming's entities in `entityWhitelist`. Their trails, launch
+  clouds and burning debris smoke are spawned in the entity's client tick; culling would cut the trail of a missile
+  behind a hill or behind the player.
+- `aero_cam_sync-client.toml`: Aeronautics Camera Sync's defaults with `configSchemaVersion = 5`. Version 1.4.0 writes
+  a new file with schema 0 and then, on the next launch, opens a "Config Reset" question instead of the main menu.
+- `moreculling.toml`: `useBlockStateCulling = false`. More Culling's block face culling overrides Create Aeronautics'
+  rule that draws faces next to levitite; everything else is More Culling's default.
+- `subtle_effects/general.toml`: Subtle Effects' defaults except `particleRenderDistance = 32` (its default is 5
+  chunks). Its particle culling would otherwise hide Incoming's debris, splashes and fragments beyond 80 blocks.
+- `sound_physics_remastered/sound_rates.properties`: `0` for every `incoming:` sound. Incoming models distance, air,
+  terrain and echo for its own sounds; Sound Physics keeps everything else at its defaults.
+- `defaultoptions/keybindings.txt`: the pack's key layout ([Keys](#keys)).
 
-MapSyncer (на сервере и у игроков) оставляем для готового `server_map_cache`, который приходит с эталоном мира:
-это снимок всей подготовленной карты, включая места за радиусом LSS. Игрок забирает снимок каждого нужного измерения
-отдельно: `/mapsyncer sync minecraft:overworld`, `/mapsyncer sync minecraft:the_nether` и
-`/mapsyncer sync minecraft:the_end` (если для него есть кэш на сервере). Команды выполнять по очереди: дождаться
-окончания синхронизации на клиенте и выждать не менее секунды перед следующей командой. В MapSyncer 1.0.3 `sync all`
-при первой синхронизации не запрашивает ни одного измерения. Автоматическое обновление кэша выключено
-в `config/mapsyncer-server.toml`.
-На уже настроенном сервере один раз в консоли: `mapsyncer incremental off` — команда сохраняет `DISABLED` в активный
-файл настроек и сразу останавливает обработчик; состояние — `mapsyncer status`. Переопределение настроек мира
-(`world/serverconfig/mapsyncer-server.toml`) имеет приоритет над файлом сборки.
+## Keys
 
-В MapSyncer 1.0.3 оба автоматических режима, `TICK` и `SCHEDULED`, сохраняют весь мир и переводят изменённые регионы
-MCA в формат Xaero синхронно в тике сервера. На большом мире это останавливает игру и вызывает ServerHangWatchdog
-через 60 секунд (ночные падения в 04:01). Поэтому автоматические проходы не включать. Теряем ежедневный свежий
-снимок всей карты и автоматическую синхронизацию MapSyncer при входе; сохранённая карта у игроков остаётся,
-а изменения вокруг них передаёт LSS. За радиусом LSS снимок стареет. Если нужен новый снимок всей карты, готовить его
-отдельно на копии мира: `mapsyncer generate` переводит регионы в фоне, но перед этим всё равно сохраняет весь мир
-в потоке сервера. Xaero's World Map и Minimap остаются и на сервере: так у каждого мира свой идентификатор, и карты
-и метки миров, которые по очереди запускаются на одном адресе, не сливаются в одну.
+Default Options makes the pack's layout the default: a new instance gets it on first launch, and "Reset Keys" in
+Controls returns to it. NeoForge triggers every action bound to a pressed key, so mods' defaults that collide are
+moved. Rules: Minecraft's keys stay where they are; one key, one action where both could fire; a mod's key that is
+taken moves to Alt + the same key.
 
-Дальняя прорисовка — [Voxy](https://modrinth.com/mod/voxy): рельеф до горизонта упрощёнными блоками (LOD). Voxy
-выходит только для Fabric и новых версий Minecraft; на NeoForge 1.21.1 его грузит [Roxy](https://modrinth.com/mod/roxy)
-— переходник, которому нужен оригинальный jar `voxy-0.2.16-beta+1.21.11` с Modrinth (другие версии Voxy с Roxy не
-работают). Рельеф для LOD Voxy берёт из чанков, которые видел игрок, а на сервере — от
-[LOD Server Support](https://modrinth.com/mod/lod-server-support): он стоит и на сервере, и у игроков и присылает
-рельеф вдали сам. Distant Horizons убран: две дальние прорисовки сразу не нужны.
-Voxy нужна OpenGL 4.6, на macOS её нет (там OpenGL 4.1): Roxy 0.4.1 запускает его на Apple Silicon только с
-дополнительными библиотеками ([инструкция Roxy](https://github.com/RasaNovum/Roxy/blob/main/Roxy-macOS-compat/setup-guide.md)).
-Поэтому Roxy и Voxy — необязательные моды сборки, по умолчанию включены: на macOS в окне «Optional mods...» снять обе
-галочки (Roxy без Voxy не работает). Выключенный на странице «Моды» Prism мод packwiz-installer вернёт.
-
-Шейдеры — через Iris, переключатель — K, выбор — O. В сборке пять шейдерпаков, от тяжёлых к лёгким:
-[Photon](https://modrinth.com/shader/photon-shader) и [Solas](https://modrinth.com/shader/solas-shader) — самые
-красивые и самые тяжёлые; [Complementary Unbound](https://modrinth.com/shader/complementary-unbound) и
-[BSL](https://modrinth.com/shader/bsl-shaders) — середина, с пресетами под слабую видеокарту;
-[MakeUp Ultra Fast](https://modrinth.com/shader/makeup-ultra-fast-shaders) — для слабых ПК (тяжёлые эффекты по умолчанию
-выключены). Отобраны из самых скачиваемых на Modrinth с версией для 1.21.1 и Iris, у всех в zip есть шейдеры для
-Voxy (`voxy.json`); Bliss и Rethinking Voxels не взяты — у них поддержки Voxy нет. Какой включить и включать ли
-вообще, решает игрок — сборка настройку Iris не кладёт. Если отрисовка Voxy с шейдерпаком не встаёт (так в CI:
-там нет OpenGL 4.6), Voxy сам выключает шейдеры и это сохраняется в настройке Iris — включить снова K. Unbound с Euphoria Patches — копия
-«ComplementaryUnbound_r5.9.3 + EuphoriaPatches_1.10.5», её Euphoria Patches делает сам на запуске. В экземплярах до
-0.1.37 в `shaderpacks` осталась копия прежнего пака сборки, «ComplementaryReimagined_r5.9.3 + EuphoriaPatches_1.10.5»:
-её сделал Euphoria Patches, packwiz-installer её не знает и не удаляет (zip Reimagined удаляет). Рядом с ней копию
-Unbound Euphoria Patches делает, только если помнит, что прежней была Reimagined
-(`config/euphoria_patcher/.data.json`; после переноса папки экземпляра не помнит). Если копии Unbound нет, папку
-Reimagined удалить руками — на следующем запуске копия появится.
-
-Настройки, которые сборка кладёт сама:
-- `config/mapsyncer-server.toml` — `incremental_update.incrementalUpdateMode = "DISABLED"`, остальные значения
-  MapSyncer дописывает по умолчанию. Автоматическая конвертация регионов в MapSyncer 1.0.3 блокирует тик сервера;
-  обновления карты вокруг игрока уже передаёт LSS, а готовый кэш MapSyncer остаётся снимком (выше).
-- `config/entityculling.json` — значения Entity Culling по умолчанию плюс сущности Incoming в `entityWhitelist`: такие
-  сущности мод не прячет и не останавливает их тик на клиенте (в 1.11.3 этот список действует на оба). Факел снаряда
-  рисуется вместе с моделью, а шлейф, облако пуска и дым горящих обломков рождаются в тике сущности на клиенте
-  (`IncomingClient.entityTick`): без исключения снаряд за холмом или за спиной игрока терял бы факел и рвал шлейф.
-- `config/aero_cam_sync-client.toml` — значения Aeronautics Camera Sync по умолчанию и `configSchemaVersion = 5`.
-  Версия 1.4.0 сама пишет новый файл с версией схемы 0, а на следующем запуске считает его устаревшим и вместо
-  главного меню открывает вопрос «Config Reset» (`ConfigMigrationManager`: файл был и схема меньше 5) — до первого
-  нажатия «Reset» или «Ignore», которые ставят 5. С файлом сборки вопроса нет. Обновляя мод, сверить его версию схемы.
-- `config/moreculling.toml` — `useBlockStateCulling = false`, остальное More Culling дописывает сам (и, как у нового
-  файла, переводит дальности рамок в блоки). Рамки он рисует сам: без задней стенки и карт, к которым игрок стоит
-  спиной, у блока в рамке — три видимые грани, у плоского предмета дальше 16 блоков — только лицевая сторона
-  (торец в 3 см). Отсечение граней блоков выключено: оно отвечает за `Block.shouldRenderFace` в его начале и перебивает
-  правку Aeronautics, по которой грань у левитита рисуется (`levitite/BlockMixin`), а даёт оно меньше вершин видеокарте,
-  которая в замере была занята на 34 %, пока поток отрисовки стоял на 100 %.
-- `config/vista-common.toml` — значения Vista 5.6.9 по умолчанию, кроме двух в `[television]`: `max_connected_size = 24`
-  (предел мода; по умолчанию 8) и `square_aspect_ratio = false` — телевизоры собираются в прямоугольник, а не только
-  в квадрат. Так собирается широкий экран столовой бункера на сервере Silo (25567): живая картинка с камеры на
-  поверхности. Настройку сервера Moonlight Lib присылает игрокам сам. Цена — второй проход отрисовки мира с камеры,
-  только пока экран включён и рядом: до 10 кадров в секунду, дальность 64 блока, не больше ~17 мс на кадр (значения
-  мода по умолчанию). С Iris мод предупреждает о худшей картинке экрана.
-- `config/vista-client.toml` — `[general]`: `no_iris_warn_screen = true`, `no_veil_warn_screen = true`. Иначе Vista при
-  каждом запуске с Iris (и Veil у Contraption Lights) показывает экран-предупреждение и советует Iris Bonk. Iris Bonk в
-  сборке есть (экспериментальный: без него с шейдерпаком экран Vista чёрный); он меняет, как Iris обращается с шейдерами
-  всех модов, в том числе Incoming, — если что-то сломается, убираем его первым.
-- `config/defaultoptions/keybindings.txt` — раскладка клавиш сборки (ниже).
-- `config/subtle_effects/general.toml` — значения Subtle Effects 1.15.1 по умолчанию, кроме `particleRenderDistance = 32`
-  (его предел, 512 блоков; по умолчанию 5 чанков). Отсечение частиц у мода включено и прячет почти все частицы дальше
-  этой дальности, в том числе обломки, брызги и осколки удара Incoming: прилёт за 100 блоков остался бы без них. Огненный
-  шар и дым Incoming рисует сам и отсечения не видит. Отсечение за краем экрана мод оставляет — его выигрыш сохраняется.
-- `config/sound_physics_remastered/sound_rates.properties` — строка `0` на каждый звук `incoming:` (своего шаблона на
-  все звуки мода у Sound Physics Remastered нет): звуки Incoming идут по его собственной модели — дальность, воздух,
-  холмы и стены, эхо от гор, — и Sound Physics не кладёт на них свои отражения. Остальные звуки игры — его, со
-  значениями по умолчанию: при загрузке он дописывает их в файл сам. Нужен Incoming 3.7.1 и новее.
-- `config/fml.toml` — значения загрузчика NeoForge по умолчанию, кроме `maxThreads = 1`: моды создаются по одному,
-  а не все сразу в нескольких потоках. Create 6.0.10 регистрирует свои блоки и предметы через общие таблицы, которые
-  не рассчитаны на работу из нескольких потоков (в его `Create.java` так и написано: «some of these registrations are
-  not thread-safe»), а NeoForge создаёт все моды параллельно, и аддоны Create в своих конструкторах трогают классы
-  Create. Изредка запись предмета теряется, и запуск падает в регистрации: `Trying to access unbound value:
-  ResourceKey[minecraft:item / create:chocolate_bucket]` (23.10 — один раз на ~70 копий сборки, запущенных проверками
-  21–23.10; у других сборок с Create — так же, Create#10534). В одном потоке гонки нет. Цена — около 1–2 с: вход
-  в мир на ноутбуке хоста 26–27 с против 25 с (два тёплых запуска на каждое значение, 23.10).
-- `config/servercore/config.yml`, `optimizations.yml` — значения ServerCore 1.5.19 по умолчанию, кроме двух. Дальность
-  активации (`activation-range`, как у Paper) включена: мобы и стойки для брони дальше 16–48 блоков от игроков тикают
-  раз в 20 тиков, пока их ничто не будит (падают, в воде, их бьют, у них цель). Всё, что не моб и не стойка (снаряды
-  Incoming, контрапции Create, самолёты, снаряды пушек, предметы), из проверок исключено: тип по умолчанию —
-  `tick-interval: 1`. Динамика (`dynamic`) включена: когда тик дольше 35 мс, сервер на время сужает дальность тика
-  чанков и симуляции до 6 чанков и лимит мобов до 50 %, а когда нагрузка спадает, возвращает 8 чанков и 100 %
-  (8 — дальность симуляции сервера, `server.properties`); дальность прорисовки не трогает. Замер на копии Project Zearth (6 игроков в разных городах, ночь):
-  работа потока сервера на тик −33 % (с одной дальностью активации — −27 %).
-
-## Клавиши
-
-Раскладка сборки — `config/defaultoptions/keybindings.txt`, её делает раскладкой по умолчанию мод Default Options:
-новый экземпляр получает её на первом запуске, «Сброс» у клавиши и «Сбросить настройки» в «Назначении клавиш» возвращают её.
-В уже стоящем экземпляре клавиши, которые записаны в его `options.txt`, Default Options не меняет: Minecraft пишет туда
-все клавиши, и «не менял» от «выбрал то же» не отличить. Туда раскладку один раз ставит «Настройки → Управление →
-Назначение клавиш → Сбросить настройки» (свои переназначения при этом сбрасываются). Клавиши из файла, которых в `options.txt`
-ещё нет (новый мод сборки), Default Options ставит сам. Файл перечисляет все клавиши, кроме JEI: обновление мода
-со своими новыми значениями раскладку не сдвинет.
-
-Правила: клавиши Minecraft на своих местах; одна клавиша — одно действие там, где оба могли бы сработать; в разных
-режимах клавиша значит одно и то же (X — выйти, Ctrl — быстрее, ЛКМ — огонь); что не нужно в этой игре — без клавиши.
-NeoForge запускает все действия на нажатой клавише разом, поэтому клавиши модов по умолчанию на R (эмоции Essential,
-высадка из самолёта, перезарядка) или B (гардероб Essential, ракеты самолёта, режим огня, новая метка) срабатывали бы
-вместе.
-
-| клавиша | действие |
+| key | action |
 |---|---|
-| ЛКМ | атака; в бинокле пульта — пуск (Incoming); на лафете — выстрел пушки (Big Cannons) |
-| R | перезарядка (Point Blank); у пульта Tweaked Controllers — мышь в центр |
-| B, V, Y | режим огня, смена прицела, обвесы (Point Blank); Alt+Y — его настройки |
-| G | блок, пока в руках оружие и ПКМ занят прицелом (Point Blank) |
-| C (держать) | зум, колесо мыши — сильнее или слабее, средняя кнопка — сброс (Ok Zoomer) |
-| X | выйти: из самолёта (Immersive Aircraft, у мода — R), из пульта Tweaked Controllers (у мода — Tab; Esc тоже) |
-| Ctrl | бег; в самолёте — разгонные ракеты (у мода — B) |
-| Пробел, Shift | прыжок и красться; в самолёте — тяга, вверх и вниз |
-| H (держать) | мышь как джойстик пульта Tweaked Controllers (у мода — левый Alt, он у ящиков Create); в самолёте — свободный обзор (Immersive Aircraft, у мода — левый Alt) |
-| \` (Ё) | лафет Big Cannons: наведение или движение (у мода — C); в самолёте — руль мышью вкл/выкл (Immersive Aircraft) |
-| левый Alt | меню схематики и ящики с инструментами (Create) |
-| Tab | список игроков; с творческим посохом физики — вращение (так написано в его подсказке) |
-| M, ], [ | карта мира, её настройки, настройки мини-карты (у мода — Y) |
-| U, J, Z, Num + | список меток, новая метка (у мода — B), большая мини-карта, метка на месте (Xaero) |
-| N, «,», «.» | камера снаряда, карта наведения, второй ключ (Incoming) |
-| I | наклон камеры вместе с аппаратом (Aeronautics Camera Sync; у Do a Barrel Roll на I — вкл/выкл, здесь без клавиши) |
-| A, D | на элитрах — рыскание (Do a Barrel Roll), крен и тангаж — мышью |
-| K, O | шейдеры вкл/выкл, выбор шейдеров (Iris) |
-| Shift, Num 0, Num 1 | подробности, настройки и показ подсказки Jade |
+| Left mouse | attack; in Incoming's binoculars: launch; on a Big Cannons mount: fire |
+| R | reload (Point Blank); Tweaked Controllers: center the mouse |
+| B, V, Y | fire mode, sight, attachments (Point Blank); Alt+Y: its settings |
+| G | use or place a block while holding a weapon, whose right click aims (Point Blank) |
+| C (hold) | zoom; mouse wheel changes it (Ok Zoomer) |
+| X | leave an aircraft (Immersive Aircraft) or a Tweaked Controller |
+| Ctrl | sprint; in an aircraft: boost |
+| H (hold) | Tweaked Controllers: mouse as joystick; in an aircraft: free look |
+| \` | Big Cannons mount: aim or move; in an aircraft: mouse steering on/off |
+| Left Alt | Create's schematic menu and toolbox |
+| Tab | player list; with Create Aeronautics' physics staff: rotate |
+| M, ], [ | world map, its settings, minimap settings (Xaero) |
+| U, J, Z, Num + | waypoints, new waypoint, larger minimap, instant waypoint (Xaero) |
+| N, ",", "." | projectile camera, targeting map, second key (Incoming) |
+| I | camera tilts with the craft (Aeronautics Camera Sync) |
+| A, D | on elytra: yaw (Do a Barrel Roll); roll and pitch with the mouse |
+| K, O | shaders on/off, shaderpack selection (Iris) |
+| Shift, Num 0, Num 1 | details, settings and overlay of Jade |
+| Alt+B, Alt+C, Alt+Z, Alt+X | open backpack, its inventory upgrades, toggle upgrades 1 and 2 (Sophisticated Backpacks) |
+| Caps Lock, Alt+V, Alt+M | push to talk, voice chat menu (mute, groups, settings inside), mute (Simple Voice Chat) |
+| ' | Open Parties and Claims menu |
 
-Без клавиши (у модов она есть по умолчанию): у Essential — зум (C: его заменяет Ok Zoomer), друзья (H), гардероб (B), скриншоты (I), подглядеть чат (Z), быстрое меню
-(G), эмоции (R): всё это есть в его меню; сохранить и загрузить панель творческого режима (C, X); перезагрузка шейдеров
-Iris (R, нужна авторам шейдеров); осмотр оружия Point Blank (I, только анимация); у Jade — жидкости, рецепты и
-применения (есть в JEI) и диктор (Num 2–5); у Do a Barrel Roll — тяга вперёд (W, на серверах по умолчанию запрещена) и вкл/выкл (I: мод и так включён). Остальное — как в Minecraft (WASD, E, Q, T, /, F, L, P, F2, F5, F11, 1–9)
-и у модов: правый Shift — подтверждение в окнах Xaero, в окне рецептов JEI — R, U, A и мышь.
+## Licenses and credits
 
-Зум — [Ok Zoomer](https://modrinth.com/mod/ok-zoomer) (только у игроков): пока C зажата, поле зрения сужается
-плавно, колесо мыши меняет увеличение (30 шагов, каждые 5 — вдвое; без зума колесо, как обычно, листает
-панель), средняя кнопка возвращает начальное, после отпускания C увеличение сбрасывается. Настройки — значения мода
-по умолчанию (пресет «Camera»: на время зума прячутся интерфейс и прицел — для съёмки, чувствительность мыши падает вместе с увеличением), меняются в его окне (кнопка у клавиши
-в «Управлении») или командой `/ok_zoomer`. Zoomify, самый скачиваемый зум, для NeoForge 1.21.1 не выходит (только
-26.x); Zume хранит настройки в общей папке `.minecraft/global` вне экземпляра. Зум Essential на той же C — без клавиши.
+This repository's own files (tools, CI, configs, docs) are under the [MIT license](LICENSE). The pack links every mod
+from its official source and bundles none: each file keeps its author's license. The pack is not monetised, because
+several mods it uses (Big Cannons assets, Jade, Man of Many Planes, Towns and Towers, Cristel Lib, Entity Culling and
+3D Skin Layers) allow only non-commercial use.
+- **Voxy** is by MCRcortex: [modrinth.com/mod/voxy](https://modrinth.com/mod/voxy). The pack uses the official file
+  `voxy-0.2.16-beta+1.21.11` from that page, unmodified. **Roxy** ([modrinth.com/mod/roxy](https://modrinth.com/mod/roxy))
+  runs it on NeoForge 1.21.1: report problems with Voxy in this pack to Roxy or to us, never to Voxy.
+- **Complementary Shaders** by EminGT: [complementary.dev](https://www.complementary.dev/).
+- **Subtle Effects** ([modrinth.com/mod/subtle-effects](https://modrinth.com/mod/subtle-effects)) is credited here as
+  its author asks; Default Options and Balm (BlayTheNinth) ask that their names stay out of a pack's title.
+- Left out on purpose: shaderpacks and mods whose authors forbid redistribution or can revoke it (BSL, Flashback,
+  Essential). `tools/check_sources.py` enforces this in CI.
 
-Красными в «Управлении» остаются задуманные пары: NeoForge подсвечивает клавишу у двух действий, даже когда у них разные
-контексты и вместе они не срабатывают (`KeyMapping.same` в конце сравнивает сами клавиши). Это JEI в окне рецептов
-(A, R, U, мышь), «Размышление» Create (W над предметом в инвентаре) и его копии Shift, Ctrl и Alt, «Подробности» Jade и
-свободная камера джойстика Aeroworks (Shift), Alt+Y Point Blank рядом с Alt Create и ЛКМ, R, X, Ctrl, Tab, H и \` из таблицы.
+## Use it as a template
 
-Default Options — только у игроков. Его библиотека Balm стоит и на сервере: Balm регистрирует свой канал
-`balm:config_sync` обязательным, а NeoForge не пускает игрока с обязательным каналом, которого нет у сервера
-(`NetworkComponentNegotiator`).
+Fork the repository (or copy it) and you have a working pack with its checks:
+1. `pack/`: change `name`, `author` and `version` in `pack.toml`; add or remove mods with packwiz
+   (`packwiz modrinth add <slug>`, `packwiz remove <name>`), then `packwiz refresh`.
+2. `tools/prism_instance.py`: set `PACK_URL` to your repository's `pack/pack.toml`, and `REPO` in
+   `tools/release_notes.py` to your repository.
+3. `tools/check_sources.py`: your own non-Modrinth files go to `ALLOWED` with their license; `EXCLUDED` keeps out
+   what you must not link.
+4. CI (`.github/workflows/build.yml`) then checks every PR: fresh index, sources, NeoForge ranges
+   (`tools/check_loader.py`), and a server and a client booting from scratch (`tools/boot_check.py`, which also runs
+   locally). A new `version` on `main` with its `CHANGELOG.md` section becomes a GitHub release with the `.mrpack` and
+   the Prism zip.
 
-## Как обновлять
+## Releases and updates
 
-- Обновления приходят сами (`.github/workflows/update.yml`): каждые 3 часа — новые выпуски Incoming и Almighty, раз в
-  неделю, в ночь на понедельник, — все моды с Modrinth. Обновление получает новую версию сборки и строку в «Версиях»,
-  проходит те же проверки CI, что и любой PR (включая запуск сервера и клиента с нуля), и только тогда попадает в
-  `main` и выходит. Не прошло — сборка остаётся прежней, а в репозитории открывается issue «Automatic pack update
-  failed». Сразу, не дожидаясь расписания: запустить `update` вручную во вкладке Actions.
-- Закреплённые моды (`pin = true`) обновляются только вручную: Voxy и Roxy (ниже) и Create, Sable, Create Aeronautics,
-  Immersive Aircraft — на них проверяются Incoming и Almighty, их версии меняются вместе с версиями в этих модах.
-- Мод вручную: `packwiz update <имя>` (или `packwiz modrinth add --project-id <slug> --version-id <id>` — точная
-  версия), потом `packwiz refresh`. CI проверяет, что `index.toml` свежий.
-- Версию сборки (`version` в `pack.toml`) поднимать при каждом изменении состава: у всех игроков должен быть один набор.
-  Новая версия на `main` выходит сама — CI выпускает `v<версия>` с `.mrpack` и экземпляром Prism, заметки берёт из
-  её строки в «Версиях» ниже и английского перевода в `docs/releases/<version>.en.md`. Для каждой новой версии
-  нужны и строка, и файл перевода: без них CI не пройдёт и релиз не выйдет.
-- `pack/` на `main` игроки ставят при следующем запуске игры: в `main` — только проверенное CI и только jar модов
-  из уже вышедших выпусков.
+Numbered releases with a [changelog](CHANGELOG.md), about once a month, plus fixes for crashes. Each release is a PR
+that updates mods (`packwiz update --all`; pinned mods by hand), bumps `version` in `pack.toml` and adds its
+`CHANGELOG.md` section; CI boots it from scratch before it can be merged and released. Create, Sable, Create
+Aeronautics and Immersive Aircraft are pinned to what Incoming is tested against; Voxy is pinned to the one file Roxy
+loads.
 
-## Версии
+## Problems
 
-| версия | мод | что изменилось |
-|---|---|---|
-| 0.1.64 | 3.13.0 | Обновлены моды: Create: Diesel Generators 1.21.1-1.3.16, CreativeCore 2.13.55, Entity Culling 1.12.2, Euphoria Patches 1.11.2-r5.10-neoforge, Flashback Neoforge Fixed 1.0.19, Geckolib 4.9.4, Iris Bonk 1.21.1-0.1.5, Just Enough Items (JEI) 19.76.1.478, LOD Server Support v0.23.0-beta.1+neoforge+mc1.21.1, Particle Rain v4.0.4+1.21.1-neoforge, Reese's Sodium Options mc1.21.1-2.2.6+neoforge, Subtle Effects 1.15.3, Vista 1.21.1-5.6.10, Complementary Shaders - Unbound r5.10, MakeUp - Ultra Fast 9.6a. Обновление автоматическое. |
-| 0.1.63 | 3.13.0 | Обновлены моды: Contraption Lights (Bi-directional Coloured Dynamic Lights) 1.6.0, CreativeCore 2.13.54, Entity Culling 1.12.1, Flashback Neoforge Fixed 1.0.18, Kotlin for Forge 5.13.0, LOD Server Support v0.22.0-beta.1+neoforge+mc1.21.1, MezzConfig 0.7.1, Subtle Effects 1.15.2. Обновление автоматическое. |
-| 0.1.62 | 3.13.0 | Iris Bonk: экраны Vista с шейдерпаком показывают картинку, а не чёрный экран. Vista больше не показывает при запуске предупреждение об Iris. Обновление автоматическое. |
-| 0.1.61 | 3.13.0 | Vista (+ Moonlight Lib): экраны с живой картинкой с камеры, широкие экраны из телевизоров. Ставится и на сервер. Обновление автоматическое. |
-| 0.1.60 | 3.13.0 | Incoming 3.13.0 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.13.0.md)). Обновление автоматическое. |
-| 0.1.59 | 3.12.1 | Incoming 3.12.1 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.12.1.md)). Обновление автоматическое. |
-| 0.1.58 | 3.12.0 | Incoming 3.12.0 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.12.0.md)). Обновление автоматическое. |
-| 0.1.57 | 3.11.0 | NeoForge 21.1.265 (packwiz-installer спросит, обновить ли его в экземпляре, — согласиться). Все остальные моды уже на последних выпусках для 1.21.1. |
-| 0.1.56 | 3.11.0 | Incoming 3.11.0 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.11.0.md)). Обновление автоматическое. |
-| 0.1.55 | 3.10.4 | Обновлены моды: Balm 21.0.67+neoforge-1.21.1, Colorwheel 1.3.2+mc1.21.1, Contraption Lights (Bi-directional Coloured Dynamic Lights) 1.5.6, CreativeCore 2.13.53, Essential Mod 1.5.2, MezzConfig 0.6.11, Particle Rain v4.0.3+1.21.1-neoforge. Обновление автоматическое. |
-| 0.1.54 | 3.10.4 | Incoming 3.10.4 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.10.4.md)). Обновление автоматическое. |
-| 0.1.53 | 3.10.3 | Обновлены моды: Colorwheel 1.3.1+mc1.21.1, CreativeCore 2.13.52, Just Enough Items (JEI) 19.70.0.469, MezzConfig 0.6.10, More Culling 1.0.11, Not Enough Animations 1.12.7, Solas Shader 3.9. Обновление автоматическое. |
-| 0.1.52 | 3.10.3 | Incoming 3.10.3 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.10.3.md)). Обновление автоматическое. |
-| 0.1.51 | 3.10.2 | Incoming 3.10.2 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.10.2.md)). Обновление автоматическое. |
-| 0.1.50 | 3.10.1 | Incoming 3.10.1 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.10.1.md)). Обновление автоматическое. |
-| 0.1.49 | 3.10.0 | Incoming 3.10.0 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.10.0.md)). Обновление автоматическое. |
-| 0.1.48 | 3.9.1 | Incoming 3.9.1 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.9.1.md)). Обновление автоматическое. |
-| 0.1.47 | 3.9.0 | Обновлены моды: Burnt 1.10.5.3, Create - Xaero's map 1.4.2, Fzzy Config 0.7.7+fix1+1.21+neoforge, Just Enough Items (JEI) 19.70.0.460, MezzConfig 0.6.9, Sodium Extra mc1.21.1-0.9.5+neoforge. Обновление автоматическое. |
-| 0.1.46 | 3.9.0 | Incoming 3.9.0 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.9.0.md)) — свет обычного взрыва в пределах его энергии: далёкие горы ночью больше не вспыхивают, вблизи днём огненный шар оранжевый; дым и пыль взрывов стоят на месте, когда вы поворачиваетесь; дым и марево только над огнём самого мода; невидимые облака после налёта больше не тратят время кадра; большие залпы легче для сервера. MapSyncer на сервере больше не конвертирует карту в тике сервера. Не совместима по сети с 3.8.0: обновитесь все и сервер |
-| 0.1.45 | 3.8.0 | Запись Flashback больше не падает на звуках Subtle Effects (храп спящего жителя, капли, костёр и другие): Subtle Effects с Fzzy Config и Kotlin for Forge теперь стоит и на сервере (исправление — после перезапуска сервера). Совместима по сети с 0.1.44 |
-| 0.1.44 | 3.8.0 | Incoming 3.8.0 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.8.0.md)) — взрыв выглядит по тому, во что попал (грунт, бетон, плита, воздух); огонь топлива — обычный огонь на блоках; пыльная дымка и ветер у земли идут по улицам; ударная волна у игрока (контузия, трава и пыль вокруг); звук массированного налёта; дым большого налёта больше не роняет частоту кадров. Burnt — огонь прогорает; Sound Physics Remastered — эхо и глушение звуков мира. Не совместима по сети с 3.7.0: обновитесь все и сервер |
-| 0.1.43 | 3.7.0 | Мир вокруг живее: Subtle Effects (искры огня, дым горящих мобов, рябь, падающие листья), Particle Rain (дождь и снег частицами, пыльные бури), AmbientSounds (звуки природы), LambDynamicLights (факел в руке светит) и Contraption Lights (фонари на аппаратах и кораблях светят на мир). Всё только у игроков, серверу не нужно |
-| 0.1.42 | 3.7.0 | LOD Server Support 0.20.0 (новая настройка «Extend Far Player Draw Range» на странице Far Players, по умолчанию выключена: далёкие игроки видны дальше обычной прорисовки вместе с Voxy) и ModernFix 5.27.27 |
-| 0.1.41 | 3.7.0 | Incoming 3.7.0 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.7.0.md)) — огненный шар клубится и поднимается; свечение вокруг огня (настройка «Свечение вокруг огня»); дым клубится со светлыми верхами; видно ударную волну, камера трясётся; пыль тяжелее воздуха и стекает с крыш; воронки по грунту, плиты над пустотой пробиваются; удар по воде — настоящий столб брызг; залп летит волной; ядерка — шар с узором и короткая засветка. Не совместима по сети с 3.6.1: обновитесь все и сервер |
-| 0.1.40 | 3.6.1 | Incoming 3.6.1 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.6.1.md)) — после удара шахеда или ракеты горит только то, что правда поджигает жар шара (листва, сено, сухая трава), а не песок и рельсы; рамки целей держатся на цели при любом зуме; облако после удара наклоняется по ветру и расходится; ускорители догорают плавно; ножка ядерки — та же пыль, что ковёр. Не совместима по сети с 3.6.0: обновитесь все и сервер |
-| 0.1.39 | 3.6.0 | Ещё три шейдерпака на выбор (O): Solas (красивый, тяжёлый), BSL (середина), MakeUp Ultra Fast (для слабых ПК); все с дальним рельефом Voxy. Шейдеры по-прежнему не включаются сами |
-| 0.1.38 | 3.6.0 | Шейдеры больше не включаются сами: сборка не выбирает шейдерпак, Photon и Complementary Unbound — на выбор (O). У кого уже стояла 0.1.37, настройка Iris сбросится и шейдеры выключатся — включить свой в O |
-| 0.1.37 | 3.6.0 | Шейдеры: Photon вместо Complementary Reimagined, он выбран по умолчанию и включится у всех при обновлении; на выбор — Complementary Unbound (клавиша O). Если в выборе нет «ComplementaryUnbound_r5.9.3 + EuphoriaPatches_1.10.5», удалить в `shaderpacks` папку «ComplementaryReimagined_r5.9.3 + EuphoriaPatches_1.10.5» — Euphoria Patches сделает копию Unbound на следующем запуске |
-| 0.1.36 | 3.6.0 | Incoming 3.6.0 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.6.0.md)) — обычные удары по физике заряда: взрывы снова частицами, как в 3.4.1, но размер, цвет и свет из модели; осколки, воронки, пробитие бомбы, ПВО и полёт по своей модели, пресет масштаба GAME/REAL/CUSTOM. Не совместима по сети с прежними версиями: обновитесь все и сервер. Мир со своими `nuclear.effects_scale` или `wave_speed` получит GAME — чтобы сохранить числа, поставить CUSTOM. NeoForge 21.1.264 (packwiz-installer спросит, обновить ли его в экземпляре, — согласиться) и все моды — до последних версий для 1.21.1: JEI 19.69, Immersive Aircraft 1.7.0, 3D Skin Layers 1.11.4, Flashback NeoForge Fixed 1.0.17. Зум Ok Zoomer на C (держать) с колесом мыши — вместо зума Essential. Дальняя прорисовка Voxy (через Roxy) и LOD Server Support вместо Distant Horizons: на macOS снять галочки Roxy и Voxy. Моды загружаются по одному (`config/fml.toml`) — без редкого падения Create при запуске. CI ставит сборку с нуля и запускает сервер и клиент |
-| 0.1.35 | 3.4.1 | Снова Incoming 3.4.1 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.4.1.md)): прилёты в 3.5.0 вышли хуже, пока их разбираем — играем на 3.4.1. Не совместима по сети с 0.1.34: обновитесь все и сервер |
-| 0.1.34 | 3.5.0 | Incoming 3.5.0 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.5.0.md)) — обычные удары по физике: взрыв — освещённый объём дыма, пыли и огня, дым над пожарами, факелы и дымные следы из данных двигателей, облако пуска; звук полёта и взрыва по двигателю, заряду и погоде, толчок волны и звон в ушах. Не совместима по сети с 3.4.1: обновитесь все и сервер |
-| 0.1.33 | 3.4.1 | Incoming 3.4.1 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.4.1.md)) — факел двигателя один вблизи и вдали и не пропадает на краю прорисовки; ударная волна бьёт фронтом сразу; свет огненного шара доходит и до отвёрнутых склонов; сорванная волной пыль остаётся на месте, пелена — ровное покрывало сверху, её нет под землёй и нет каймы у краёв блоков |
-| 0.1.32 | 3.4.0 | Do a Barrel Roll 3.7.3 — полёт на элитрах с креном: мышь кренит и задирает нос, A и D — рыскание; Forgified Fabric API, который ему нужен, теперь у всех и на сервере |
-| 0.1.31 | 3.4.0 | Incoming 3.4.0 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.4.0.md)) — ядерный удар по физике от вспышки до осадков: волна идёт с настоящей скоростью (где в настройках уже есть значение, оно остаётся), давление по высоте подрыва, свет выжигает землю и поджигает со вспышкой, гриб поднимается и светлеет, как на испытаниях, слой пыли, звук и слух, ранения волной, ожоги, ослепление вспышкой и радиация |
-| 0.1.30 | 3.3.0 | Incoming 3.3.0 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.3.0.md)) — ядерный огненный шар и гриб объёмом, с тенью днём и светом на земле ночью; ударную волну видно по стене пыли за ней; над водой брызги и столб воды вместо пыли; волна толкает взгляд, а не трясёт; мобы убегают от взрыва |
-| 0.1.29 | 3.2.0 | Incoming 3.2.0 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.2.0.md)) — после ядерного удара пелена пыли над городом и огненный шторм, выжженная земля, следы вспышки на стенах, удар над водой, руины успевают за волной; оператор и хост выбирают точку пуска на карте наведения |
-| 0.1.28 | 3.1.0 | NeoForge 21.1.262 — его требует Forgified Fabric API из 0.1.27 (без него игра не запускалась); на запуске packwiz-installer спросит, обновить ли его в экземпляре |
-| 0.1.27 | 3.1.0 | Incoming 3.1.0 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.1.0.md)) — оружие под настоящими названиями (Shahed, Lancet, Grad), стена пыли ядерного взрыва идёт по рельефу и несёт обломки, осадки позже, МБР разгоняется как настоящая, удар по месту на земле `at <x z>`; обновлены JEI, ImmediatelyFast, Essential, Forgified Fabric API и Flashback NeoForge Fixed |
-| 0.1.26 | 3.0.1 | Сборка теперь называется Open Skies: файлы установки `Open-Skies.zip` и `Open-Skies.mrpack`, репозиторий zentixua/open-skies, прежние ссылки на `Airstrike-Pack.zip` и `.mrpack` больше не работают. Поставленные экземпляры обновляются как прежде, моды и настройки те же ([установка](#установка)) |
-| 0.1.25 | 3.0.1 | Incoming 3.0.1 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.0.1.md)) — ЗРК настоящей величины, надписи пульта помещаются в окно и кнопки; Almighty 0.4.0 на сервере ([заметки](https://github.com/zentixua/almighty/blob/main/docs/releases/0.4.0.md)) — тексты моста по-английски, набор ведущего в `mcp/gm` |
-| 0.1.24 | 3.0.0 | Мод Airstrike теперь называется Incoming: Incoming 3.0.0 ([заметки](https://github.com/zentixua/incoming/blob/main/docs/releases/3.0.0.md)) — команда `/incoming`, настройки `incoming-server.toml` и `incoming-client.toml` (прежние `airstrike-*.toml` переименовать, иначе настройки по умолчанию), клавиши мода — снова по умолчанию; старые миры с блоками, предметами и следами ударов мода открываются как прежде |
-| 0.1.23 | 2.10.3 | Моды — до последних версий для 1.21.1: Immersive Aircraft 1.6.0 (самолётам нужен разбег чуть длиннее, руль мышью — \` (Ё), свободный обзор — H, [клавиши](#клавиши)) и Man of Many Planes 0.2.3 под него, Entity Culling 1.11.3, ModernFix 5.27.26, Flashback NeoForge Fixed 1.0.15; NeoForge 21.1.259 — на запуске packwiz-installer спросит, обновить ли его в экземпляре |
-| 0.1.22 | 2.10.3 | ServerCore поднимает дальность тика чанков и симуляции под нагрузкой обратно не выше 8 — сервер теперь с прорисовкой 10 и симуляцией 8 (было 12 и 10): работа потока сервера −20 % на копии Zearth с 6 игроками, рельеф дальше рисует Distant Horizons |
-| 0.1.21 | 2.10.3 | Производительность сервера: Airstrike 2.10.3 ([заметки](https://github.com/zentixua/airstrike/blob/main/docs/releases/2.10.3.md)) — удары не нагружают тик там, где их никто не видит; Almighty 0.3.1 ([заметки](https://github.com/zentixua/almighty/blob/main/docs/releases/0.3.1.md)) — стоящие боты ведущего не нагружают сервер; ServerCore на сервере (настройки выше). Замер на копии Zearth, 6 игроков и кампания ведущего по всей карте: работа потока сервера 193 → 72 мс на тик (вместе с G1 на сервере) |
-| 0.1.20 | 2.10.2 | Моды — до последних версий для 1.21.1: Sable 2.0.6 (сущности снова стоят на жидкостях, как страйдеры), Xaero's Minimap 26.6.0 и World Map 1.47.0, JEI 19.57.0.451 и MezzConfig 0.6.8, Flashback NeoForge Fixed 1.0.14; NeoForge 21.1.256 — на запуске packwiz-installer спросит, обновить ли его в экземпляре |
-| 0.1.19 | 2.10.2 | Airstrike 2.10.2 ([заметки](https://github.com/zentixua/airstrike/blob/main/docs/releases/2.10.2.md)): блик пожара и взрыва вдали больше не светит сквозь дома |
-| 0.1.18 | 2.10.1 | Almighty 0.3.0 на сервере ([заметки](https://github.com/zentixua/almighty/blob/main/docs/releases/0.3.0.md)): ведущий надёжнее водит самолёты и корабли — выключился автопилот, бот отпускает рули |
-| 0.1.17 | 2.10.1 | Almighty 0.2.2 на сервере ([заметки](https://github.com/zentixua/almighty/blob/main/docs/releases/0.2.2.md)): постройка ведущего по координатам корабля Create Aeronautics больше не роняет сервер |
-| 0.1.16 | 2.10.1 | Airstrike 2.10.1: сервер не копит загруженные чанки после множества залпов; Almighty 0.2.1 на сервере: бот-пилот не теряет самолёт |
-| 0.1.15 | 2.10.0 | spark: TPS, MSPT, память и профилировщик сервера и клиента |
-| 0.1.14 | 2.10.0 | Chunky убран с сервера: вместе с Distant Horizons он ронял запуск сервера (DH обращается к Chunky, пока тот не загружен) |
-| 0.1.13 | 2.10.0 | Раскладка клавиш сборки без пересечений (Default Options + Balm, [ниже](#клавиши)); в уже стоящем экземпляре — «Сбросить настройки» в «Назначении клавиш» |
-| 0.1.12 | 2.10.0 | Airstrike 2.10.0 ([заметки](https://github.com/zentixua/airstrike/blob/main/docs/releases/2.10.0.md)): стационарная пусковая, залп с места пуска и через точки маршрута, руководство игрока; мод ведущего теперь Almighty 0.2.0 ([заметки](https://github.com/zentixua/almighty/blob/main/docs/releases/0.2.0.md)), только на сервере; Chunky на сервере; остальные моды и настройки те же |
-| 0.1.11 | 2.9.0 | Airstrike 2.9.0 ([заметки](https://github.com/zentixua/airstrike/blob/main/docs/releases/2.9.0.md)): боеприпасы, разведка, точность, Отбой своих, ядерный удар без оператора, ЗРК; мод ведущего 0.1.2 на сервере; остальные моды и настройки те же |
-| 0.1.10 | 2.8.1 | Мод ведущего airstrike-gm 0.1.0 ([заметки](https://github.com/zentixua/airstrike/blob/main/docs/releases/2.8.2.md)), только на сервере: игрокам ничего не скачивается |
-| 0.1.9 | 2.8.1 | Airstrike 2.8.1 ([заметки](https://github.com/zentixua/airstrike/blob/main/docs/releases/2.8.1.md)): фиксы по итогам игры 03.10; остальные моды и настройки те же |
-| 0.1.8 | 2.8.0 | MapSyncer: вся карта мира с сервера в Xaero's World Map; Xaero's World Map и Minimap — и на сервере |
-| 0.1.7 | 2.8.0 | TrueUUID: вход на выделенный сервер сборки с лицензией и без неё |
-| 0.1.6 | 2.8.0 | Airstrike 2.8.0 ([заметки](https://github.com/zentixua/airstrike/blob/main/docs/releases/2.8.0.md)); остальные моды и настройки те же |
-| 0.1.5 | 2.7.0 | More Culling (+ Cloth Config): рамки с предметами дешевле для потока отрисовки |
-| 0.1.4 | 2.7.0 | Distant Horizons — необязательный (по умолчанию включён): на macOS его выключают, DH 3.3.3 там роняет игру |
-| 0.1.3 | 2.7.0 | Airstrike 2.7.0 ([заметки](https://github.com/zentixua/airstrike/blob/main/docs/releases/2.7.0.md)); остальные моды и настройки те же |
-| 0.1.2 | 2.6.0 | автообновление (packwiz-installer); LAN Server Properties — вход без лицензии в мир хоста, временно |
-| 0.1.1 | 2.6.0 | Airstrike 2.6.0 ([заметки](https://github.com/zentixua/airstrike/blob/main/docs/releases/2.6.0.md)); остальные моды и настройки те же |
-| 0.1.0 | 2.5.0 | первая версия |
+Open an [issue](https://github.com/zentixua/open-skies/issues) with the pack version, your launcher, OS and GPU, and
+the log: `logs/latest.log` from the instance folder (and `crash-reports/` if the game crashed). Try the lite setup
+first if the game crashes on a weaker PC.

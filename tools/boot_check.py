@@ -4,7 +4,7 @@
   python3 tools/boot_check.py server run/boot/server
   python3 tools/boot_check.py client run/boot/client --world run/boot/server/world \
       [--wrap 'xvfb-run -a -s "-screen 0 1280x720x24" {cmd}']
-  python3 tools/boot_check.py client run/boot/record --server run/boot/server [--wrap …]
+  python3 tools/boot_check.py client run/boot/join --server run/boot/server [--wrap …]
 
 Everything is installed from scratch, just as for a player and on the server: NeoForge versions from pack.toml
 (server: NeoForge installer; client: portablemc installs Minecraft, Mojang libraries and assets), mods and config/
@@ -14,11 +14,11 @@ mods follow their default checkbox). The directory must be new: do not mix with 
 The server listens only on 127.0.0.1, with account verification disabled; after "Done", it receives `stop` and must
 exit with code 0. The client enters --world (copied into saves/) through Quick Play and must stay there for --stay
 seconds without crashing; then its process is terminated. With --server, the client joins the dedicated check
-server (same directory, server started again) with recording mods, and Flashback records a replay from the first
-join next to a sleeping villager (SLEEPER). This checks what singleplayer cannot: server registries and joining
-with the server mods' channels. The client needs a window: on a headless machine, use --wrap with xvfb-run (CI)
-or nested KWin (laptop: tools/nested_kwin.sh incoming, `{cmdq}` passes the command as one argument). The client must
-not open an audio device (nested_kwin.sh blocks it on the laptop; CI has no device).
+server (same directory, server started again) and stays --stay seconds next to a sleeping villager (SLEEPER), whose
+sounds client mods play. This checks what singleplayer cannot: server registries, joining with the server mods'
+channels, and client mods whose registry entries the server must know. The client needs a window: on a headless
+machine, use --wrap with xvfb-run (as CI does) or any other wrapper (`{cmdq}` passes the command as one argument).
+The client should not open an audio device (CI has none).
 
 A loading crash (a mod rejects NeoForge or another mod, "Mod loading has failed", a RegisterEvent error) exits
 with code 1 and prints the log tail and crash report at the end. Requirements: Java 21 (JAVA_HOME or java in PATH);
@@ -26,9 +26,7 @@ for the client, portablemc 5 (PORTABLEMC or portablemc in PATH).
 """
 import argparse
 import functools
-import hashlib
 import http.server
-import json
 import os
 import re
 import shlex
@@ -48,10 +46,8 @@ USER_AGENT = "zentixua/open-skies tools/boot_check.py"
 BOOTSTRAP = "https://github.com/packwiz/packwiz-installer-bootstrap/releases/download/v0.0.3/packwiz-installer-bootstrap.jar"
 INSTALLER = "https://github.com/packwiz/packwiz-installer/releases/download/v0.5.14/packwiz-installer.jar"
 NEOFORGE = "https://maven.neoforged.net/releases/net/neoforged/neoforge/{v}/neoforge-{v}-installer.jar"
-# Replay recording mods (optional in pack/) for the client check on the server.
-RECORDING = ("connector", "flashback", "flashback-neoforge-fixed")
 # Server scene before the client joins: the player spawns on a platform in the sky next to a sleeping villager
-# (no AI, so it sleeps throughout the check). Client mods play sleep sounds (Subtle Effects snoring), recorded by Flashback.
+# (no AI, so it sleeps throughout the check). Client mods play sleep sounds there (Subtle Effects snoring).
 SLEEPER = (
     "forceload add -16 -16 15 15", "gamerule doDaylightCycle false", "gamerule doMobSpawning false",
     "gamerule spawnRadius 0", "time set 18000", "defaultgamemode creative",
@@ -63,9 +59,8 @@ SLEEPER = (
 SUMMONED = re.compile(r"\]: Summoned new ")
 DONE = re.compile(r"\]: Done \([0-9.]+s\)!")
 JOINED = re.compile(r"\]: (\S+) joined the game")
-# Disconnecting from the server ends Flashback recording (automaticallyFinish); its directory remains until saving.
 LEFT = re.compile(r"\]: \S+ lost connection: (.*)")
-# "Unreported exception thrown!": client crash outside the main loop (Flashback recording thread); the report comes later.
+# "Unreported exception thrown!": client crash outside the main loop (another thread); the report comes later.
 FAILED = re.compile(r"Mod loading has failed|Loading errors encountered|Preparing crash report|"
                     r"Failed to start the minecraft server|Unreported exception thrown!")
 
@@ -266,7 +261,7 @@ def client(a):
     # Skip the welcome screen (otherwise Quick Play waits behind it forever) and pausing when the window loses focus.
     options = "onboardAccessibility:false\npauseOnLostFocus:false\nsoundCategory_master:0.0\n"
     if a.server:
-        install_recording(dest)
+        drop_lod(dest)
         # Skip the "online play is not controlled by Mojang" warning (otherwise joining waits behind it forever).
         options += "skipMultiplayerWarning:true\n"
     with open(os.path.join(dest, "options.txt"), "w") as f:
@@ -331,38 +326,20 @@ def client(a):
                     report(dest, log)
                     sys.exit(f"client crashed {where} (exit code {proc.returncode})")
                 time.sleep(1)
-            if a.server:
-                recording = os.path.join(dest, "flashback", "temp", "recording")
-                if not (os.path.isdir(recording) and os.listdir(recording)):
-                    report(dest, log)
-                    sys.exit("Flashback did not start recording")
         finally:
             stop_group(proc)
     finally:
         if server_proc:
             stop_server(server_proc, srv, server_log, a.timeout)
-    print(f"client: {a.stay} s {where} without crashing" + (", Flashback was recording" if a.server else ""))
+    print(f"client: {a.stay} s {where} without crashing")
 
 
-def install_recording(dest):
-    """Recording mods (Flashback and its requirements: optional, disabled by default) and recording from the first join.
-
-    The server check does not need Voxy or Roxy (the singleplayer check loads them). With Mesa llvmpipe alongside
-    the server, they exhaust the CI machine's memory, so they are excluded here."""
-    for name in RECORDING:
-        with open(os.path.join(PACK, "mods", f"{name}.pw.toml"), "rb") as f:
-            meta = tomllib.load(f)
-        jar = download(meta["download"]["url"], os.path.join(dest, "mods", meta["filename"]))
-        assert meta["download"]["hash-format"] == "sha512"
-        with open(jar, "rb") as f:
-            if hashlib.sha512(f.read()).hexdigest() != meta["download"]["hash"]:
-                sys.exit(f"{meta['filename']}: hash does not match pack/")
+def drop_lod(dest):
+    """The server check does not need Voxy or Roxy (the singleplayer check loads them). With Mesa llvmpipe alongside
+    the server, they exhaust the CI machine's memory, so they are removed here."""
     for jar in os.listdir(os.path.join(dest, "mods")):
         if jar.startswith(("voxy-", "roxy-")):
             os.remove(os.path.join(dest, "mods", jar))
-    os.makedirs(os.path.join(dest, "config", "flashback"), exist_ok=True)
-    with open(os.path.join(dest, "config", "flashback", "flashback.json"), "w") as f:
-        json.dump({"configVersion": 2, "recordingControls": {"automaticallyStart": True}}, f)
 
 
 def main():
@@ -379,7 +356,7 @@ def main():
     c = sub.choices["client"]
     where = c.add_mutually_exclusive_group(required=True)
     where.add_argument("--world", help="world directory (e.g. the check server's world): singleplayer")
-    where.add_argument("--server", help="check server directory: the client joins and records a Flashback replay "
+    where.add_argument("--server", help="check server directory: the client joins it "
                                         "next to a sleeping villager")
     c.add_argument("--server-memory", default="3G", help="server -Xmx with --server")
     c.add_argument("--user", default="BootCheck")
