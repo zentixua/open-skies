@@ -69,6 +69,9 @@ python3 tools/boot_check.py server run/boot/server   # and `client` (see the scr
   "Settings the pack ships"). Remove it only once Create fixes it.
 - Voxy and Roxy are required: `.mrpack` launchers show optional files unticked, which would leave every player
   without long-distance rendering. macOS and GPUs without OpenGL 4.6 remove both by hand (README).
+- `packwiz modrinth add` rewrites the `.pw.toml` of every dependency it resolves, even one already in the pack, and
+  drops its `pin = true` (adding Create: Central Kitchen unpinned Create). After adding a mod, `git diff` the existing
+  files and restore the pins.
 - GitHub caches raw files for up to 5 minutes: right after a merge, `pack.toml` and `index.toml` may come from
   different commits, and packwiz-installer reports an incorrect index hash ("Quit", launch again later).
 - packwiz-installer removes only what it installed: an instance installed from `.mrpack` that switches to the
