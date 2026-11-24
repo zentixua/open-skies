@@ -13,7 +13,3 @@ hash = "d5159e2e745a9c50f16c67c54303b8a991dc5a1954e5cd7edc235c6f24ad2a045cb493e1
 mod-id = "fxxUqruK"
 version = "H3w2nVdU"
 
-[option]
-optional = true
-description = "Дальняя прорисовка (Roxy и Voxy — только вместе): нужна OpenGL 4.6, на macOS выключить оба"
-default = true

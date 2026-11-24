@@ -1,6 +1,0 @@
-[television]
-	#Maximum size of connected TVs (in blocks). Set to 1 to disable multi-block TVs.
-	#Range: 1 ~ 24
-	max_connected_size = 24
-	#Makes connected tvs just have a square aspect ratio. If you set to false cassettes will be stretched and will look worse as a result
-	square_aspect_ratio = false
