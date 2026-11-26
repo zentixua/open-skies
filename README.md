@@ -1,74 +1,148 @@
-# Open Skies
+<p align="center">
+  <img src="docs/media/banner.jpg" alt="Open Skies: a biplane flies past a smoke column rising from a strike below, at dusk">
+</p>
 
-A NeoForge 1.21.1 modpack about a world worth defending. Explore and settle, build machines with Create, fly
-everywhere, and fight when you choose: [Incoming](https://github.com/zentixua/incoming) adds remote-guided strikes,
-from a Shahed drone to cruise missiles and a nuclear ICBM, aimed with binoculars at anything you can see.
+<p align="center">
+  <b>Build airships, explore, and defend your world from the air.</b><br>
+  A Create modpack for Minecraft 1.21.1 (NeoForge), built around
+  <a href="https://github.com/zentixua/incoming">Incoming</a>.
+</p>
 
-- **Sandbox, no quests.** Vanilla progression and recipes; advancements and this page are the guide. Survival and
-  creative, singleplayer, LAN and dedicated servers.
-- **Flight is the travel.** Create Aeronautics airships, Immersive Aircraft and Man of Many Planes. No teleports.
-- **A light survival layer.** Better dungeons, temples and towns to raid from the air, Farmer's Delight cooking,
-  backpacks, per-player loot, claims for servers.
-- **Horizon-wide view.** Voxy long-distance rendering, on by default.
-- About 100 mods, every one with a single job ([What's inside](#whats-inside)); built in the open with
-  [packwiz](https://packwiz.infra.link/) and checked by CI on every change (a server and a client load it from scratch
-  and the client joins the server; CI has no GPU, so Voxy's and shaders' rendering is not part of that check).
+<p align="center">
+  <a href="https://github.com/zentixua/open-skies/releases/latest/download/Open-Skies.mrpack"><b>⬇ Download Open-Skies.mrpack</b></a>
+  &nbsp;·&nbsp; <a href="#install">How to install</a>
+  &nbsp;·&nbsp; <a href="#servers">Servers</a>
+  &nbsp;·&nbsp; <a href="https://github.com/zentixua/open-skies/issues">Report a problem</a>
+</p>
+
+Open Skies is a survival sandbox about a world worth defending. Settle down, build machines and airships with Create,
+and fly anywhere: flight is how you travel. When you choose to fight, Incoming lets you aim through binoculars at
+anything you can see and send a drone, a salvo of cruise missiles or a nuclear ICBM.
+
+![What's inside: fly, strike, explore, see far](docs/media/features.jpg)
+
+## What you can do
+
+### Fly everywhere
+
+Build airships from blocks with [Create Aeronautics](https://modrinth.com/mod/create-aeronautics): balloons, burners,
+propellers and floating levitite, flown with real physics. [Immersive Aircraft](https://modrinth.com/mod/immersive-aircraft)
+and [Man of Many Planes](https://modrinth.com/mod/man-of-many-planes) add ready-made planes, and
+[Do a Barrel Roll](https://modrinth.com/mod/do-a-barrel-roll) lets you bank on elytra. There are no teleports or
+waystones.
+
+![An airship built from Create Aeronautics blocks hovers over a river valley at sunset, a biplane behind it](docs/media/gallery/airship-valley.jpg)
+
+### Strike from the air with Incoming
+
+[Incoming](https://github.com/zentixua/incoming) is the heart of the pack. Aim the Strike Designator at a target, or
+pick one on its map, and send a Shahed drone, a Lancet, cruise missiles, Grad rockets or a B-2 with a bunker buster.
+Blasts break blocks, shatter windows and start fires; smoke and dust drift with the wind. SAM sites shoot down drones,
+cruise missiles and bombers, and sirens warn players near a target. Nuclear strikes (an ICBM, or a nuclear warhead
+on a missile or bomb) are for operators by default.
+
+In this pack Incoming works with its neighbours: Create Aeronautics airships are targets that blasts break and push,
+munition recipes use Create parts, Voxy shows distant terrain on the targeting map, and the
+pack's settings keep Incoming's trails, debris and sounds intact with the culling, particle and sound mods.
+
+![A cruise missile salvo hits a village at dusk: fireball, black smoke and the dust wave on the hillside](docs/media/gallery/strike.jpg)
+
+### Build with Create
+
+[Create](https://modrinth.com/mod/create) 6 with Propulsion, Aeroworks and Tweaked Controllers for flying machines,
+Create Big Cannons, Connected, Deco and Diesel Generators. Farmer's Delight with Create: Central Kitchen automates
+cooking.
+
+### Explore and survive
+
+YUNG's dungeons, temples, strongholds and fortresses, and [Towns and Towers](https://modrinth.com/mod/towns-and-towers)
+villages to find from the air. Lootr gives every player their own loot, Sophisticated Backpacks and Storage carry it
+home, GraveStone keeps your items when you die, and Comforts adds sleeping bags for long trips. Vanilla terrain and
+recipes, no quests: advancements and this page are the guide.
+
+![A Towns and Towers jungle village among the trees in the morning](docs/media/gallery/jungle-village.jpg)
+
+### See to the horizon
+
+[Voxy](https://modrinth.com/mod/voxy) draws terrain far beyond the normal view distance. Three shaderpacks come with
+the pack, none switched on: [Photon](https://modrinth.com/shader/photon-shader) (the most beautiful, the heaviest),
+[Complementary Unbound](https://modrinth.com/shader/complementary-unbound) (with low-end presets) and
+[MakeUp Ultra Fast](https://modrinth.com/shader/makeup-ultra-fast-shaders) (for weak PCs), all with Voxy support.
+Euphoria Patches adds its own copy of Complementary ("ComplementaryUnbound + EuphoriaPatches") on first launch, so the
+list shows four. Press **K** to turn shaders on or off and **O** to choose one.
+
+### Play with friends
+
+Survival or creative; singleplayer, LAN or a dedicated server ([setup](#servers)). [Open Parties and Claims](https://modrinth.com/mod/open-parties-and-claims)
+protects builds and [Simple Voice Chat](https://modrinth.com/plugin/simple-voice-chat) is optional. Incoming's world
+rules switch block damage and fires on or off and cap strikes per player.
 
 ## Install
 
-Download from the [latest release](https://github.com/zentixua/open-skies/releases/latest) (no GitHub account needed):
-- [Open-Skies.mrpack](https://github.com/zentixua/open-skies/releases/latest/download/Open-Skies.mrpack): import it
-  in [Modrinth App](https://modrinth.com/app), [Prism Launcher](https://prismlauncher.org/download/) ("Add
-  Instance" → "Import") or ATLauncher. The instance stays on that version; install a newer release over it when you
-  want to update.
-- [Open-Skies.zip](https://github.com/zentixua/open-skies/releases/latest/download/Open-Skies.zip), advanced: a Prism
-  Launcher instance that updates itself to the latest release before every launch
-  ([packwiz-installer](https://packwiz.infra.link/tutorials/installing/packwiz-installer/) in its pre-launch command).
-  Worlds and your own settings stay; files of the pack are replaced when a release changes them.
+1. Get a free launcher: [Modrinth App](https://modrinth.com/app) or [Prism Launcher](https://prismlauncher.org/download/).
+2. Download [Open-Skies.mrpack](https://github.com/zentixua/open-skies/releases/latest/download/Open-Skies.mrpack)
+   (no GitHub account needed).
+3. Import it: in Modrinth App, **+** (create an instance) → "From file"; in Prism Launcher, "Add Instance" → "Import".
+   ATLauncher imports it too.
+4. Give the game 6 GB of memory in the instance's settings (Java and memory), then press Play.
 
-Optional file: Simple Voice Chat. Prism and Modrinth App show it **unticked** when importing the `.mrpack`: tick it if
-your server runs it. The auto-updating Prism zip and a server installed with packwiz-installer get it by default;
-delete its jar on a server that goes without voice chat.
+To update, download the new release and import it the same way, then copy the `saves` folder (your worlds) from the
+old instance into the new one.
 
-**Requirements.** Java 21 (launchers install it), 6 GB of memory for the game (the Prism zip sets 6144 MB; set the
-same in Modrinth App) and 16 GB of system RAM, a GPU with OpenGL 4.6 (GTX 1660 / RX 580 class or better without
-shaders). Shaders, Voxy at long distances and big Create builds want more.
+**Auto-updating instance (Prism Launcher).** [Open-Skies.zip](https://github.com/zentixua/open-skies/releases/latest/download/Open-Skies.zip)
+is a Prism instance that updates itself to the latest release before every launch
+([packwiz-installer](https://packwiz.infra.link/tutorials/installing/packwiz-installer/)). Import it the same way;
+memory is already set. Worlds and your own settings stay; files of the pack are replaced when a release changes them.
 
-**macOS and older GPUs.** Voxy needs OpenGL 4.6; macOS has OpenGL 4.1, so Voxy runs there only through Roxy's extra
-libraries ([Roxy's macOS guide](https://github.com/RasaNovum/Roxy/blob/main/Roxy-macOS-compat/setup-guide.md)).
-Without them, or on a GPU without OpenGL 4.6, remove both `roxy-*.jar` and `voxy-*.jar` from the instance's `mods`
-folder (Roxy does nothing without Voxy). In the auto-updating Prism instance, packwiz-installer would bring them back:
-use the `.mrpack` there.
+**Optional:** Simple Voice Chat. Launchers show it **unticked** when importing the `.mrpack`: tick it if your server
+runs it. The auto-updating zip and a server installed with packwiz-installer get it by default.
 
-**Lite setup** for weaker PCs: no shaderpack (the default), Voxy and Roxy removed as above, Simple Voice Chat unticked;
-about 4–5 GB of memory is then enough.
+| | Minimum | Notes |
+|---|---|---|
+| Java | 21 | the launcher installs it |
+| Memory for the game | 6 GB | the zip sets 6144 MB |
+| System RAM | 16 GB | |
+| Graphics | OpenGL 4.6 (GTX 1660 / RX 580 class) | without shaders; shaders, long Voxy distances and big Create builds want more |
+
+**Weaker PC:** keep shaders off (the default), remove `roxy-*.jar` and `voxy-*.jar` from the instance's `mods`
+folder, and leave voice chat unticked; 4–5 GB of memory is then enough.
+
+**macOS and GPUs without OpenGL 4.6:** Voxy needs OpenGL 4.6, which macOS lacks; it runs there only through
+[Roxy's extra libraries](https://github.com/RasaNovum/Roxy/blob/main/Roxy-macOS-compat/setup-guide.md). Otherwise
+remove both `roxy-*.jar` and `voxy-*.jar` as above. The auto-updating zip would bring them back: use the `.mrpack`.
 
 ## Servers
 
-Install the server side of the pack with NeoForge (version in [pack.toml](pack/pack.toml)) and then either:
-- packwiz-installer, in the server directory:
+Install NeoForge (the version in [pack.toml](pack/pack.toml)) on the server, then the server side of the pack, either:
+- with packwiz-installer, in the server directory
+  ([bootstrap jar](https://github.com/packwiz/packwiz-installer-bootstrap/releases/latest)):
   `java -jar packwiz-installer-bootstrap.jar -g -s server https://raw.githubusercontent.com/zentixua/open-skies/main/pack/pack.toml`
-  ([bootstrap jar](https://github.com/packwiz/packwiz-installer-bootstrap/releases/latest); `main` is always the latest
-  release), or
-- the `.mrpack` with a server tool that reads it, for example the
+  (`main` is always the latest release), or
+- from the `.mrpack` with a tool that reads it, such as the
   [itzg/minecraft-server](https://docker-minecraft-server.readthedocs.io/en/latest/types-and-platforms/mod-platforms/modrinth-modpacks/)
   Docker image (`MODRINTH_MODPACK`).
 
-Client-only mods are skipped on the server; every mod that registers something the server sends to players is
-installed on both sides. Notes for server owners:
-- **Claims and parties:** [Open Parties and Claims](https://modrinth.com/mod/open-parties-and-claims) protects
-  builds from other players (`/openpac-claims`, `/openpac-parties`, or the `'` key in game). Whether claims also stop Incoming's strikes is not
-  verified yet: test it on your server before relying on it. Incoming's own world rules switch block damage and fire
-  on or off, cap active strikes per player, and keep nuclear weapons operator-only by default
+Client-only mods are skipped on the server. Server notes:
+- **Claims:** `/openpac-claims`, `/openpac-parties` or the `'` key in game. Whether claims also stop Incoming's strikes
+  is not verified yet: test it before relying on it. Incoming's own world rules switch block damage and fire, cap
+  active strikes per player and keep nuclear weapons operator-only by default
   ([Incoming's guide](https://github.com/zentixua/incoming/tree/main/docs/guide)).
-- **Voice chat:** [Simple Voice Chat](https://modrinth.com/plugin/simple-voice-chat) needs UDP port 24454 open
-  (configurable in `config/voicechat/voicechat-server.properties`).
-- **Pre-generation:** [Chunky](https://modrinth.com/plugin/chunky) (`/chunky radius 3000`, `/chunky start`) saves
-  lag on first exploration; [LOD Server Support](https://modrinth.com/mod/lod-server-support) sends distant terrain
-  to players' Voxy and Xaero's map.
+- **Voice chat** needs UDP port 24454 open (`config/voicechat/voicechat-server.properties`); delete its jar on a server
+  without voice chat.
+- **Pre-generate** the world with [Chunky](https://modrinth.com/plugin/chunky) (`/chunky radius 3000`, `/chunky start`):
+  less lag on first exploration. [LOD Server Support](https://modrinth.com/mod/lod-server-support) then sends distant
+  terrain to players' Voxy and maps.
 - **Performance:** [spark](https://spark.lucko.me/) (`/spark tps`, `/spark profiler`).
 
+## Keys
+
+The pack moves mods' default keys so that no two actions collide. A few to know: **N** projectile camera and **,**
+targeting map (Incoming), **M** world map, **K** / **O** shaders, **'** claims, **Caps Lock** push to talk. Full list:
+[docs/keys.md](docs/keys.md).
+
 ## What's inside
+
+95 mods, each with one job:
 
 | role | mods |
 |---|---|
@@ -80,115 +154,61 @@ installed on both sides. Notes for server owners:
 | multiplayer | Open Parties and Claims, Simple Voice Chat (optional), No Chat Reports, Chunky, spark |
 | long-distance rendering | [Voxy](https://modrinth.com/mod/voxy) through [Roxy](https://modrinth.com/mod/roxy), LOD Server Support |
 | performance | Sodium, Sodium Extra, Reese's Sodium Options, Lithium, FerriteCore, ModernFix, ImmediatelyFast, Entity Culling, More Culling (+ Cloth Config), Dynamic FPS, Clumps |
-| look and sound | Iris (+ Colorwheel) and three shaderpacks (below), Euphoria Patches, Subtle Effects (+ Fzzy Config, Kotlin for Forge), Particle Rain, AmbientSounds (+ CreativeCore), Sound Physics Remastered, LambDynamicLights, Contraption Lights, Burnt (fire burns structures down), 3D Skin Layers, Not Enough Animations, Aeronautics Camera Sync |
+| look and sound | Iris (+ Colorwheel) and three shaderpacks, Euphoria Patches, Subtle Effects (+ Fzzy Config, Kotlin for Forge), Particle Rain, AmbientSounds (+ CreativeCore), Sound Physics Remastered, LambDynamicLights, Contraption Lights, Burnt (fire burns structures down), 3D Skin Layers, Not Enough Animations, Aeronautics Camera Sync |
 | interface | JEI (+ MezzConfig), Jade and Jade Sable Compat, Xaero's Minimap and World Map, Create – Xaero's map, Better Advancements, Controlling (+ Searchables), Mouse Tweaks, Ok Zoomer, Default Options (+ Balm) |
-
-**Shaders** run through Iris: K toggles them, O picks one. None is selected by default; the pack ships three, all
-with Voxy support: [Photon](https://modrinth.com/shader/photon-shader) (the most beautiful and the heaviest),
-[Complementary Unbound](https://modrinth.com/shader/complementary-unbound) (middle, with low-end presets; Euphoria
-Patches adds its own copy, "ComplementaryUnbound + EuphoriaPatches", on first launch) and
-[MakeUp Ultra Fast](https://modrinth.com/shader/makeup-ultra-fast-shaders) (for weak PCs). If Voxy cannot start its
-renderer with a shaderpack, Voxy turns shaders off and Iris remembers it: press K to turn them on again.
 
 **Not in the pack, on purpose:** quests and recipe changes (a sandbox), teleports and waystones (flight is the travel),
 terrain overhauls (cost and Voxy), a second mod for a role already filled.
 
-## Settings the pack ships
+## FAQ
 
-Every other mod keeps its defaults. Each file in [pack/config](pack/config) is there for a reason:
-- `fml.toml`: NeoForge's defaults except `maxThreads = 1`, so mods are constructed one at a time. Create 6.0.10
-  registers its blocks and items through shared tables that are not thread-safe ("some of these registrations are not
-  thread-safe" in its `Create.java`), and Create addons touch Create classes from their constructors; with parallel
-  construction a registration is occasionally lost and startup fails with `Trying to access unbound value:
-  ResourceKey[minecraft:item / create:…]` (Create issue #10534). Cost: about 1–2 s of startup. Remove when Create
-  fixes it.
-- `voxy-config.json`: `sectionRenderDistance = 12` instead of Voxy's 16. Voxy sizes its LOD geometry buffer from free
-  video memory when you join (about 1.8–2.1 GB on an 8 GB card); at 16 it fills on such cards and the game crashes
-  with `IllegalStateException: Geometry OOM`. 12 covers a little over half the area. With more video memory, raise it
-  in Video Settings → Voxy.
-- `entityculling.json`: Entity Culling's defaults plus Incoming's entities in `entityWhitelist`. Their trails, launch
-  clouds and burning debris smoke are spawned in the entity's client tick; culling would cut the trail of a missile
-  behind a hill or behind the player.
-- `aero_cam_sync-client.toml`: Aeronautics Camera Sync's defaults with `configSchemaVersion = 5`. Version 1.4.0 writes
-  a new file with schema 0 and then, on the next launch, opens a "Config Reset" question instead of the main menu.
-- `moreculling.toml`: `useBlockStateCulling = false`. More Culling's block face culling overrides Create Aeronautics'
-  rule that draws faces next to levitite; everything else is More Culling's default.
-- `subtle_effects/general.toml`: Subtle Effects' defaults except `particleRenderDistance = 32` (its default is 5
-  chunks). Its particle culling would otherwise hide Incoming's debris, splashes and fragments beyond 80 blocks.
-- `sound_physics_remastered/sound_rates.properties`: `0` for every `incoming:` sound. Incoming models distance, air,
-  terrain and echo for its own sounds; Sound Physics keeps everything else at its defaults.
-- `defaultoptions/keybindings.txt`: the pack's key layout ([Keys](#keys)).
+**Is it free?** Yes. Open Skies is not monetised.
 
-## Keys
+**Forge or Fabric?** NeoForge 1.21.1 only.
 
-Default Options makes the pack's layout the default: a new instance gets it on first launch, and "Reset Keys" in
-Controls returns to it. NeoForge triggers every action bound to a pressed key, so mods' defaults that collide are
-moved. Rules: Minecraft's keys stay where they are; one key, one action where both could fire; a mod's key that is
-taken moves to Alt + the same key.
+**Can I add my own mods?** Yes, to your own instance. The auto-updating instance replaces only the pack's own files.
 
-| key | action |
-|---|---|
-| Left mouse | attack; in Incoming's binoculars: launch; on a Big Cannons mount: fire |
-| R | reload (Point Blank); Tweaked Controllers: center the mouse |
-| B, V, Y | fire mode, sight, attachments (Point Blank); Alt+Y: its settings |
-| G | use or place a block while holding a weapon, whose right click aims (Point Blank) |
-| C (hold) | zoom; mouse wheel changes it (Ok Zoomer) |
-| X | leave an aircraft (Immersive Aircraft) or a Tweaked Controller |
-| Ctrl | sprint; in an aircraft: boost |
-| H (hold) | Tweaked Controllers: mouse as joystick; in an aircraft: free look |
-| \` | Big Cannons mount: aim or move; in an aircraft: mouse steering on/off |
-| Left Alt | Create's schematic menu and toolbox |
-| Tab | player list; with Create Aeronautics' physics staff: rotate |
-| M, ], [ | world map, its settings, minimap settings (Xaero) |
-| U, J, Z, Num + | waypoints, new waypoint, larger minimap, instant waypoint (Xaero) |
-| N, ",", "." | projectile camera, targeting map, second key (Incoming) |
-| I | camera tilts with the craft (Aeronautics Camera Sync) |
-| A, D | on elytra: yaw (Do a Barrel Roll); roll and pitch with the mouse |
-| K, O | shaders on/off, shaderpack selection (Iris) |
-| Shift, Num 0, Num 1 | details, settings and overlay of Jade |
-| Alt+B, Alt+C, Alt+Z, Alt+X | open backpack, its inventory upgrades, toggle upgrades 1 and 2 (Sophisticated Backpacks) |
-| Caps Lock, Alt+V, Alt+M | push to talk, voice chat menu (mute, groups, settings inside), mute (Simple Voice Chat) |
-| ' | Open Parties and Claims menu |
+**Is it on Modrinth or CurseForge?** Not yet: download it here, from the [releases](https://github.com/zentixua/open-skies/releases).
+
+**How often is it updated?** About once a month, plus fixes for crashes. Each release lists its changes in the
+[changelog](CHANGELOG.md).
+
+**Nuclear strikes do nothing in my world.** They are for operators by default. In singleplayer, create the world
+with cheats on (or open it to LAN with cheats allowed); a server owner makes players operators or switches
+`nuclear.ops_only` off ([Incoming's world settings](https://github.com/zentixua/incoming/blob/main/docs/guide/settings.md#world-settings)).
+
+**Shaders turned themselves off.** If Voxy cannot start its renderer with a shaderpack, Voxy turns shaders off and
+Iris remembers it: press K to turn them on again.
+
+## Problems
+
+Open an [issue](https://github.com/zentixua/open-skies/issues) with the pack version, your launcher, OS and GPU, and
+the log: `logs/latest.log` from the instance folder (and `crash-reports/` if the game crashed). Try the weaker-PC
+setup first if the game crashes on a weaker PC.
+
+## For pack makers
+
+Open Skies is built in the open with [packwiz](https://packwiz.infra.link/) and checked by CI on every change: a server
+and a client install it from scratch and the client joins the server. How it is built, the settings it ships, and how
+to fork it as a template for your own pack: [docs/pack-makers.md](docs/pack-makers.md).
 
 ## Licenses and credits
 
-This repository's own files (tools, CI, configs, docs) are under the [MIT license](LICENSE). The pack links every mod
-from its official source and bundles none: each file keeps its author's license. The pack is not monetised, because
-several mods it uses (Big Cannons assets, Jade, Man of Many Planes, Towns and Towers, Cristel Lib, Entity Culling and
-3D Skin Layers) allow only non-commercial use.
+This repository's own files (tools, CI, configs, docs, images) are under the [MIT license](LICENSE). The pack links
+every mod from its official source and bundles none: each file keeps its author's license. The pack is not monetised,
+because several mods it uses (Big Cannons assets, Jade, Man of Many Planes, Towns and Towers, Cristel Lib, Entity
+Culling, 3D Skin Layers, Not Enough Animations, Propulsion: Simulated and Better Advancements) allow only
+non-commercial use.
 - **Voxy** is by MCRcortex: [modrinth.com/mod/voxy](https://modrinth.com/mod/voxy). The pack uses the official file
   `voxy-0.2.16-beta+1.21.11` from that page, unmodified. **Roxy** ([modrinth.com/mod/roxy](https://modrinth.com/mod/roxy))
   runs it on NeoForge 1.21.1: report problems with Voxy in this pack to Roxy or to us, never to Voxy.
 - **Complementary Shaders** by EminGT: [complementary.dev](https://www.complementary.dev/).
 - **Subtle Effects** ([modrinth.com/mod/subtle-effects](https://modrinth.com/mod/subtle-effects)) is credited here as
   its author asks; Default Options and Balm (BlayTheNinth) ask that their names stay out of a pack's title.
+- The screenshots are in-game frames from this pack (Complementary Unbound with Euphoria Patches). The icon and the
+  wordmark are pixel art placed cell by cell in code, written with AI assistance, in Incoming's style
+  ([docs/media/src](docs/media/src)); the tagline font is Barlow Condensed (SIL Open Font License 1.1).
 - Left out on purpose: shaderpacks and mods whose authors forbid redistribution or can revoke it (BSL, Flashback,
   Essential). `tools/check_sources.py` enforces this in CI.
 
-## Use it as a template
-
-Fork the repository (or copy it) and you have a working pack with its checks:
-1. `pack/`: change `name`, `author` and `version` in `pack.toml`; add or remove mods with packwiz
-   (`packwiz modrinth add <slug>`, `packwiz remove <name>`), then `packwiz refresh`.
-2. `tools/prism_instance.py`: set `PACK_URL` to your repository's `pack/pack.toml`, and `REPO` in
-   `tools/release_notes.py` to your repository.
-3. `tools/check_sources.py`: your own non-Modrinth files go to `ALLOWED` with their license; `EXCLUDED` keeps out
-   what you must not link.
-4. CI (`.github/workflows/build.yml`) then checks every PR: fresh index, sources, NeoForge ranges
-   (`tools/check_loader.py`), and a server and a client booting from scratch (`tools/boot_check.py`, which also runs
-   locally). A new `version` on `main` with its `CHANGELOG.md` section becomes a GitHub release with the `.mrpack` and
-   the Prism zip.
-
-## Releases and updates
-
-Numbered releases with a [changelog](CHANGELOG.md), about once a month, plus fixes for crashes. Each release is a PR
-that updates mods (`packwiz update --all`; pinned mods by hand), bumps `version` in `pack.toml` and adds its
-`CHANGELOG.md` section; CI boots it from scratch before it can be merged and released. Create, Sable, Create
-Aeronautics and Immersive Aircraft are pinned to what Incoming is tested against; Voxy is pinned to the one file Roxy
-loads.
-
-## Problems
-
-Open an [issue](https://github.com/zentixua/open-skies/issues) with the pack version, your launcher, OS and GPU, and
-the log: `logs/latest.log` from the instance folder (and `crash-reports/` if the game crashed). Try the lite setup
-first if the game crashes on a weaker PC.
+Open Skies is not an official Minecraft product and is not approved by or associated with Mojang or Microsoft.
