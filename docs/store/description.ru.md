@@ -31,7 +31,7 @@ Incoming — сердце сборки. Наведите Strike Designator на 
 ## Видно до горизонта
 
 Voxy рисует местность далеко за обычной дальностью прорисовки. В сборке три шейдерпака, ни один не включён: Photon,
-Complementary Unbound и MakeUp Ultra Fast, все с поддержкой Voxy. **K** включает и выключает шейдеры, **O** — выбор пака.
+Complementary Unbound и MakeUp Ultra Fast, все с поддержкой Voxy (Euphoria Patches добавляет четвёртый пункт — свою копию Complementary). **K** включает и выключает шейдеры, **O** — выбор пака.
 
 ## Играйте с друзьями
 

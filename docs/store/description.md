@@ -39,7 +39,7 @@ munition recipes use Create parts, and Voxy shows distant terrain on the targeti
 ## See to the horizon
 
 Voxy draws terrain far beyond the normal view distance. Three shaderpacks come with the pack, none switched on:
-Photon, Complementary Unbound and MakeUp Ultra Fast, all with Voxy support. Press **K** to turn shaders on or off and **O** to choose one.
+Photon, Complementary Unbound and MakeUp Ultra Fast, all with Voxy support (Euphoria Patches adds a fourth entry, its own copy of Complementary). Press **K** to turn shaders on or off and **O** to choose one.
 
 ## Play with friends
 

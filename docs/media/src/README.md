@@ -12,6 +12,9 @@ docs/store/README.md.
 - **Banner** ([banner.py](banner.py)): Incoming's banner layout (wordmark at x 120, letter-spaced tagline in Barlow
   Condensed SemiBold, SIL OFL 1.1) over a 3:1 crop of an in-game frame, with a navy shade on the left.
 - **Strip** ([features.py](features.py)): four crops of gallery frames with labels.
+- **Store images** (in-game frames only, docs/store/README.md): `icon-ingame.png` is a 860×860 crop of the airship
+  frame scaled to 512 and 400; `banner-store.jpg` is the banner's frame cropped to 1920×640 (rows 250–890) with no
+  wordmark, tagline or shade.
 - **Frames** (`../gallery`, the banner, the strip): the pack itself (1.0.0) installed with `tools/boot_check.py` on a
   machine without a GPU, Mesa llvmpipe (`MESA_GL_VERSION_OVERRIDE=4.6` for Voxy), 1920×1080, Complementary Unbound
   with Euphoria Patches, HUD hidden (F1), F2 screenshots. A fresh world (seed `open-skies`), pre-generated with

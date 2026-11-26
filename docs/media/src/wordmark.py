@@ -1,4 +1,4 @@
-"""OPEN SKIES pixel wordmark in Incoming's letterforms (9 rows, 2-cell strokes, 2-cell gaps). Hand-placed cells.
+"""OPEN SKIES pixel wordmark in Incoming's letterforms (9 rows, 2-cell strokes, 2-cell gaps). Cells placed one by one in code, written with AI assistance.
 
 python3 wordmark.py out.png CELL [#rrggbb]"""
 import sys
