@@ -8,19 +8,20 @@ project, uploading and publishing need the owner's word (AGENTS.md, "Stores"). U
 | Platform | Verdict | What has to happen first |
 |---|---|---|
 | GitHub | **live** | Releases with `.mrpack` and the Prism zip; this README and the images. |
-| Modrinth | **later, ready to upload** | 1. Incoming public on Modrinth, then `pack/mods/incoming.pw.toml` switched to its Modrinth file (a pack release). Until then the `.mrpack` links Incoming from GitHub, which Modrinth accepts only with a permission declaration ("Your project"). 2. The "Contains AI-generated content" disclosure set (rule 6.1). 3. The owner's call on rule 6.2 for the icon and wordmark (below). |
+| Modrinth | **later, ready to upload** | 1. Incoming public on Modrinth, then `pack/mods/incoming.pw.toml` switched to its Modrinth file (a pack release). Until then the `.mrpack` links Incoming from GitHub, which Modrinth accepts only with a permission declaration ("Your project"). 2. The "Contains AI-generated content" disclosure set (rule 6.1). Store images are in-game frames only (rule 6.2, below). |
 | CurseForge | **later** | Not reachable as the pack is today: Voxy (and so Roxy and LOD Server Support) cannot be in a CurseForge pack, Incoming is not on CurseForge, packs must be built with the CurseForge App, and some files are unverified there. |
 
-**Why Modrinth waits.** Modrinth reviews modpacks by hand and checks every file from outside its CDN
-([modpack permissions, 2026](https://modrinth.com/news/article/modpack-permissions)). Its content rules
+**Why Modrinth waits.** Modrinth reviews modpacks by hand. Since June 2026 a creator declares a permission for every
+file not hosted on Modrinth before submitting, and the version is withheld until that is reviewed
+([modpack permissions](https://modrinth.com/news/article/modpack-permissions)). Its content rules
 ([rules](https://modrinth.com/legal/rules), 6.1–6.2) require the AI disclosure when "a substantial portion of the
 project's code is a product of AI output" or "any element of the project's page such as description or publishing
 relies on generative AI", and forbid gallery, icon or description images "created or derived from generative AI
-output". The pack's own files and these texts were written with Claude's help, so the disclosure applies. The images
-are in-game frames, but the pixel icon and wordmark were placed cell by cell in code ([../media/src](../media/src)) in
-an AI-assisted session: whether moderation counts that as "derived from generative AI output" is the owner's call. If
-not accepted, [icon-ingame.png](../media/icon-ingame.png) (a crop of an in-game frame) replaces the icon and the banner
-can go without the wordmark. Weapons content is not a rule issue on either store: Modrinth and CurseForge host similar
+output". The pack's own files and these texts were written with Claude's help, so the disclosure applies. The store images are therefore
+in-game frames only: [icon-ingame.png](../media/icon-ingame.png) (a crop of the airship frame) as the icon and
+[banner-store.jpg](../media/banner-store.jpg) (the banner's frame without the wordmark) at the top of the description.
+The pixel icon and wordmark were placed cell by cell in code written with AI assistance ([../media/src](../media/src)),
+which a moderator could read as "derived from generative AI output": they stay on GitHub. Weapons content is not a rule issue on either store: Modrinth and CurseForge host similar
 mods (HBM's Nuclear Tech, ICBM, Warium, Superb Warfare); the page keeps real-world politics out.
 
 **Why CurseForge waits.** CurseForge packs may contain only CurseForge files, or non-CurseForge mods on its approved
@@ -48,10 +49,10 @@ edition would be a different pack (no Voxy, Incoming published there first).
 | Issues | https://github.com/zentixua/open-skies/issues |
 | Wiki | https://github.com/zentixua/open-skies#readme |
 | Discord, donations | none |
-| Icon | [icon.png](../media/icon.png) 512×512 (Modrinth); [icon-400.png](../media/icon-400.png) 400×400 (CurseForge avatar) |
+| Icon | [icon-ingame.png](../media/icon-ingame.png) 512×512 (Modrinth); [icon-ingame-400.png](../media/icon-ingame-400.png) 400×400 (CurseForge avatar). Not the pixel icon (rule 6.2, above) |
 | Version name, file | `Open Skies <version>`, the release's `Open-Skies.mrpack` (same file as on GitHub) |
 | Changelog | the version's section of [CHANGELOG.md](../../CHANGELOG.md) |
-| Content disclosure | Contains AI-generated content (code and texts written with AI assistance; images are in-game frames) |
+| Content disclosure | Contains AI-generated content (the pack's tools and these texts were written with AI assistance; the store images are untouched in-game frames) |
 
 The description repeats no download links: stores install through their own launchers, and CurseForge forbids
 external downloads. Images are absolute `raw.githubusercontent.com` links to `main`; they load once this kit is
@@ -59,8 +60,7 @@ merged.
 
 ## Gallery
 
-Untouched in-game frames, 1920×1080, from this pack with Complementary Unbound + Euphoria Patches (the banner adds the
-wordmark and tagline). The world is a fresh one; scenes were set up with commands, and the airship is a real Create
+Untouched in-game frames, 1920×1080, from this pack with Complementary Unbound + Euphoria Patches. The world is a fresh one; scenes were set up with commands, and the airship is a real Create
 Aeronautics contraption assembled from blocks. Featured image: the first.
 
 | File | Title | Description |
@@ -69,12 +69,11 @@ Aeronautics contraption assembled from blocks. Featured image: the first.
 | [airship.jpg](../media/gallery/airship.jpg) | Built from blocks | Balloon, burner, gondola and propeller: an airship assembled with Create Aeronautics. |
 | [strike.jpg](../media/gallery/strike.jpg) | Incoming: cruise missile strike | A missile salvo hits a village at dusk. |
 | [blast-wave.jpg](../media/gallery/blast-wave.jpg) | Blast wave | Dust from the impact rolls over the hillside. |
-| [biplane.jpg](../media/gallery/biplane.jpg) | After the strike | An Immersive Aircraft biplane passes the smoke column over the village. |
-| [valley-above.jpg](../media/gallery/valley-above.jpg) | From above | The valley, the airship and the smoke from high up, Voxy terrain to the horizon. |
 | [jungle-village.jpg](../media/gallery/jungle-village.jpg) | Towns and Towers | A jungle village among the trees in the morning. |
 
-Also in [../media](../media): [banner.jpg](../media/banner.jpg) 1920×640 (page header) and
-[features.jpg](../media/features.jpg) (the "fly, strike, explore, see far" strip). How each image was made:
+Also in [../media](../media): [banner-store.jpg](../media/banner-store.jpg) 1920×640 (store page header, a plain
+frame); [banner.jpg](../media/banner.jpg) and [features.jpg](../media/features.jpg) (with the wordmark and typeset
+labels) are for GitHub only. How each image was made:
 [../media/src](../media/src).
 
 ## License pass (26.11.2026)
@@ -86,7 +85,7 @@ is on CurseForge with distribution allowed.
 | File | License | Modrinth | CurseForge | Source |
 |---|---|---|---|---|
 | Incoming 3.13.0 | GPL-3.0-only (the owner's mod) | after Incoming is on Modrinth, or declared "Your project" | no: not on CurseForge | [releases](https://github.com/zentixua/incoming/releases) |
-| Voxy 0.2.16-beta+1.21.11 | All Rights Reserved; modpacks allowed with a link back and the version from its Modrinth page | yes (Modrinth CDN, credited) | no: link-back condition, no CurseForge page | [modrinth.com/mod/voxy](https://modrinth.com/mod/voxy) |
+| Voxy 0.2.16-beta+1.21.11 | All Rights Reserved; modpacks allowed "as long as you link the mod back to this page and the version used is avaible on this modrinth mod page. (i.e. please do not use or include unofficial backports or versions)". The pack links that official file unmodified; Roxy runs it on 1.21.1, which a moderator may ask about | yes (Modrinth CDN, credited) | no: link-back condition, no CurseForge page | [modrinth.com/mod/voxy](https://modrinth.com/mod/voxy) |
 | Roxy, LOD Server Support | MIT | yes | no Voxy, no use (LOD Server Support's 1.21.1 file there unverified) | [Roxy](https://modrinth.com/mod/roxy), [LSS](https://modrinth.com/mod/lod-server-support) |
 | Create Aeronautics (bundled) 1.3.2 | code MIT, assets All Rights Reserved | yes (Modrinth CDN) | unverified: a CurseForge project exists, this file not confirmed | [source](https://github.com/Creators-of-Aeronautics/Simulated-Project) |
 | GraveStone × Sable patch 1.0.0 | MIT | yes | not on CurseForge: needs the approved list | [source](https://github.com/thallada/gravestone-sable-compat) |

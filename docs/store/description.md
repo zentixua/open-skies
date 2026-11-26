@@ -1,12 +1,10 @@
-![Open Skies: a biplane flies past smoke rising from a struck village at dusk](https://raw.githubusercontent.com/zentixua/open-skies/main/docs/media/banner.jpg)
+![A biplane flies past a smoke column rising from a strike below, at dusk](https://raw.githubusercontent.com/zentixua/open-skies/main/docs/media/banner-store.jpg)
 
 **Build airships, explore, and defend your world from the air.**
 
 Open Skies is a survival sandbox for Minecraft 1.21.1 built around Create and [Incoming](https://github.com/zentixua/incoming).
 Settle down, build machines and airships, and fly anywhere: flight is how you travel. When you choose to fight, aim
 through binoculars at anything you can see and send a drone, a salvo of cruise missiles or a nuclear ICBM.
-
-![Fly, strike, explore, see far](https://raw.githubusercontent.com/zentixua/open-skies/main/docs/media/features.jpg)
 
 ## Fly everywhere
 
@@ -20,11 +18,11 @@ elytra. There are no teleports or waystones.
 
 Incoming is the heart of the pack. Aim the Strike Designator at a target, or pick one on its map, and send a Shahed
 drone, a Lancet, cruise missiles, Grad rockets or a B-2 with a bunker buster. Blasts break blocks, shatter windows and
-start fires; smoke and dust drift with the wind. SAM sites shoot down drones and missiles, and sirens warn players
-near a target. Nuclear strikes are for operators by default.
+start fires; smoke and dust drift with the wind. SAM sites shoot down drones, cruise missiles and bombers, and sirens
+warn players near a target. Nuclear strikes are for operators by default.
 
 In this pack Incoming works with its neighbours: Create Aeronautics airships are targets that blasts break and push,
-munition recipes use Create parts, and Voxy and LOD Server Support show distant terrain on the targeting map.
+munition recipes use Create parts, and Voxy shows distant terrain on the targeting map.
 
 ![A cruise missile salvo hits a village at dusk: fireball, black smoke and the dust wave on the hillside](https://raw.githubusercontent.com/zentixua/open-skies/main/docs/media/gallery/strike.jpg)
 
@@ -41,13 +39,13 @@ munition recipes use Create parts, and Voxy and LOD Server Support show distant 
 ## See to the horizon
 
 Voxy draws terrain far beyond the normal view distance. Three shaderpacks come with the pack, none switched on:
-Photon, Complementary Unbound and MakeUp Ultra Fast. Press **K** to turn shaders on or off and **O** to choose one.
+Photon, Complementary Unbound and MakeUp Ultra Fast, all with Voxy support. Press **K** to turn shaders on or off and **O** to choose one.
 
 ## Play with friends
 
-Singleplayer, LAN or a dedicated server. Open Parties and Claims protects builds and Simple Voice Chat is optional.
+Survival or creative; singleplayer, LAN or a dedicated server. Open Parties and Claims protects builds and Simple Voice Chat is optional.
 Incoming's world rules switch block damage and fires on or off and cap strikes per player. Server setup:
-[the pack's README](https://github.com/zentixua/open-skies#play-with-friends).
+[the pack's README](https://github.com/zentixua/open-skies#servers).
 
 ## Requirements
 
@@ -65,6 +63,9 @@ instance's `mods` folder, or follow [Roxy's macOS guide](https://github.com/Rasa
 [Incoming's world rules](https://github.com/zentixua/incoming/blob/main/docs/guide/settings.md#world-settings).
 
 **Where are the keys?** The pack moves mods' keys so that none collide: [key list](https://github.com/zentixua/open-skies/blob/main/docs/keys.md).
+
+**Nuclear strikes do nothing in my world.** They are for operators by default: create the world with cheats on, or
+switch `nuclear.ops_only` off in Incoming's world settings.
 
 **Are there quests?** No. Open Skies is a sandbox: advancements and this page are the guide.
 

@@ -1,8 +1,10 @@
 # How the images were made
 
-No generated images: every picture is an in-game frame or pixel art placed cell by cell.
+No image generator was used: every picture is an in-game frame, or pixel art placed cell by cell in code written with
+AI assistance (Claude). Store pages use only the in-game frames (`icon-ingame.png`, `banner-store.jpg`, the gallery):
+docs/store/README.md.
 
-- **Icon** ([icon.py](icon.py)): a 32×32 grid typed by hand, Incoming's icon palette (night sky, dark ground,
+- **Icon** ([icon.py](icon.py)): a 32×32 grid of palette letters, Incoming's icon palette (night sky, dark ground,
   embers), an airship and a small mushroom cloud on the horizon; scaled with nearest neighbour to 512 and 400.
   `python3 icon.py ../icon.png`.
 - **Wordmark** ([wordmark.py](wordmark.py)): OPEN SKIES in Incoming's pixel letterforms (9 rows, strokes 2 cells,

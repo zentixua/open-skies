@@ -55,8 +55,9 @@ latest release: packwiz-installer instances and servers read `pack/` from `main`
 - **Stores.** The pack is published on GitHub only. Uploading it to Modrinth or CurseForge needs the owner's word;
   [docs/store/README.md](docs/store/README.md) holds the kit and the license verdict per platform (Modrinth: once
   Incoming is public there; CurseForge: later, Voxy's permission does not meet its rules). Several mods allow only
-  non-commercial use (README, "Licenses and credits"): the pack is never monetised. Store and README images are
-  in-game frames or hand-placed pixel art, never generated images (Modrinth rule 6.2).
+  non-commercial use (README, "Licenses and credits"): the pack is never monetised. Store pages use only in-game
+  frames (Modrinth rule 6.2 forbids images "created or derived from generative AI output"); the code-drawn pixel icon
+  and wordmark, written with AI assistance, stay on GitHub.
 - **Merging.** A PR merges after green CI and one review by someone (or a model) who did not write it. Only serious
   errors (wrong behaviour, a crash) block.
 

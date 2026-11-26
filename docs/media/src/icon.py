@@ -1,4 +1,4 @@
-"""Open Skies pixel icon: 32x32 hand-placed pixels (palette from Incoming's icon), nearest-neighbour scaled.
+"""Open Skies pixel icon: 32x32 pixels placed cell by cell (palette from Incoming's icon), nearest-neighbour scaled.
 
 python3 icon.py out.png  → out.png (512), out-400.png (CurseForge avatar), out-32.png (the 32×32 source)"""
 import sys

@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/media/banner.jpg" alt="Open Skies: a biplane flies past smoke rising from a struck village at dusk">
+  <img src="docs/media/banner.jpg" alt="Open Skies: a biplane flies past a smoke column rising from a strike below, at dusk">
 </p>
 
 <p align="center">
@@ -11,7 +11,7 @@
 <p align="center">
   <a href="https://github.com/zentixua/open-skies/releases/latest/download/Open-Skies.mrpack"><b>⬇ Download Open-Skies.mrpack</b></a>
   &nbsp;·&nbsp; <a href="#install">How to install</a>
-  &nbsp;·&nbsp; <a href="#play-with-friends">Servers</a>
+  &nbsp;·&nbsp; <a href="#servers">Servers</a>
   &nbsp;·&nbsp; <a href="https://github.com/zentixua/open-skies/issues">Report a problem</a>
 </p>
 
@@ -37,12 +37,12 @@ waystones.
 
 [Incoming](https://github.com/zentixua/incoming) is the heart of the pack. Aim the Strike Designator at a target, or
 pick one on its map, and send a Shahed drone, a Lancet, cruise missiles, Grad rockets or a B-2 with a bunker buster.
-Blasts break blocks, shatter windows and start fires; smoke and dust drift with the wind. SAM sites shoot down drones
-and missiles, and sirens warn players near a target. Nuclear strikes (an ICBM, or a nuclear warhead
+Blasts break blocks, shatter windows and start fires; smoke and dust drift with the wind. SAM sites shoot down drones,
+cruise missiles and bombers, and sirens warn players near a target. Nuclear strikes (an ICBM, or a nuclear warhead
 on a missile or bomb) are for operators by default.
 
 In this pack Incoming works with its neighbours: Create Aeronautics airships are targets that blasts break and push,
-munition recipes use Create parts, Voxy and LOD Server Support show distant terrain on the targeting map, and the
+munition recipes use Create parts, Voxy shows distant terrain on the targeting map, and the
 pack's settings keep Incoming's trails, debris and sounds intact with the culling, particle and sound mods.
 
 ![A cruise missile salvo hits a village at dusk: fireball, black smoke and the dust wave on the hillside](docs/media/gallery/strike.jpg)
@@ -67,12 +67,13 @@ recipes, no quests: advancements and this page are the guide.
 [Voxy](https://modrinth.com/mod/voxy) draws terrain far beyond the normal view distance. Three shaderpacks come with
 the pack, none switched on: [Photon](https://modrinth.com/shader/photon-shader) (the most beautiful, the heaviest),
 [Complementary Unbound](https://modrinth.com/shader/complementary-unbound) (with low-end presets) and
-[MakeUp Ultra Fast](https://modrinth.com/shader/makeup-ultra-fast-shaders) (for weak PCs). Press **K** to turn shaders
-on or off and **O** to choose one.
+[MakeUp Ultra Fast](https://modrinth.com/shader/makeup-ultra-fast-shaders) (for weak PCs), all with Voxy support.
+Euphoria Patches adds its own copy of Complementary ("ComplementaryUnbound + EuphoriaPatches") on first launch, so the
+list shows four. Press **K** to turn shaders on or off and **O** to choose one.
 
 ### Play with friends
 
-Singleplayer, LAN or a dedicated server. [Open Parties and Claims](https://modrinth.com/mod/open-parties-and-claims)
+Survival or creative; singleplayer, LAN or a dedicated server ([setup](#servers)). [Open Parties and Claims](https://modrinth.com/mod/open-parties-and-claims)
 protects builds and [Simple Voice Chat](https://modrinth.com/plugin/simple-voice-chat) is optional. Incoming's world
 rules switch block damage and fires on or off and cap strikes per player.
 
@@ -85,7 +86,8 @@ rules switch block damage and fires on or off and cap strikes per player.
    ATLauncher imports it too.
 4. Give the game 6 GB of memory in the instance's settings (Java and memory), then press Play.
 
-To update, download the new release and import it the same way. Your worlds are in the old instance's `saves` folder.
+To update, download the new release and import it the same way, then copy the `saves` folder (your worlds) from the
+old instance into the new one.
 
 **Auto-updating instance (Prism Launcher).** [Open-Skies.zip](https://github.com/zentixua/open-skies/releases/latest/download/Open-Skies.zip)
 is a Prism instance that updates itself to the latest release before every launch
@@ -109,7 +111,7 @@ folder, and leave voice chat unticked; 4–5 GB of memory is then enough.
 [Roxy's extra libraries](https://github.com/RasaNovum/Roxy/blob/main/Roxy-macOS-compat/setup-guide.md). Otherwise
 remove both `roxy-*.jar` and `voxy-*.jar` as above. The auto-updating zip would bring them back: use the `.mrpack`.
 
-## Play with friends
+## Servers
 
 Install NeoForge (the version in [pack.toml](pack/pack.toml)) on the server, then the server side of the pack, either:
 - with packwiz-installer, in the server directory
@@ -171,6 +173,10 @@ terrain overhauls (cost and Voxy), a second mod for a role already filled.
 **How often is it updated?** About once a month, plus fixes for crashes. Each release lists its changes in the
 [changelog](CHANGELOG.md).
 
+**Nuclear strikes do nothing in my world.** They are for operators by default. In singleplayer, create the world
+with cheats on (or open it to LAN with cheats allowed); a server owner makes players operators or switches
+`nuclear.ops_only` off ([Incoming's world settings](https://github.com/zentixua/incoming/blob/main/docs/guide/settings.md#world-settings)).
+
 **Shaders turned themselves off.** If Voxy cannot start its renderer with a shaderpack, Voxy turns shaders off and
 Iris remembers it: press K to turn them on again.
 
@@ -191,16 +197,17 @@ to fork it as a template for your own pack: [docs/pack-makers.md](docs/pack-make
 This repository's own files (tools, CI, configs, docs, images) are under the [MIT license](LICENSE). The pack links
 every mod from its official source and bundles none: each file keeps its author's license. The pack is not monetised,
 because several mods it uses (Big Cannons assets, Jade, Man of Many Planes, Towns and Towers, Cristel Lib, Entity
-Culling, 3D Skin Layers and Better Advancements) allow only non-commercial use.
+Culling, 3D Skin Layers, Not Enough Animations, Propulsion: Simulated and Better Advancements) allow only
+non-commercial use.
 - **Voxy** is by MCRcortex: [modrinth.com/mod/voxy](https://modrinth.com/mod/voxy). The pack uses the official file
   `voxy-0.2.16-beta+1.21.11` from that page, unmodified. **Roxy** ([modrinth.com/mod/roxy](https://modrinth.com/mod/roxy))
   runs it on NeoForge 1.21.1: report problems with Voxy in this pack to Roxy or to us, never to Voxy.
 - **Complementary Shaders** by EminGT: [complementary.dev](https://www.complementary.dev/).
 - **Subtle Effects** ([modrinth.com/mod/subtle-effects](https://modrinth.com/mod/subtle-effects)) is credited here as
   its author asks; Default Options and Balm (BlayTheNinth) ask that their names stay out of a pack's title.
-- The images are in-game frames from this pack (Complementary Unbound with Euphoria Patches); the icon and the
-  wordmark are hand-placed pixel art in Incoming's style ([docs/media/src](docs/media/src)), the tagline font is
-  Barlow Condensed (SIL Open Font License 1.1).
+- The screenshots are in-game frames from this pack (Complementary Unbound with Euphoria Patches). The icon and the
+  wordmark are pixel art placed cell by cell in code, written with AI assistance, in Incoming's style
+  ([docs/media/src](docs/media/src)); the tagline font is Barlow Condensed (SIL Open Font License 1.1).
 - Left out on purpose: shaderpacks and mods whose authors forbid redistribution or can revoke it (BSL, Flashback,
   Essential). `tools/check_sources.py` enforces this in CI.
 
