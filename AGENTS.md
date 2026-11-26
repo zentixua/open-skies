@@ -1,7 +1,8 @@
 # Open Skies: contributor rules
 
 These rules apply to every contributor, human or agent. Read this file in full before changing the pack. Players'
-documentation is README.md; release history is CHANGELOG.md. Everything in this repository is in English.
+documentation is README.md (keys: docs/keys.md); pack makers' is docs/pack-makers.md; release history is CHANGELOG.md.
+Everything in this repository is in English, except the Russian store texts (`docs/store/*.ru.md`).
 
 Open Skies is a public NeoForge 1.21.1 modpack built around [Incoming](https://github.com/zentixua/incoming): Create,
 Create Aeronautics and aircraft, a light survival and exploration layer, Voxy long-distance rendering through Roxy.
@@ -21,6 +22,9 @@ tools/boot_check.py      ← the pack boots from scratch: server to "Done", clie
 tools/prism_instance.py  ← Prism instance that installs pack/ from main before every launch (Open-Skies.zip)
 tools/release_notes.py   ← release notes for the current version from CHANGELOG.md
 .github/workflows/build.yml ← CI on every PR and main push; a new version on main becomes release v<version>
+docs/                    ← keys.md (key layout), pack-makers.md (build, shipped settings, template), store/
+                           (Modrinth and CurseForge kit, license verdicts), media/ (icon, banner, gallery, the scripts
+                           that draw them)
 ```
 
 The pack lives in `pack/`, not the root, so repository files stay out of the index and the game. `main` is always the
@@ -33,8 +37,8 @@ latest release: packwiz-installer instances and servers read `pack/` from `main`
 - **Sources.** Link files, never bundle them: Modrinth CDN, or an `ALLOWED` entry in `tools/check_sources.py` with
   the license and the reason. A mod whose author forbids redistribution or can revoke it goes to `EXCLUDED`. Jars in
   `config/` or other overrides are forbidden.
-- **Configs.** Other mods keep their defaults. Every file in `pack/config` has its reason in README's "Settings the
-  pack ships", in the same PR.
+- **Configs.** Other mods keep their defaults. Every file in `pack/config` has its reason in docs/pack-makers.md
+  ("Settings the pack ships"), in the same PR.
 - **Sides.** `side` must be right: servers install with `-s server` and skip `client` mods. A client mod that
   registers anything the server may send to players (sounds, particles, entities, items) must also be on the server
   (`side = "both"`) if the mod supports it: in multiplayer the client gets registry ids from the server, and
@@ -46,11 +50,13 @@ latest release: packwiz-installer instances and servers read `pack/` from `main`
   against; change them together with Incoming. Voxy is pinned (`packwiz pin voxy`): Roxy loads only
   `voxy-0.2.16-beta+1.21.11` (Modrinth version `H3w2nVdU`); update it only when Roxy announces another version.
 - **Keys.** `pack/config/defaultoptions/keybindings.txt` lists every key of every mod except JEI. A new mod's default
-  key that is taken moves to Alt + the same key, or is unbound when its action has a menu; README's key table changes
-  with it.
-- **Stores.** The pack is published on GitHub only. Uploading it to Modrinth or CurseForge needs the owner's word and
-  a license pass first: Photon's license forbids redistribution on platforms that pay creators, and several mods allow
-  only non-commercial use (README, "Licenses and credits").
+  key that is taken moves to Alt + the same key, or is unbound when its action has a menu; docs/keys.md changes with
+  it.
+- **Stores.** The pack is published on GitHub only. Uploading it to Modrinth or CurseForge needs the owner's word;
+  [docs/store/README.md](docs/store/README.md) holds the kit and the license verdict per platform (Modrinth: once
+  Incoming is public there; CurseForge: later, Voxy's permission does not meet its rules). Several mods allow only
+  non-commercial use (README, "Licenses and credits"): the pack is never monetised. Store and README images are
+  in-game frames or hand-placed pixel art, never generated images (Modrinth rule 6.2).
 - **Merging.** A PR merges after green CI and one review by someone (or a model) who did not write it. Only serious
   errors (wrong behaviour, a crash) block.
 
@@ -68,7 +74,7 @@ python3 tools/boot_check.py server run/boot/server   # and `client` (see the scr
 ## Pitfalls
 
 - `config/fml.toml` keeps `maxThreads = 1`: Create 6.0.10 registers items through tables that are not thread-safe,
-  and parallel mod construction occasionally fails with `Trying to access unbound value … create:…` (README,
+  and parallel mod construction occasionally fails with `Trying to access unbound value … create:…` (docs/pack-makers.md,
   "Settings the pack ships"). Remove it only once Create fixes it.
 - Voxy and Roxy are required: `.mrpack` launchers show optional files unticked, which would leave every player
   without long-distance rendering. macOS and GPUs without OpenGL 4.6 remove both by hand (README).
