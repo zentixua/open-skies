@@ -18,8 +18,9 @@ file not hosted on Modrinth before submitting, and the version is withheld until
 project's code is a product of AI output" or "any element of the project's page such as description or publishing
 relies on generative AI", and forbid gallery, icon or description images "created or derived from generative AI
 output". The pack's own files and these texts were written with Claude's help, so the disclosure applies. The store images are therefore
-in-game frames only: [icon-ingame.png](../media/icon-ingame.png) (a crop of the airship frame) as the icon and
-[banner-store.jpg](../media/banner-store.jpg) (the banner's frame without the wordmark) at the top of the description.
+in-game frames only: [icon-ingame.png](../media/icon-ingame.png) and
+[banner-store.jpg](../media/banner-store.jpg), plain crops of the pack's own Incoming strike frame (the gallery's
+`strike.jpg`), as the icon and at the top of the description.
 The pixel icon and wordmark were placed cell by cell in code written with AI assistance ([../media/src](../media/src)),
 which a moderator could read as "derived from generative AI output": they stay on GitHub. Weapons content is not a rule issue on either store: Modrinth and CurseForge host similar
 mods (HBM's Nuclear Tech, ICBM, Warium, Superb Warfare); the page keeps real-world politics out.

@@ -1,8 +1,7 @@
-"""Banners, feature strips and store images for the brand variants, composed over in-game frames.
+"""Shared helpers for banner.py, features.py and store.py: frame crops, the navy shade, shadows, letter-spaced text.
 
-Text: pixel wordmarks (wordmark.py) and Barlow Condensed (SIL OFL 1.1, Incoming's tagline typeface). Pixel ornaments
-(reticle brackets, badge icon) are cells placed in code. Store images (store-icon.png, store-banner.jpg)
-are in-game frames only: crops, no text or drawing (Modrinth rule 6.2, docs/store/README.md)."""
+Fonts: Barlow Condensed SemiBold and Bold (SIL OFL 1.1, Incoming's tagline typeface,
+github.com/google/fonts/tree/main/ofl/barlowcondensed) from BRAND_FONTS (default: ./fonts)."""
 import os
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
@@ -58,15 +57,6 @@ def tagline(im, xy, text, size=44, spacing=17, fill=CREAM):
     im = Image.alpha_composite(im, tl.filter(ImageFilter.GaussianBlur(3)))
     end = spaced(ImageDraw.Draw(im), xy, text, font(size), spacing, fill + (255,))
     return im, end
-
-def pixels(rows, cell, pal):
-    """A small pixel sprite (rows of palette keys, '.' transparent) at cell size."""
-    img = Image.new('RGBA', (len(rows[0]) * cell, len(rows) * cell), (0, 0, 0, 0))
-    for y, r in enumerate(rows):
-        for x, c in enumerate(r):
-            if c != '.':
-                img.paste(pal[c], (x * cell, y * cell, (x + 1) * cell, (y + 1) * cell))
-    return img
 
 def save(im, out):
     os.makedirs(os.path.dirname(out), exist_ok=True)
