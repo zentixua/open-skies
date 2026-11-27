@@ -1,8 +1,8 @@
-![A biplane flies past a smoke column rising from a strike below, at dusk](https://raw.githubusercontent.com/zentixua/open-skies/main/docs/media/banner-store.jpg)
+![An Incoming cruise missile salvo hits a village at dusk](https://raw.githubusercontent.com/zentixua/open-skies/main/docs/media/banner-store.jpg)
 
 **Build airships, explore, and defend your world from the air.**
 
-Open Skies is a survival sandbox for Minecraft 1.21.1 built around Create and [Incoming](https://github.com/zentixua/incoming).
+Open Skies is the official modpack of [Incoming](https://github.com/zentixua/incoming): a survival sandbox for Minecraft 1.21.1 with Create.
 Settle down, build machines and airships, and fly anywhere: flight is how you travel. When you choose to fight, aim
 through binoculars at anything you can see and send a drone, a salvo of cruise missiles or a nuclear ICBM.
 

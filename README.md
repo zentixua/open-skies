@@ -1,11 +1,11 @@
 <p align="center">
-  <img src="docs/media/banner.jpg" alt="Open Skies: a biplane flies past a smoke column rising from a strike below, at dusk">
+  <img src="docs/media/banner.jpg" alt="Open Skies, the official Incoming modpack: an Incoming cruise missile strike under a day sky">
 </p>
 
 <p align="center">
   <b>Build airships, explore, and defend your world from the air.</b><br>
-  A Create modpack for Minecraft 1.21.1 (NeoForge), built around
-  <a href="https://github.com/zentixua/incoming">Incoming</a>.
+  The official modpack of <a href="https://github.com/zentixua/incoming">Incoming</a>: Create, airships and
+  exploration for Minecraft 1.21.1 (NeoForge).
 </p>
 
 <p align="center">
@@ -19,7 +19,7 @@ Open Skies is a survival sandbox about a world worth defending. Settle down, bui
 and fly anywhere: flight is how you travel. When you choose to fight, Incoming lets you aim through binoculars at
 anything you can see and send a drone, a salvo of cruise missiles or a nuclear ICBM.
 
-![What's inside: fly, strike, explore, see far](docs/media/features.jpg)
+![What's inside: Incoming, fly, explore, see far](docs/media/features.jpg)
 
 ## What you can do
 
@@ -205,7 +205,8 @@ non-commercial use.
 - **Complementary Shaders** by EminGT: [complementary.dev](https://www.complementary.dev/).
 - **Subtle Effects** ([modrinth.com/mod/subtle-effects](https://modrinth.com/mod/subtle-effects)) is credited here as
   its author asks; Default Options and Balm (BlayTheNinth) ask that their names stay out of a pack's title.
-- The screenshots are in-game frames from this pack (Complementary Unbound with Euphoria Patches). The icon and the
+- The screenshots are in-game frames from this pack (Complementary Unbound with Euphoria Patches); the banner's frame
+  and the strip's Incoming tile are from Incoming's own media. The icon (Incoming's icon under a day sky) and the
   wordmark are pixel art placed cell by cell in code, written with AI assistance, in Incoming's style
   ([docs/media/src](docs/media/src)); the tagline font is Barlow Condensed (SIL Open Font License 1.1).
 - Left out on purpose: shaderpacks and mods whose authors forbid redistribution or can revoke it (BSL, Flashback,
