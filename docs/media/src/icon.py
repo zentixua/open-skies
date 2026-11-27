@@ -66,9 +66,10 @@ SHIP = [   # small airship with an outline, bow left
 ]
 
 def stamp(g, sprite, x0, y0):
+    """Paint the sprite over sky cells only: Incoming's cloud and ground stay intact."""
     for y, row in enumerate(sprite):
         for x, c in enumerate(row):
-            if c != '.':
+            if c != '.' and g[y0 + y][x0 + x] in SKY_CELLS | set(DAY):
                 g[y0 + y][x0 + x] = c
 
 def image(g):

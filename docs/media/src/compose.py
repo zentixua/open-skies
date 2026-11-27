@@ -59,7 +59,7 @@ def tagline(im, xy, text, size=44, spacing=17, fill=CREAM):
     return im, end
 
 def save(im, out):
-    os.makedirs(os.path.dirname(out), exist_ok=True)
+    os.makedirs(os.path.dirname(out) or '.', exist_ok=True)
     im = im.convert('RGB')
     if out.endswith('.png'):
         im.save(out)

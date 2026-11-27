@@ -17,9 +17,10 @@ official modpack carries the mod's mark).
   INCOMING MODPACK" in Barlow Condensed SemiBold (SIL OFL 1.1), on a navy shade over an in-game frame of an Incoming
   cruise missile strike under a day sky: `still-2.jpg` from Incoming's own media
   ([zentixua/incoming docs/media](https://github.com/zentixua/incoming/tree/main/docs/media)), taken in Incoming's test
-  world. `python3 banner.py still-2.jpg 860 250 1.12 ../banner.jpg`.
+  world; download it into `src/` and run every command from `src/`. `python3 banner.py still-2.jpg 860 250 1.12
+  ../banner.jpg`.
 - **Strip** ([features.py](features.py)): Incoming first and twice as wide (the same `still-2.jpg`), then three gallery
-  frames: `python3 features.py ../features.jpg 'still-2.jpg|1150|400|INCOMING|Air strikes and nukes|2|1.3'
+  frames: `python3 features.py ../features.jpg 'still-2.jpg|1150|380|INCOMING|Air strikes and nukes|2|1.3'
   '../gallery/airship.jpg|960|540|FLY|Create airships and aircraft'
   '../gallery/jungle-village.jpg|900|560|EXPLORE|Towns, dungeons and temples'
   '../gallery/airship-valley.jpg|1574|480|SEE FAR|Voxy distance and shaders|1|1.5'`.

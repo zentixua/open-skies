@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/media/banner.jpg" alt="Open Skies, the official Incoming modpack: an Incoming cruise missile strike under a clear sky">
+  <img src="docs/media/banner.jpg" alt="Open Skies, the official Incoming modpack: an Incoming cruise missile strike under a day sky">
 </p>
 
 <p align="center">
@@ -19,7 +19,7 @@ Open Skies is a survival sandbox about a world worth defending. Settle down, bui
 and fly anywhere: flight is how you travel. When you choose to fight, Incoming lets you aim through binoculars at
 anything you can see and send a drone, a salvo of cruise missiles or a nuclear ICBM.
 
-![What's inside: fly, strike, explore, see far](docs/media/features.jpg)
+![What's inside: Incoming, fly, explore, see far](docs/media/features.jpg)
 
 ## What you can do
 
