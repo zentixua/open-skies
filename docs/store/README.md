@@ -85,7 +85,7 @@ is on CurseForge with distribution allowed.
 
 | File | License | Modrinth | CurseForge | Source |
 |---|---|---|---|---|
-| Incoming 3.13.0 | GPL-3.0-only (the owner's mod) | after Incoming is on Modrinth, or declared "Your project" | no: not on CurseForge | [releases](https://github.com/zentixua/incoming/releases) |
+| Incoming 3.14.0 | GPL-3.0-only (the owner's mod) | after Incoming is on Modrinth, or declared "Your project" | no: not on CurseForge | [releases](https://github.com/zentixua/incoming/releases) |
 | Voxy 0.2.16-beta+1.21.11 | All Rights Reserved; modpacks allowed "as long as you link the mod back to this page and the version used is avaible on this modrinth mod page. (i.e. please do not use or include unofficial backports or versions)". The pack links that official file unmodified; Roxy runs it on 1.21.1, which a moderator may ask about | yes (Modrinth CDN, credited) | no: link-back condition, no CurseForge page | [modrinth.com/mod/voxy](https://modrinth.com/mod/voxy) |
 | Roxy, LOD Server Support | MIT | yes | no Voxy, no use (LOD Server Support's 1.21.1 file there unverified) | [Roxy](https://modrinth.com/mod/roxy), [LSS](https://modrinth.com/mod/lod-server-support) |
 | Create Aeronautics (bundled) 1.3.2 | code MIT, assets All Rights Reserved | yes (Modrinth CDN) | unverified: a CurseForge project exists, this file not confirmed | [source](https://github.com/Creators-of-Aeronautics/Simulated-Project) |

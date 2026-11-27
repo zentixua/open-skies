@@ -3,6 +3,12 @@
 Each released version of Open Skies. A new `version` in `pack/pack.toml` needs its section here; CI builds the
 GitHub release notes from it (`tools/release_notes.py`).
 
+## 1.0.1
+
+- Incoming 3.14.0: a new nuclear dust wave, buildings that fall when a strike knocks out their support, flash fires,
+  and redstone, Create Display Link, Jade and computer support
+  ([release notes](https://github.com/zentixua/incoming/releases/tag/v3.14.0)).
+
 ## 1.0.0
 
 First public release.
