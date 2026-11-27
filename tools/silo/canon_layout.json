@@ -1,0 +1,211 @@
+{
+ "about": "Canon layout of the 50-silo complex, in units of the flower edge (centre to centre of neighbouring silos). Silo 1 at 0,0; the entry gate on the axis road due north (-y). x east, y south, as a Minecraft map. Fitted jointly (tools/silo/canon_fit.py) to two images from the show: the founders' plaque at the opening (S3E09, all 50 numbers) and the high oblique of the whole complex in 2052 (S3; Reddit r/SiloTVSeries 1wf7vy8, frame 1). Each flower is a regular hexagon of equal edge; a homography maps the ground to each image. Residuals: plaque 6.0 px rms, frame 11.3 px rms. Silos 2-6, 16, 45 and the gate are free points.",
+ "edge_m": 156,
+ "edge_source": "Frame 1, rectified by the fit: every ring's outer pale circle maps to a circle of 0.82 edge (0.77-0.91 over five rings, across and along). That circle is where the explorethesilo model's crater returns to the plain (r 64 m; its dark berm ring at r 42 sits at 0.67 of it, as in the frame), so edge = 128 / 0.82 = 156 m. The model's own neighbouring craters lie 170 and 190 m from it.",
+ "gate": [
+  0.0,
+  -4.993
+ ],
+ "silos": {
+  "1": [
+   0.0,
+   0.0
+  ],
+  "7": [
+   2.0,
+   1.403
+  ],
+  "10": [
+   1.088,
+   0.992
+  ],
+  "9": [
+   1.9,
+   0.408
+  ],
+  "8": [
+   2.811,
+   0.819
+  ],
+  "13": [
+   2.911,
+   1.814
+  ],
+  "12": [
+   2.1,
+   2.398
+  ],
+  "11": [
+   1.188,
+   1.987
+  ],
+  "14": [
+   1.682,
+   -1.862
+  ],
+  "17": [
+   1.034,
+   -2.625
+  ],
+  "15": [
+   2.018,
+   -2.804
+  ],
+  "21": [
+   2.665,
+   -2.042
+  ],
+  "20": [
+   2.329,
+   -1.1
+  ],
+  "19": [
+   1.345,
+   -0.921
+  ],
+  "18": [
+   0.698,
+   -1.683
+  ],
+  "22": [
+   4.317,
+   -0.393
+  ],
+  "24": [
+   3.678,
+   -1.161
+  ],
+  "23": [
+   4.663,
+   -1.331
+  ],
+  "28": [
+   5.302,
+   -0.562
+  ],
+  "27": [
+   4.956,
+   0.376
+  ],
+  "26": [
+   3.971,
+   0.546
+  ],
+  "25": [
+   3.331,
+   -0.223
+  ],
+  "29": [
+   -2.057,
+   1.543
+  ],
+  "32": [
+   -2.865,
+   0.954
+  ],
+  "31": [
+   -1.95,
+   0.549
+  ],
+  "30": [
+   -1.143,
+   1.139
+  ],
+  "35": [
+   -1.25,
+   2.133
+  ],
+  "34": [
+   -2.164,
+   2.537
+  ],
+  "33": [
+   -2.972,
+   1.948
+  ],
+  "36": [
+   -4.394,
+   -0.104
+  ],
+  "38": [
+   -4.766,
+   -1.032
+  ],
+  "37": [
+   -3.776,
+   -0.891
+  ],
+  "42": [
+   -3.404,
+   0.038
+  ],
+  "41": [
+   -4.021,
+   0.824
+  ],
+  "40": [
+   -5.011,
+   0.682
+  ],
+  "39": [
+   -5.384,
+   -0.246
+  ],
+  "43": [
+   -1.713,
+   -1.739
+  ],
+  "46": [
+   -2.085,
+   -2.668
+  ],
+  "44": [
+   -1.095,
+   -2.526
+  ],
+  "50": [
+   -0.723,
+   -1.597
+  ],
+  "49": [
+   -1.341,
+   -0.811
+  ],
+  "48": [
+   -2.331,
+   -0.953
+  ],
+  "47": [
+   -2.703,
+   -1.881
+  ],
+  "16": [
+   1.459,
+   -3.551
+  ],
+  "45": [
+   -1.467,
+   -3.426
+  ],
+  "2": [
+   0.052,
+   2.572
+  ],
+  "3": [
+   -1.479,
+   3.707
+  ],
+  "4": [
+   -0.473,
+   3.402
+  ],
+  "5": [
+   0.54,
+   3.399
+  ],
+  "6": [
+   1.553,
+   3.545
+  ]
+ }
+}
