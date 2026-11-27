@@ -28,25 +28,22 @@ def rim(g, sprite, x0, y0, light, hot, hot_from):
                 g[y0 + y][x0 + x] = hot if x0 + x >= hot_from else light
 
 # the pack's airship, bow to the left, lit from the right by the blast (cream envelope, orange band, gondola)
-LIT_SHIP = [
-    "....KKKKKKKK....",
-    "..KKGFFEEEEyyK.K",
-    ".KHGFFEEEEEEyyKK",
-    "KHGGFFFEEEEEEyyK",
-    "KRRRRROOOOOOOOxK",
-    "KHHGGGFFFFEEEyyK",
-    ".KHHGGGFFFFEEyKK",
-    "..KKHHGGGFFEKK.K",
-    "....KKKKKKKK....",
-    ".....K....K.....",
-    ".....KnynynK....",
-    "......KKKKK.....",
+LIT_SHIP = [   # 12×9, bow left, lit from the right by the blast; gondola with lit windows
+    "..KKKKKKK.K.",
+    ".KGFEEEEyKKK",
+    "KGFEEEEEEyyK",
+    "KRRROOOOOOxK",
+    ".KHGGFFFEyKK",
+    "..KKKKKKK.K.",
+    "....K..K....",
+    "...KnynyK...",
+    "....KKKK....",
 ]
 
 def variant_a():
     """Strike Sky: Incoming's mushroom cloud, the pack's airship in front of it, lit by the blast."""
     g = grid(INC)
-    stamp(g, LIT_SHIP, 0, 11)
+    stamp(g, LIT_SHIP, 0, 14)   # clear of the cap and the stem, against the sky
     return g
 
 TINY_SHIP = [   # small cream airship, bow left
@@ -70,42 +67,6 @@ def variant_b():
     stamp(g, TINY_SHIP, 1, 1)
     return g
 
-def variant_c():
-    """Contrail: an Incoming cruise missile dives out of the dusk sky, its trail drawn across the icon."""
-    g = grid(INC)
-    # remove the mushroom: every cell above the ground takes its row's sky colour
-    sky = {y: 'e' for y in range(15)}
-    sky.update({15: 'g', 16: 'g', 17: 'g', 18: 'h', 19: 'h', 20: 'h', 21: 'i', 22: 'i', 23: 'm', 24: 'm'})
-    for y in range(25):
-        g[y] = [sky[y]] * 32
-    g[25] = list('pppppppppppppppppppppppppppppppp')
-    g[26] = list('ppoppppppppppppppppppppppppopppp')
-    for y in range(27, 32):
-        g[y] = ['a'] * 32
-    # a village on the horizon (dark roofs, lit windows) where the missile is heading
-    stamp(g, ["..cc....cc...", ".cccc..cccc..", "ccccccccccccc", "cyccccycccycc"], 17, 24)
-    # trail: quadratic Bézier from off the top left to the head; older = wider and fainter
-    P0, P1, P2 = (-2, 3), (13, 1), (20, 18)
-    pts = []
-    for i in range(400):
-        t = i / 399
-        x = (1 - t) ** 2 * P0[0] + 2 * (1 - t) * t * P1[0] + t * t * P2[0]
-        y = (1 - t) ** 2 * P0[1] + 2 * (1 - t) * t * P1[1] + t * t * P2[1]
-        pts.append((t, x, y))
-    for t, x, y in pts:
-        w = 1.9 - 1.1 * t
-        c = 'X' if t < 0.25 else 'V' if t < 0.5 else 'U' if t < 0.78 else 'T'
-        for dy in range(-2, 3):
-            for dx in range(-2, 3):
-                if dx * dx + dy * dy <= w * w:
-                    xi, yi = round(x + dx), round(y + dy)
-                    if 0 <= xi < 32 and 0 <= yi < 32 and g[yi][xi] not in 'TU' or (c == 'T' and 0 <= yi < 32 and 0 <= xi < 32):
-                        g[yi][xi] = c
-    # missile head and exhaust (Incoming's cruise missile colours: grey body, orange flame)
-    stamp(g, ["yx...", "xyx..", ".xUY.", "..YYY", "...YY"], 18, 16)
-    # small airship watching from the right
-    stamp(g, TINY_SHIP, 21, 4)
-    return g
 
 def variant_d():
     """Designator: Incoming's mushroom seen through the Strike Designator's lens, its green reticle on target."""
@@ -119,17 +80,15 @@ def variant_d():
             elif d > r:
                 g[y][x] = 'M' if (x + y) % 7 else 'L'
     # reticle ticks from the lens edge inward, and corner brackets on the target (ground zero)
-    for i in range(3, 8):
-        g[15][i] = 'Q'; g[15][31 - i] = 'Q'; g[i][15] = 'Q'
-        g[16][i] = 'P'; g[16][31 - i] = 'P'; g[i][16] = 'P'
+    for i in range(3, 8):     # side ticks only: a top tick would cut through the fireball
+        g[15][i] = 'Q'; g[15][31 - i] = 'Q'
+        g[16][i] = 'P'; g[16][31 - i] = 'P'
     for (x, y) in [(10, 20), (11, 20), (10, 21), (21, 20), (20, 20), (21, 21),
                    (10, 27), (11, 27), (10, 26), (21, 27), (20, 27), (21, 26)]:
         g[y][x] = 'Q'
-    # the red button of the designator, lower right corner
-    stamp(g, ["SS", "SS"], 28, 28)
     return g
 
-VARIANTS = {'a-strike-sky': variant_a, 'b-open-sky': variant_b, 'c-contrail': variant_c, 'd-designator': variant_d}
+VARIANTS = {'a-strike-sky': variant_a, 'b-open-sky': variant_b, 'd-designator': variant_d}
 
 if __name__ == '__main__':
     out = sys.argv[1]

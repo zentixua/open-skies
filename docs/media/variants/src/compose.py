@@ -1,11 +1,10 @@
 """Banners, feature strips and store images for the brand variants, composed over in-game frames.
 
 Text: pixel wordmarks (wordmark.py) and Barlow Condensed (SIL OFL 1.1, Incoming's tagline typeface). Pixel ornaments
-(reticle brackets, contrail, badge icon) are cells placed in code. Store images (store-icon.png, store-banner.jpg)
+(reticle brackets, badge icon) are cells placed in code. Store images (store-icon.png, store-banner.jpg)
 are in-game frames only: crops, no text or drawing (Modrinth rule 6.2, docs/store/README.md)."""
 import os
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
-from wordmark import render
 
 FONTS = os.environ.get('BRAND_FONTS', os.path.join(os.path.dirname(__file__), 'fonts'))
 CREAM = (238, 229, 214)

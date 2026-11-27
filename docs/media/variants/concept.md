@@ -40,17 +40,17 @@ one makes an Incoming motif the first thing seen at 64 px.
 
 ## Variants
 - **A · Strike Sky**: Incoming's mushroom cloud is the icon; the pack's airship flies in front of it, lit by the
-  blast. Banner: the same scene in game (airship at dusk, a real Incoming nuke behind it). Tagline "AN INCOMING
-  MODPACK". The pack's flight and the mod's strike in one picture.
-- **B · Official Pack**: Cobblemon's model. The icon is Incoming's icon unchanged under an open day sky (the pack's
-  name drawn as a sky); the wordmark is a lockup, INCOMING on top in its own letters, OPEN SKIES under it. The
-  strongest tie: anyone who knows the mod knows the pack at a glance.
-- **C · Contrail**: the missile trail as the brand line. Icon: an Incoming cruise missile diving out of the dusk sky
-  toward a village, its contrail across the icon; the airship watches. Banner: a real salvo's trails over the valley;
-  the contrail runs under the wordmark.
+  blast. Banner: a real Incoming nuke at dusk (Incoming's own frame), "AN INCOMING MODPACK". The frame the idea
+  wants, the pack's airship in front of a nuke, is the finishing shoot if A is chosen.
+- **B · Official Pack**: the Cobblemon model. The icon is Incoming's icon unchanged under an open day sky (the pack's
+  name drawn as a sky); the banner lockup is Incoming's icon and INCOMING in its ember over OPEN SKIES, "THE OFFICIAL
+  INCOMING MODPACK". The strongest tie: anyone who knows the mod knows the pack at a glance.
 - **D · Designator**: the player's view through the Strike Designator. Icon: the mushroom inside the binocular lens
-  with the designator's green reticle. Banner: an in-game frame through the designator; reticle brackets frame the
-  wordmark. "See far, strike far" ties Voxy's distance to Incoming.
+  with the designator's green reticle. Banner: the pack's own cruise-missile strike, marked by the designator's
+  corner brackets, "STRIKE FAR WITH INCOMING".
+- **C · Contrail** (dropped): an Incoming cruise missile's trail as the brand line. The independent judgement scored
+  it last (no Incoming mark at 64 px, the banner reads as generic smoke), so it was removed.
 
-Store-safe split (each variant): store icon and store banner are in-game frames only (Modrinth rule 6.2); the pixel
-icon, wordmark and ornaments stay on GitHub and in the launcher (the `.mrpack` and Prism icon).
+Store-safe split (each variant): store icon and store banner are in-game frames only (Modrinth rule 6.2: crops, and
+for A a brightness lift, no drawing or text); the pixel icon, wordmark and ornaments stay on GitHub and in the launcher
+(the `.mrpack` and Prism icon).

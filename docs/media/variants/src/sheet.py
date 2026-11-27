@@ -3,13 +3,14 @@
 python3 sheet.py VARIANTS_DIR CURRENT_MEDIA_DIR out.png
 Per row: name and idea; launcher tile (the 64 px pixel icon as Prism shows it); store search card (96 px in-game
 store icon, as Modrinth lists packs); GitHub README header (banner at 880 px, the README column) and the feature
-strip under it. UI fonts: Noto Sans (store card mock), Barlow Condensed (labels)."""
+strip under it. UI fonts: Noto Sans (store card mock; NOTO_FONTS, default /usr/share/fonts/noto), Barlow Condensed
+(labels; BRAND_FONTS as for build.py)."""
 import os, sys
 from PIL import Image, ImageDraw, ImageFont
 from compose import font
 
 VD, CUR, OUT = sys.argv[1:4]
-NOTO = '/usr/share/fonts/noto/NotoSans-%s.ttf'
+NOTO = os.path.join(os.environ.get('NOTO_FONTS', '/usr/share/fonts/noto'), 'NotoSans-%s.ttf')
 ui = lambda s, b=False: ImageFont.truetype(NOTO % ('Bold' if b else 'Regular'), s)
 
 ROWS = [
@@ -18,12 +19,10 @@ ROWS = [
           banner=os.path.join(CUR, 'banner.jpg'), strip=os.path.join(CUR, 'features.jpg'))),
     ('a-strike-sky', 'A · Strike Sky', "Incoming's mushroom cloud is the mark; the pack's airship flies in front of it. "
      'Banner: a real Incoming nuke at dusk. "An Incoming modpack".', None),
-    ('b-open-sky', 'B · Official Pack', "Incoming's own icon under an open day sky; INCOMING + OPEN SKIES lockup with "
-     'the mod\'s badge. "The official Incoming modpack" (Cobblemon model).', None),
-    ('c-contrail', 'C · Contrail', 'An Incoming cruise missile dives out of the dusk sky; its contrail is the brand '
-     'line. Banner: a real launch, wordmark on the open sky.', None),
+    ('b-open-sky', 'B · Official Pack', "Incoming's own icon under an open day sky; the mod's badge and INCOMING over "
+     'OPEN SKIES. "The official Incoming modpack" (Cobblemon model).', None),
     ('d-designator', 'D · Designator', "The view through Incoming's Strike Designator: the mushroom in the lens, green "
-     'reticle. Banner: the pack\'s real strike framed as a target.', None),
+     'reticle. Banner: the pack\'s own strike framed as a target.', None),
 ]
 
 BG, CARD, TEXT, MUTED = (22, 24, 28), (38, 41, 48), (236, 236, 240), (160, 164, 176)
