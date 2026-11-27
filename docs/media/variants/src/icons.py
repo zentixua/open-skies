@@ -1,31 +1,8 @@
-"""The four variants' pixel icons, 32×32 cells placed in code (AI-assisted), scaled with nearest neighbour.
+"""The variants' pixel icons, 32×32 cells placed in code (AI-assisted), scaled with nearest neighbour.
 
 python3 icons.py OUTDIR  → OUTDIR/<variant>/icon.png (512), icon-400.png, icon-64.png, icon-32.png"""
 import math, os, sys
 from pix import INC, SKY_CELLS, grid, stamp, save_icon
-
-# the pack's airship as a silhouette, bow to the left, fins at the stern (right)
-SIL = [
-    ".....ccccccc.....c.",
-    "...ccccccccccc..cc.",
-    "..cccccccccccccccc.",
-    ".cccccccccccccccccc",
-    "..cccccccccccccccc.",
-    "...ccccccccccc..cc.",
-    ".....ccccccc.....c.",
-    "......c...c........",
-    "......ccccc........",
-]
-
-def rim(g, sprite, x0, y0, light, hot, hot_from):
-    """Blast light on the silhouette: top and right edges facing the fireball."""
-    for y, row in enumerate(sprite):
-        for x, ch in enumerate(row):
-            if ch == '.': continue
-            up = y == 0 or sprite[y - 1][x] == '.'
-            right = x == len(row) - 1 or row[x + 1] == '.'
-            if up or right:
-                g[y0 + y][x0 + x] = hot if x0 + x >= hot_from else light
 
 # the pack's airship, bow to the left, lit from the right by the blast (cream envelope, orange band, gondola)
 LIT_SHIP = [   # 12×9, bow left, lit from the right by the blast; gondola with lit windows
@@ -46,12 +23,12 @@ def variant_a():
     stamp(g, LIT_SHIP, 0, 14)   # clear of the cap and the stem, against the sky
     return g
 
-TINY_SHIP = [   # small cream airship, bow left
-    "..FEEWWE..",
-    ".GFEEEEWWE",
-    "GORRROOOOE",
-    ".HGGFFFFF.",
-    "....KK....",
+TINY_SHIP = [   # small cream airship with an outline, bow left
+    "..KKKKK..",
+    ".KFEEWWK.",
+    "KRROOOOOK",
+    ".KGGFFFK.",
+    "...KKK...",
 ]
 
 def variant_b():
@@ -64,7 +41,7 @@ def variant_b():
                 g[y][x] = day[y] if y < len(day) else '7'
     stamp(g, ["..CC....", ".CCCCC..", "CCCCCCCD", ".DDDDDD."], 23, 15)
     stamp(g, [".CC..", "CCCCD", ".DDD."], 1, 18)
-    stamp(g, TINY_SHIP, 1, 1)
+    stamp(g, TINY_SHIP, 0, 1)   # clear of the cap
     return g
 
 

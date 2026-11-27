@@ -53,8 +53,8 @@ PAL.update({
  # day sky (variant B)
  '1':'#2e5f9e','2':'#3a71b2','3':'#4a84c2','4':'#5e97cf','5':'#78abd9','6':'#93bfe2','7':'#b2d2ea',
  'C':'#f4f1ea','D':'#d9dfe6',
- # designator (variant D): its olive body, screen green and reticle green, red button
- 'L':'#404a2c','M':'#56623a','N':'#1e221e','P':'#285a32','Q':'#8cff8c','S':'#dc281e','Z':'#181a16','Y':'#3c3e42',
+ # designator (variant D): its olive body, screen green and reticle green
+ 'L':'#404a2c','M':'#56623a','N':'#1e221e','P':'#285a32','Q':'#8cff8c','Z':'#181a16','Y':'#3c3e42',
 })
 
 def grid(rows=None, fill='e'):

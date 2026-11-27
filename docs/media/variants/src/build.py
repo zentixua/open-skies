@@ -7,7 +7,7 @@ drawing or text), strip.jpg (feature strip, 1920×532). Frames: in-game screensh
 FRAMES below and ../README.md."""
 import os, sys
 from PIL import Image, ImageDraw, ImageEnhance
-from compose import CREAM, NAVY, crop, shade, with_shadow, tagline, pixels, spaced, font, save
+from compose import CREAM, NAVY, crop, shade, with_shadow, tagline, spaced, font, save
 from wordmark import render
 from pix import PAL, INC, image as pix_image
 
@@ -18,7 +18,6 @@ F = lambda n: os.path.join(FR, n)
 def rgb(k):
     return tuple(int(PAL[k][i:i + 2], 16) for i in (1, 3, 5)) + (255,)
 
-SKY = (138, 190, 230)      # open-sky blue of variant B
 GREEN = (140, 255, 140)    # the Strike Designator's screen cross
 EMBER = (255, 166, 64)
 
