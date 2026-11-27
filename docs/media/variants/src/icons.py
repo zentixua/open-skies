@@ -46,7 +46,7 @@ LIT_SHIP = [
 def variant_a():
     """Strike Sky: Incoming's mushroom cloud, the pack's airship in front of it, lit by the blast."""
     g = grid(INC)
-    stamp(g, LIT_SHIP, 0, 13)
+    stamp(g, LIT_SHIP, 0, 11)
     return g
 
 TINY_SHIP = [   # small cream airship, bow left
